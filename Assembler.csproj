@@ -1,0 +1,340 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{90AB8905-FDCC-48D1-B488-8EA357DD4471}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ThrusterCore</RootNamespace>
+    <AssemblyName>Stealth System</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\..\AppData\Roaming\SpaceEngineers\Mods\ThrusterCore\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\..\AppData\Roaming\SpaceEngineers\Mods\ThrusterCore\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\netstandard.dll</HintPath>
+    </Reference>
+    <Reference Include="ProtoBuf.Net">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\ProtoBuf.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="ProtoBuf.Net.Core">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\ProtoBuf.Net.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Sandbox.Common">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Sandbox.Game">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="Sandbox.Graphics, Version=0.1.1.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="SpaceEngineers.Game">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\SpaceEngineers.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="SpaceEngineers.ObjectBuilders">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\SpaceEngineers.ObjectBuilders.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.ReaderWriter, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\System.Xml.ReaderWriter.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.XPath, Version=4.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\System.Xml.XPath.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Game">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Game.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="VRage.Input">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Input.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="VRage.Library">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Library.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Math">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Math.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="VRage.Mod.Io">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Mod.Io.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Platform.Windows">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Platform.Windows.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Render">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Render.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Render11">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Render11.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Data\Scripts\Assembler\Comp\aCompEvents.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="Data\Scripts\Assembler\Comp\AssemblerComp.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="Data\Scripts\Assembler\Helpers\Helpers.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\RichHudClient.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\BindManager\Bind.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\BindManager\BindGroup.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\BindManager\BindManager.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\BindManager\Control.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\HUD\HudCursor.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\HUD\HudMain.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\HUD\Rendering\BillboardUtils.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\HUD\Rendering\FontManager\FontData.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\HUD\Rendering\FontManager\FontManager.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\HUD\Rendering\TextBoard.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\HUD\Rendering\TextBuilder.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\ControlCategory.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Controls\TerminalButton.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Controls\TerminalCheckbox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Controls\TerminalColorPicker.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Controls\TerminalControlBase.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Controls\TerminalDragBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Controls\TerminalDropdown.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Controls\TerminalList.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Controls\TerminalOnOffButton.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Controls\TerminalSlider.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Controls\TextField.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\ControlTile.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\ListBoxData.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\ModControlRoot.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Pages\ControlPage.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Pages\RebindPage.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Pages\TerminalPageBase.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Pages\TextPage.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\RichHudTerminal.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\TerminalPageCategory.cs" />
+    <Compile Include="Data\Scripts\Assembler\Menu\AssemblerWindow.cs" />
+    <Compile Include="Data\Scripts\Assembler\Menu\ScrollContainer.cs" />
+    <Compile Include="Data\Scripts\Assembler\Menu\QueueItem.cs" />
+    <Compile Include="Data\Scripts\Assembler\Menu\AssemblerHud.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\ApiContainers.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\Collections.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\Extensions\CollectionExtensions.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\Extensions\MathExtensions.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\Extensions\VectorExtensions.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\ObjectPool.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\PoolPolicies\ListPoolPolicy.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\PoolPolicies\StringBuilderPoolPolicy.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\TaskPool.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\Utilities\Color.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\Utilities\Debug.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\Utilities\ProtoBuf.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\Utilities\Xml.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\Internal\ExceptionHandler.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\Internal\ModBase.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\Internal\RichHudCore.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\IO\LocalFileIO.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\IO\LogIO.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\MsgEnums.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\BindManager\BindClientAccessors.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\BindManager\BindDefinition.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\BindManager\BindGroupInitializer.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\BindManager\CustomControls.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\BindManager\IBind.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\BindManager\IBindGroup.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\BindManager\IControl.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\CmdManager.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementBases\HudElementBase.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementBases\HudNodeBase.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementBases\HudParentBase.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementBases\HudSpaceNodeBase.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementBases\LabelBoxBase.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementBases\LabelElementBase.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementBases\NodeUtils.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementBases\ParentUtils.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementBases\WindowBase.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementEnums.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementInterfaces\IClickableElement.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementInterfaces\IEntryBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementInterfaces\IHudCollection.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementInterfaces\ILabelElement.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementInterfaces\IReadOnlyHudElement.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementInterfaces\IReadOnlyHudNode.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementInterfaces\IReadOnlyHudParent.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElementInterfaces\IReadOnlyHudSpaceNode.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\BorderBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\Buttons\BorderedButton.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\Buttons\BorderedCheckBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\Buttons\Button.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\Buttons\LabelBoxButton.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\Buttons\LabelButton.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\Buttons\NamedCheckBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\Buttons\NamedOnOffButton.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\Buttons\OnOffButton.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\ColorPickerHSV.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\ColorPickerRGB.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\ListInputElement.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\MouseInputElement.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\MouseInputFilter.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\ScrollBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\SelectionBoxes\Dropdown.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\SelectionBoxes\ListBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\SelectionBoxes\RadialSelectionBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\SelectionBoxes\SelectionBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\SelectionBoxes\SelectionBoxBase.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\SelectionBoxes\TreeBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\SelectionBoxes\TreeBoxBase.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\SelectionBoxes\TreeList.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\Sliders\NamedSliderBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\Sliders\ScrollBar.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\Sliders\SliderBar.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\Sliders\SliderBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\TextBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ClickableHudElements\TextField.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ContainerInterfaces\IHudElementContainer.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ContainerInterfaces\IListBoxEntry.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ContainerInterfaces\IScrollBoxEntry.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\ContainerInterfaces\ISelectionBoxEntry.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\Containers\HudElementContainer.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\Containers\HudElementTuple.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\Containers\ListBoxEntry.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\Containers\ScrollBoxEntry.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\Containers\ScrollBoxEntryTuple.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\Containers\SelectionBoxEntry.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\DoubleLabelBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\EmptyHudElement.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\HudChain.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\HudCollection.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\Label.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\LabelBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudElements\TexturedBox.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudMainEnums.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudSpaceNodes\CamSpaceNode.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudSpaceNodes\CustomSpaceNode.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\HudSpaceNodes\ScaledSpaceNode.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\ICursor.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\Rendering\BillboardMats.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\Rendering\BillboardUtils.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\Rendering\BlockBoard.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\Rendering\IFontMin.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\Rendering\MatBoard.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\Rendering\Material.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\Rendering\MaterialFrame.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\Rendering\PolyBoard.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\Rendering\PuncturedPolyBoard.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\Rendering\QuadBoard.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\Rendering\TextBuilderInterfaces\ILine.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\Rendering\TextBuilderInterfaces\IRichChar.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\Rendering\TextBuilderInterfaces\ITextBoard.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\Rendering\TextBuilderInterfaces\ITextBuilder.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\RichText\GlyphFormat.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\RichText\RichText.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\TerminalColors.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\HUD\ToolTip.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\SettingsMenu\IControlCategory.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\SettingsMenu\IControlPage.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\SettingsMenu\IControlTile.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\SettingsMenu\IModControlRoot.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\SettingsMenu\IRebindPage.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\SettingsMenu\ITerminalControl.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\SettingsMenu\ITerminalPage.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\SettingsMenu\ITerminalPageCategory.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\SettingsMenu\ITextPage.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\SharedBinds.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\UI\TextInput.cs" />
+    <Compile Include="Data\Scripts\Assembler\Session\SessionFields.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="Data\Scripts\Assembler\Session\SessionEvents.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="Data\Scripts\Assembler\Comp\GridComp.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="Data\Scripts\Assembler\Session\SessionRun.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\..\Documents\SE\SEWhitelistChecker.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".editorconfig" />
+    <None Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\.gitrepo" />
+    <None Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\LICENSE" />
+    <None Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\README.md" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
