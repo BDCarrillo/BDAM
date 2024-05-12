@@ -20,9 +20,10 @@ namespace BDAM
     public class ListCompItem
     {
         [ProtoMember(1)] public string bpBase;
-        [ProtoMember(2)] public int buildAmount;
-        [ProtoMember(3)] public int grindAmount;
-        //TODO priorities?
+        [ProtoMember(2)] public int buildAmount = -1;
+        [ProtoMember(3)] public int grindAmount = -1;
+        [ProtoMember(4)] public int priority = 3;
+        [ProtoMember(5)] public string label;
         //TODO missing mats?
     }
 
@@ -35,14 +36,16 @@ namespace BDAM
         internal bool inputJammed;
         internal bool outputJammed;
         internal bool missingMats;
-        internal int missingMatsInt = 0;
-        internal int unJamAttempts = 0;
-        internal int countStart = 0;
-        internal int countStop = 0;
         internal bool autoControl = false;
         internal MyProductionQueueItem lastQueue;
         internal Dictionary<MyBlueprintDefinitionBase, ListCompItem> buildList = new Dictionary<MyBlueprintDefinitionBase, ListCompItem>();
         internal GridComp gridComp;
+
+        //Stats tracking
+        internal int missingMatsInt = 0;
+        internal int unJamAttempts = 0;
+        internal int countStart = 0;
+        internal int countStop = 0;
 
 
         internal void Init(IMyAssembler Assembler, GridComp comp, Session session)
@@ -53,6 +56,12 @@ namespace BDAM
             
             if (Session.Server)
             {
+                if(!assembler.IsQueueEmpty)
+                {
+                    var queue = assembler.GetQueue();
+                    lastQueue = queue[0];
+                }
+
                 assembler.StoppedProducing += Assembler_StoppedProducing;
                 assembler.StartedProducing += Assembler_StartedProducing;
                 //Check/init storage
@@ -83,7 +92,7 @@ namespace BDAM
                                 //Serialized string to BPs
                                 foreach (var saved in load.compItems)
                                 {
-                                    buildList.Add(Session.BPLookup[saved.bpBase], new ListCompItem() { bpBase = saved.bpBase, buildAmount = saved.buildAmount, grindAmount = saved.grindAmount });
+                                    buildList.Add(Session.BPLookup[saved.bpBase], new ListCompItem() { bpBase = saved.bpBase, buildAmount = saved.buildAmount, grindAmount = saved.grindAmount, priority = saved.priority, label = saved.label });
                                 }
                                 autoControl = load.auto;
                                 MyLog.Default.WriteLineAndConsole($"{Session.modName} Loaded storage for {assembler.DisplayNameText} items found: {load.compItems.Count}  auto: {load.auto}");
@@ -105,20 +114,15 @@ namespace BDAM
 
         public void AssemblerUpdate()
         {
-            //TODO eval this for cases of missing materials
             //TODO noting/skipping items that are not buildable due to a lack of materials
-
             if (!assembler.IsQueueEmpty)
             {
                 var queue = assembler.GetQueue();
-
-                MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $"{queue[0].Blueprint.DisplayNameText} - {queue[0].Amount}  Last: {lastQueue.Blueprint.DisplayNameText} - {lastQueue.Amount}");
-
+                MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $"{queue[0].Blueprint.Id.SubtypeName} - {queue[0].Amount}  Last: {lastQueue.Blueprint.Id.SubtypeName} - {lastQueue.Amount}");
                 if (lastQueue.Blueprint == queue[0].Blueprint && lastQueue.Amount == queue[0].Amount)
                 {
                     if (Session.logging)
                         MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " SAME ITEM SITTING IN QUEUE"); //insufficient mats?
-
                 }
                 else if (Session.logging)
                     MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " skipping check- items in queue");
@@ -137,59 +141,60 @@ namespace BDAM
                 if (!AssemblerTryGrind())
                     AssemblerTryBuild();
             }
-
         }
 
         public bool AssemblerTryBuild()
         {
             if (Session.logging)
                 MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " checking for buildable items");
-            foreach (var listItem in buildList)
-            {
-                if (listItem.Value.buildAmount == -1 || listItem.Value.buildAmount <= listItem.Value.grindAmount)
-                    continue;
-                var itemName = listItem.Key.Results[0].Id.SubtypeName;
-                if (gridComp.inventoryList.ContainsKey(itemName))
+            for (int i = 1; i < 4; i++)
+                foreach (var listItem in buildList)
                 {
-                    var amountAvail = gridComp.inventoryList[itemName];
-                    var amountNeeded = listItem.Value.buildAmount - amountAvail;
-                    if (amountNeeded > 0)
+                    if (listItem.Value.buildAmount == -1 || listItem.Value.buildAmount <= listItem.Value.grindAmount || listItem.Value.priority != i)
+                        continue;
+                    var itemName = listItem.Key.Results[0].Id.SubtypeName;
+                    if (gridComp.inventoryList.ContainsKey(itemName))
                     {
-                        var queueAmount = amountNeeded > Session.maxQueueAmount ? Session.maxQueueAmount : amountNeeded;
-                        if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly)
-                            assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly;
-                        assembler.AddQueueItem(listItem.Key, queueAmount);
-                        MyLog.Default.WriteLineAndConsole($"{Session.modName}Queued build {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.buildAmount}");
-                        return true;
+                        var amountAvail = gridComp.inventoryList[itemName];
+                        var amountNeeded = listItem.Value.buildAmount - amountAvail;
+                        if (amountNeeded > 0)
+                        {
+                            var queueAmount = amountNeeded > Session.maxQueueAmount ? Session.maxQueueAmount : amountNeeded;
+                            if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly)
+                                assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly;
+                            assembler.AddQueueItem(listItem.Key, queueAmount);
+                            MyLog.Default.WriteLineAndConsole($"{Session.modName}Queued build {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.buildAmount}");
+                            return true;
+                        }
                     }
                 }
-            }
             return false;
         }
         public bool AssemblerTryGrind()
         {
             if (Session.logging)
                 MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " checking for grindable items");
-            foreach (var listItem in buildList)
-            {
-                if (listItem.Value.grindAmount == -1 || listItem.Value.grindAmount <= listItem.Value.buildAmount)
-                    continue;
-                var itemName = listItem.Key.Results[0].Id.SubtypeName;
-                if (gridComp.inventoryList.ContainsKey(itemName))
+            for (int i = 1; i < 4; i++)
+                foreach (var listItem in buildList)
                 {
-                    var amountAvail = gridComp.inventoryList[itemName];
-                    var amountExcess = amountAvail - listItem.Value.grindAmount;
-                    if (amountExcess > 0)
+                    if (listItem.Value.grindAmount == -1 || listItem.Value.grindAmount <= listItem.Value.buildAmount || listItem.Value.priority != i)
+                        continue;
+                    var itemName = listItem.Key.Results[0].Id.SubtypeName;
+                    if (gridComp.inventoryList.ContainsKey(itemName))
                     {
-                        var queueAmount = amountExcess > Session.maxQueueAmount ? Session.maxQueueAmount : amountExcess;
-                        if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
-                            assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly;
-                        assembler.AddQueueItem(listItem.Key, queueAmount);
-                        MyLog.Default.WriteLineAndConsole($"{Session.modName}Queued grind {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.grindAmount}");
-                        return true;
+                        var amountAvail = gridComp.inventoryList[itemName];
+                        var amountExcess = amountAvail - listItem.Value.grindAmount;
+                        if (amountExcess > 0)
+                        {
+                            var queueAmount = amountExcess > Session.maxQueueAmount ? Session.maxQueueAmount : amountExcess;
+                            if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
+                                assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly;
+                            assembler.AddQueueItem(listItem.Key, queueAmount);
+                            MyLog.Default.WriteLineAndConsole($"{Session.modName}Queued grind {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.grindAmount}");
+                            return true;
+                        }
                     }
                 }
-            }
             return false;
         }
 

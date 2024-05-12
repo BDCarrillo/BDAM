@@ -24,7 +24,7 @@ namespace BDAM
             Client = (MPActive && !MyAPIGateway.Multiplayer.IsServer) || !MPActive;
             if (Server)
                 MyEntities.OnEntityCreate += OnEntityCreate;
-            if(Client)
+            if (Client)
             {
                 MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlGetter;
                 MyAPIGateway.TerminalControls.CustomActionGetter += CustomActionGetter;
@@ -65,7 +65,6 @@ namespace BDAM
                             if(!BPLookup.ContainsKey(bp.Id.SubtypeName))
                                 BPLookup.Add(bp.Id.SubtypeName, bp);
                         }
-
                         BPClasses.Add(bpClass.Id.SubtypeName, bpList);                           
                     }
                     assemblerBPs.Add(def.Id.SubtypeId.ToString(), bpClassSubtypeNames);//Pop assembler specific list

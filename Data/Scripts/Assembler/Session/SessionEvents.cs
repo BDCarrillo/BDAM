@@ -97,7 +97,7 @@ namespace BDAM
                 }
             }
         }
-        private void OpenSummary(IMyTerminalBlock block)
+        public static void OpenSummary(IMyTerminalBlock block)
         {
             timer.Restart();
             var controlledGrid = (MyCubeGrid)block.CubeGrid;

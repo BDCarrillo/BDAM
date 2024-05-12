@@ -57,6 +57,7 @@ namespace BDAM
                     var queue = assembler.GetQueue();
                     lastQueue = queue[0];
                     missingMatsInt++;
+                    //TODO missing mats link to queue/update queue item
                     if (Session.logging)
                         MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " stopped - missing materials");
                 }

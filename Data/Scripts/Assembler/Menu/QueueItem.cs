@@ -12,9 +12,8 @@ namespace BDAM
 
         private readonly ListCompItem lComp;
         private readonly MyBlueprintDefinitionBase bp;
-        private readonly TextBox labelBox;
-        private readonly LabelButton onHand;
-        private readonly BorderedButton dBuild, dGrind, remove, buildAmount, grindAmount;
+        private readonly TextBox labelBox, onHand;
+        private readonly BorderedButton dBuild, dGrind, remove, buildAmount, grindAmount, priority;
 
         public QueueItem(ListCompItem LComp, MyBlueprintDefinitionBase BP, HudElementBase parent) : base(parent)
         {
@@ -32,7 +31,7 @@ namespace BDAM
                 Offset = new Vector2(20, 0),
                 Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f),
                 AutoResize = false,
-                Text = bp.Results[0].Id.SubtypeName,
+                Text = lComp.label,
                 InputEnabled = false,
             };
 
@@ -100,35 +99,52 @@ namespace BDAM
             dGrind.background.Width = dGrind.Width;
             dGrind.background.Padding = Vector2.Zero;
 
-            onHand = new LabelButton(this)
+            onHand = new TextBox(this)
             {
                 ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
                 DimAlignment = DimAlignments.Height,
                 Offset = new Vector2(dGrind.Offset.X + dGrind.Width + 15, 0),
                 Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f),
                 AutoResize = false,
-                Width = 160,
+                Width = 140,
                 Text = "Inv: 0",
+                InputEnabled = false,
             };
 
             //Onhand qty
-            var itemName = bp.Id.SubtypeName;
+            var itemName = lComp.bpBase;
             MyFixedPoint qty;
             if (AssemblerHud.Window.scrollContainer.aComp.gridComp.inventoryList.TryGetValue(itemName, out qty))
             {
                 onHand.Text = "Inv: " + Session.NumberFormat(qty.ToIntSafe());
             }
 
-
-            remove = new BorderedButton(this)
+            priority = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
                 DimAlignment = DimAlignments.Height,
                 Offset = new Vector2(onHand.Offset.X + onHand.Width + 15, 0),
                 Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f),
                 AutoResize = false,
-                Width = 140,
-                Text = "Delete",
+                Width = 120,
+                Text = "Pri: " + LComp.priority,
+                ZOffset = 120,
+                UseFocusFormatting = false,
+                TextPadding = new Vector2(8, 0),
+                Padding = new Vector2(8, 0),
+            };
+            priority.background.Width = priority.Width;
+            priority.background.Padding = Vector2.Zero;
+
+            remove = new BorderedButton(this)
+            {
+                ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
+                DimAlignment = DimAlignments.Height,
+                Offset = new Vector2(priority.Offset.X + priority.Width + 15, 0),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f),
+                AutoResize = false,
+                Width = 120,
+                Text = "Del",
                 ZOffset = 120,
                 UseFocusFormatting = false,
                 TextPadding = new Vector2(8, 0),
@@ -139,6 +155,8 @@ namespace BDAM
 
 
             //Inputs
+            priority.MouseInput.LeftClicked += priLeftClicked;
+            priority.MouseInput.RightClicked += priRightClicked;
             remove.MouseInput.LeftClicked += dLeftClicked;
             dBuild.MouseInput.LeftClicked += dLeftClicked;
             dGrind.MouseInput.LeftClicked += dLeftClicked;
@@ -146,6 +164,22 @@ namespace BDAM
             buildAmount.MouseInput.RightClicked += RightClicked;
             grindAmount.MouseInput.LeftClicked += LeftClicked;
             grindAmount.MouseInput.RightClicked += RightClicked;
+        }
+
+        private void priLeftClicked(object sender, EventArgs e)
+        {
+            lComp.priority--;
+            if (lComp.priority < 1)
+                lComp.priority = 1;
+            priority.Text = "Pri: " + lComp.priority;
+        }
+
+        private void priRightClicked(object sender, EventArgs e)
+        {
+            lComp.priority++;
+            if (lComp.priority > 3)
+                lComp.priority = 3;
+            priority.Text = "Pri: " + lComp.priority;
         }
 
         private void dLeftClicked(object sender, EventArgs e)
