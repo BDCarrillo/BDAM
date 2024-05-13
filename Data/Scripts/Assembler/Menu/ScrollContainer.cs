@@ -249,7 +249,7 @@ namespace BDAM
                 var refDict = new Dictionary<string, QueueItem>();
                 foreach (var item in aComp.buildList)
                 {
-                    var qItem = new QueueItem(item.Value, item.Key, aComp, this);
+                    var qItem = new QueueItem(item.Value, item.Key, this);
                     sortedList.Add(item.Value.label);
                     refDict.Add(item.Value.label, qItem);
                 }
