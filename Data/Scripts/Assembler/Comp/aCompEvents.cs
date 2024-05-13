@@ -52,12 +52,10 @@ namespace BDAM
                     outputJammed = true;
                 }
 
-                if(!(inputJammed || outputJammed))
+                if(!(inputJammed || outputJammed)) //Missing materials.  Will be eval'd on next update, as it may still pull resources
                 {
                     var queue = assembler.GetQueue();
                     lastQueue = queue[0];
-                    missingMatsInt++;
-                    //TODO missing mats link to queue/update queue item
                     if (Session.logging)
                         MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " stopped - missing materials");
                 }

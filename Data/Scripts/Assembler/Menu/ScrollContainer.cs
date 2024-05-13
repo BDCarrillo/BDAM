@@ -29,7 +29,6 @@ namespace BDAM
                 DimAlignment = DimAlignments.Both,
                 ParentAlignment = ParentAlignments.Center,              
             };       
-            
 
             title = new LabelBox(this)
             {
@@ -43,7 +42,7 @@ namespace BDAM
                 AutoResize = false,
                 ZOffset = 2,
             };
-
+            //Labels
             new TextBox(title)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Left,
@@ -78,6 +77,7 @@ namespace BDAM
                 InputEnabled = false,
             };
 
+            //Corner X
             close = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
@@ -196,7 +196,7 @@ namespace BDAM
         }
 
         private void LeftClick(object sender, EventArgs e)
-        {
+        {           
             if(sender == close) 
                 AssemblerHud.Window.ToggleVisibility(aComp);
             else if(sender == addAll)
@@ -249,7 +249,7 @@ namespace BDAM
                 var refDict = new Dictionary<string, QueueItem>();
                 foreach (var item in aComp.buildList)
                 {
-                    var qItem = new QueueItem(item.Value, item.Key, this);
+                    var qItem = new QueueItem(item.Value, item.Key, aComp, this);
                     sortedList.Add(item.Value.label);
                     refDict.Add(item.Value.label, qItem);
                 }
@@ -270,6 +270,7 @@ namespace BDAM
                 */                
             }
             
+            //Starting offset to get scrollbox list items below header bar
             float offset = -65;
 
             //queuelist stacking to simulate a scroll list
@@ -283,7 +284,7 @@ namespace BDAM
                 }
                 qItem.Visible = true;
                 qItem.Offset = new Vector2(-8, offset);
-                offset -= qItem.Size.Y + 5;
+                offset -= qItem.Size.Y + 5; //+5 for add'l spacing between rows
             }
         }
 
@@ -300,9 +301,10 @@ namespace BDAM
             }
         }
 
+        //Scroll if # of items is enough to overflow box
         protected override void HandleInput(Vector2 cursorPos)
         {
-            if (Visible && queueList.Count > listLen)
+            if (Visible && queueList.Count > listLen) 
             {
                 int scroll = MyAPIGateway.Input.DeltaMouseScrollWheelValue();
                 if (scroll != 0)

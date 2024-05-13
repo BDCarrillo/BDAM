@@ -9,7 +9,6 @@ namespace BDAM
 {
     public class QueueItem : HudElementBase
     {
-
         private readonly ListCompItem lComp;
         private readonly MyBlueprintDefinitionBase bp;
         private readonly TextBox labelBox, onHand;
@@ -188,6 +187,8 @@ namespace BDAM
             {
                 lComp.buildAmount = -1;
                 buildAmount.Text = "---";
+                
+                lComp.missingMats = false;
             }
             else if (sender == dGrind)
             {
@@ -226,6 +227,8 @@ namespace BDAM
                 else
                     lComp.buildAmount += amount;
                 buildAmount.Text = lComp.buildAmount <= -1 ? "---" : Session.NumberFormat(lComp.buildAmount);
+                if (lComp.buildAmount <= -1)
+                    lComp.missingMats = false;
             }
             else
             {

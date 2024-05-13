@@ -21,6 +21,7 @@ namespace BDAM
         internal int countAStart = 0;
         internal int countAStop = 0;
         internal int countUnjamAttempts = 0;
+        internal int lastInvUpdate = 0;
         internal int nextUpdate = 0;
         internal void Init(MyCubeGrid grid, Session session)
         {
@@ -87,7 +88,8 @@ namespace BDAM
         }
         private void Inventory_InventoryContentChanged(MyInventoryBase inv, MyPhysicalInventoryItem item, MyFixedPoint point)
         {
-            MyLog.Default.WriteLineAndConsole(Session.modName + $"Inv content change {item.Content.SubtypeName} {point}");
+            if (Session.logging)
+                MyLog.Default.WriteLineAndConsole(Session.modName + $"Inv content change {item.Content.SubtypeName} {point}");
 
             if (inventoryList.ContainsKey(item.Content.SubtypeName))
             {
@@ -100,6 +102,7 @@ namespace BDAM
             }
             else
                 inventoryList.TryAdd(item.Content.SubtypeName, point);
+            lastInvUpdate = Session.Tick;
         }
 
         internal void UpdateGrid()
@@ -129,7 +132,8 @@ namespace BDAM
             }
             updateCargos++;
             timer.Stop();
-            MyLog.Default.WriteLineAndConsole($"{Session.modName} Grid {Grid.DisplayName} inventory update runtime: {timer.Elapsed.TotalMilliseconds}");
+            if (Session.logging)
+                MyLog.Default.WriteLineAndConsole($"{Session.modName} Grid {Grid.DisplayName} inventory update runtime: {timer.Elapsed.TotalMilliseconds}");
             
 
 

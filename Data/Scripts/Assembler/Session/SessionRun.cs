@@ -104,9 +104,7 @@ namespace BDAM
             if (Server)
             {
                 foreach (var gridComp in GridList)
-                {
                     gridComp.Clean();
-                }
                 MyEntities.OnEntityCreate -= OnEntityCreate;
                 Clean();
             }

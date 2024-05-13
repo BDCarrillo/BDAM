@@ -24,7 +24,9 @@ namespace BDAM
         [ProtoMember(3)] public int grindAmount = -1;
         [ProtoMember(4)] public int priority = 3;
         [ProtoMember(5)] public string label;
-        //TODO missing mats?
+
+        public bool missingMats;
+        public int missingMatsTime;
     }
 
     internal partial class AssemblerComp
@@ -35,14 +37,13 @@ namespace BDAM
         internal int runStopTick;
         internal bool inputJammed;
         internal bool outputJammed;
-        internal bool missingMats;
         internal bool autoControl = false;
         internal MyProductionQueueItem lastQueue;
         internal Dictionary<MyBlueprintDefinitionBase, ListCompItem> buildList = new Dictionary<MyBlueprintDefinitionBase, ListCompItem>();
         internal GridComp gridComp;
+        internal Dictionary<MyBlueprintDefinitionBase, int> missingMats = new Dictionary<MyBlueprintDefinitionBase, int>();
 
         //Stats tracking
-        internal int missingMatsInt = 0;
         internal int unJamAttempts = 0;
         internal int countStart = 0;
         internal int countStop = 0;
@@ -68,12 +69,14 @@ namespace BDAM
                 if (assembler.Storage == null)
                 {
                     assembler.Storage = new MyModStorageComponent { [_session.storageGuid] = "" };
-                    MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage was null, initting for {assembler.DisplayNameText}");
+                    if (Session.logging)
+                        MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage was null, initting for {assembler.DisplayNameText}");
                 }
                 else if (!assembler.Storage.ContainsKey(_session.storageGuid))
                 {
                     assembler.Storage[_session.storageGuid] = "";
-                    MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage not null, but no matching GUID for  {assembler.DisplayNameText}");
+                    if (Session.logging)
+                        MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage not null, but no matching GUID for  {assembler.DisplayNameText}");
                 }
                 else if (assembler.Storage.ContainsKey(_session.storageGuid))
                 {
@@ -95,17 +98,19 @@ namespace BDAM
                                     buildList.Add(Session.BPLookup[saved.bpBase], new ListCompItem() { bpBase = saved.bpBase, buildAmount = saved.buildAmount, grindAmount = saved.grindAmount, priority = saved.priority, label = saved.label });
                                 }
                                 autoControl = load.auto;
-                                MyLog.Default.WriteLineAndConsole($"{Session.modName} Loaded storage for {assembler.DisplayNameText} items found: {load.compItems.Count}  auto: {load.auto}");
+                                if (Session.logging)
+                                    MyLog.Default.WriteLineAndConsole($"{Session.modName} Loaded storage for {assembler.DisplayNameText} items found: {load.compItems.Count}  auto: {load.auto}");
                             }
-                            else
+                            else if (Session.logging)
                                 MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage found but empty for {assembler.DisplayNameText}");
                         }
                         catch (Exception e)
                         {
-                            MyLog.Default.WriteLineAndConsole($"{Session.modName} Error reading storage for {assembler.DisplayNameText} {e}");
+                            if (Session.logging)
+                                MyLog.Default.WriteLineAndConsole($"{Session.modName} Error reading storage for {assembler.DisplayNameText} {e}");
                         }
                     }
-                    else
+                    else if (Session.logging)
                         MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage found but empty for {assembler.DisplayNameText}");
                 }
             }
@@ -114,23 +119,48 @@ namespace BDAM
 
         public void AssemblerUpdate()
         {
-            //TODO noting/skipping items that are not buildable due to a lack of materials
             if (!assembler.IsQueueEmpty)
             {
                 var queue = assembler.GetQueue();
-                MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $"{queue[0].Blueprint.Id.SubtypeName} - {queue[0].Amount}  Last: {lastQueue.Blueprint.Id.SubtypeName} - {lastQueue.Amount}");
+                if (Session.logging)
+                    MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $"{queue[0].Blueprint.Id.SubtypeName} - {queue[0].Amount}  Last: {lastQueue.Blueprint.Id.SubtypeName} - {lastQueue.Amount}");
                 if (lastQueue.Blueprint == queue[0].Blueprint && lastQueue.Amount == queue[0].Amount)
                 {
-                    if (Session.logging)
-                        MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " SAME ITEM SITTING IN QUEUE"); //insufficient mats?
+                    //TODO check if this throws a false positive if update occurs right after the stoppage was detected and before a pull
+                    assembler.RemoveQueueItem(0, queue[0].Amount);
+                    if (buildList.ContainsKey((MyBlueprintDefinitionBase)queue[0].Blueprint))
+                    {
+                        missingMats.Add((MyBlueprintDefinitionBase)queue[0].Blueprint, Session.Tick + 101);
+                        if (Session.logging)
+                            MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats {queue[0].Blueprint.Id.SubtypeName}.  Progress: {assembler.CurrentProgress}"); //insufficient mats?
+                    }
+                    else if (Session.logging)
+                        MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" manually added {queue[0].Blueprint.Id.SubtypeName} missing mats, removed from queue ");
                 }
-                else if (Session.logging)
+            }
+            else
+            {
+                if (Session.logging)
                     MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " skipping check- items in queue");
                 return;
             }
-            MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" check - mode: {assembler.Mode}");
 
+            //Missing mat checks
+            //TODO don't like time based as _any_ new inv item can trip the cycle.  Unsure if it's worth iterating all ingredients though
+            foreach (var item in buildList)
+            {
+                var lComp = item.Value;
+                if (!lComp.missingMats || lComp.missingMatsTime > Session.Tick)
+                    continue;
+                if (gridComp.lastInvUpdate > lComp.missingMatsTime)
+                {
+                    lComp.missingMats = false;
+                    if (Session.logging)
+                        MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" removed {lComp.label} from missing mat list");
+                }
+            }
 
+            //Assemble/disassemble mode and iterations to see if something can be queued
             if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
             {
                 if (!AssemblerTryBuild())
@@ -150,20 +180,22 @@ namespace BDAM
             for (int i = 1; i < 4; i++)
                 foreach (var listItem in buildList)
                 {
-                    if (listItem.Value.buildAmount == -1 || listItem.Value.buildAmount <= listItem.Value.grindAmount || listItem.Value.priority != i)
+                    var lComp = listItem.Value;
+                    if (lComp.buildAmount == -1 || lComp.buildAmount <= lComp.grindAmount || lComp.priority != i || lComp.missingMats)
                         continue;
                     var itemName = listItem.Key.Results[0].Id.SubtypeName;
                     if (gridComp.inventoryList.ContainsKey(itemName))
                     {
                         var amountAvail = gridComp.inventoryList[itemName];
-                        var amountNeeded = listItem.Value.buildAmount - amountAvail;
+                        var amountNeeded = lComp.buildAmount - amountAvail;
                         if (amountNeeded > 0)
                         {
                             var queueAmount = amountNeeded > Session.maxQueueAmount ? Session.maxQueueAmount : amountNeeded;
                             if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly)
                                 assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly;
                             assembler.AddQueueItem(listItem.Key, queueAmount);
-                            MyLog.Default.WriteLineAndConsole($"{Session.modName}Queued build {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.buildAmount}");
+                            if (Session.logging)
+                                MyLog.Default.WriteLineAndConsole($"{Session.modName}Queued build {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.buildAmount}");
                             return true;
                         }
                     }
@@ -177,20 +209,22 @@ namespace BDAM
             for (int i = 1; i < 4; i++)
                 foreach (var listItem in buildList)
                 {
-                    if (listItem.Value.grindAmount == -1 || listItem.Value.grindAmount <= listItem.Value.buildAmount || listItem.Value.priority != i)
+                    var lComp = listItem.Value;
+                    if (lComp.grindAmount == -1 || lComp.grindAmount <= lComp.buildAmount || lComp.priority != i)
                         continue;
                     var itemName = listItem.Key.Results[0].Id.SubtypeName;
                     if (gridComp.inventoryList.ContainsKey(itemName))
                     {
                         var amountAvail = gridComp.inventoryList[itemName];
-                        var amountExcess = amountAvail - listItem.Value.grindAmount;
+                        var amountExcess = amountAvail - lComp.grindAmount;
                         if (amountExcess > 0)
                         {
                             var queueAmount = amountExcess > Session.maxQueueAmount ? Session.maxQueueAmount : amountExcess;
                             if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
                                 assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly;
                             assembler.AddQueueItem(listItem.Key, queueAmount);
-                            MyLog.Default.WriteLineAndConsole($"{Session.modName}Queued grind {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.grindAmount}");
+                            if (Session.logging)
+                                MyLog.Default.WriteLineAndConsole($"{Session.modName}Queued grind {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.grindAmount}");
                             return true;
                         }
                     }
@@ -208,7 +242,8 @@ namespace BDAM
                 tempListComp.auto = autoControl;
                 var binary = MyAPIGateway.Utilities.SerializeToBinary(tempListComp);
                 assembler.Storage[_session.storageGuid] = Convert.ToBase64String(binary);
-                MyLog.Default.WriteLineAndConsole($"{Session.modName} Saving storage for {assembler.DisplayNameText} {tempListComp.auto}");
+                if (Session.logging)
+                    MyLog.Default.WriteLineAndConsole($"{Session.modName} Saving storage for {assembler.DisplayNameText} {tempListComp.auto}");
             }
             else if (!Session.Server && Session.Client)
             {

@@ -56,7 +56,6 @@ namespace BDAM
             assemblerBPs.Clear();
             BPClasses.Clear();
             BPLookup.Clear();
-
         }
     }
 }
