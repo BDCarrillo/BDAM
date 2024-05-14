@@ -39,6 +39,9 @@ namespace BDAM
             if(Client)
                 AssemblerHud.Init();
 
+            if (Server)
+                assemblerEfficiency =  1 / Session.AssemblerEfficiencyMultiplier;
+
             //Find assemblers and BP classes they can make
             foreach (var def in MyDefinitionManager.Static.GetAllDefinitions())
             {

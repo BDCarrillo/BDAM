@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using VRage;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 
 namespace BDAM
@@ -41,18 +42,28 @@ namespace BDAM
             var assembler = block as IMyAssembler;
             if (assembler != null)
             {
+                /*
                 var output = (MyInventoryBase)assembler.OutputInventory;
                 output.InventoryContentChanged += Inventory_InventoryContentChanged;
+                foreach (var item in output.GetItems())
+                {
+                    Inventory_InventoryContentChanged(output, item, item.Amount);
+                }
 
                 var input = (MyInventoryBase)assembler.InputInventory;
                 input.InventoryContentChanged += Inventory_InventoryContentChanged;
+                foreach (var item in output.GetItems())
+                {
+                    Inventory_InventoryContentChanged(input, item, item.Amount);
+                }
+                */
 
                 var aComp = new AssemblerComp();
                 aComp.Init(assembler, this, _session);
                 assemblerList.Add(block, aComp);
                 return;
             }
-            
+            /*
             MyInventoryBase inventory;                
             if (block.TryGetInventory(out inventory))
             {
@@ -62,6 +73,7 @@ namespace BDAM
                     Inventory_InventoryContentChanged(inventory, item, item.Amount);
                 }
             }
+            */
         }
 
         private void FatBlockRemoved(MyCubeBlock block)
@@ -69,27 +81,32 @@ namespace BDAM
             var assembler = block as IMyAssembler;
             if (assembler != null)
             {
+                /*
                 var output = (MyInventoryBase)assembler.OutputInventory;
                 output.InventoryContentChanged -= Inventory_InventoryContentChanged;
 
                 var input = (MyInventoryBase)assembler.InputInventory;
                 input.InventoryContentChanged -= Inventory_InventoryContentChanged;
-
+                */
                 assemblerList[block].Clean();
                 assemblerList.Remove(block);
                 return;
             }
-            
+            /*
             MyInventoryBase inventory;
             if (block.TryGetInventory(out inventory))
             {
                 inventory.InventoryContentChanged -= Inventory_InventoryContentChanged;
             }
+            */
         }
         private void Inventory_InventoryContentChanged(MyInventoryBase inv, MyPhysicalInventoryItem item, MyFixedPoint point)
         {
             if (Session.logging)
+            {
                 MyLog.Default.WriteLineAndConsole(Session.modName + $"Inv content change {item.Content.SubtypeName} {point}");
+            }
+            //TODO suppress consumable pulls for reactors/h2o2 gens?
 
             if (inventoryList.ContainsKey(item.Content.SubtypeName))
             {
@@ -130,10 +147,11 @@ namespace BDAM
                     invCount++;
                 }
             }
+            lastInvUpdate = Session.Tick;
             updateCargos++;
             timer.Stop();
             if (Session.logging)
-                MyLog.Default.WriteLineAndConsole($"{Session.modName} Grid {Grid.DisplayName} inventory update runtime: {timer.Elapsed.TotalMilliseconds}");
+                MyLog.Default.WriteLineAndConsole($"{Session.modName}{Grid.DisplayName} inventory update runtime: {timer.Elapsed.TotalMilliseconds}");
             
 
 

@@ -4,9 +4,12 @@ using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using VRage;
 using VRage.Game;
 using VRage.Utils;
+using static VRage.Game.ObjectBuilders.Definitions.MyObjectBuilder_GameDefinition;
 
 namespace BDAM
 {
@@ -26,7 +29,6 @@ namespace BDAM
         [ProtoMember(5)] public string label;
 
         public bool missingMats;
-        public int missingMatsTime;
     }
 
     internal partial class AssemblerComp
@@ -41,7 +43,8 @@ namespace BDAM
         internal MyProductionQueueItem lastQueue;
         internal Dictionary<MyBlueprintDefinitionBase, ListCompItem> buildList = new Dictionary<MyBlueprintDefinitionBase, ListCompItem>();
         internal GridComp gridComp;
-        internal Dictionary<MyBlueprintDefinitionBase, int> missingMats = new Dictionary<MyBlueprintDefinitionBase, int>();
+        internal List<string> missingMatTypes = new List<string>();
+        internal Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>> missingMatQueue = new Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>>();
 
         //Stats tracking
         internal int unJamAttempts = 0;
@@ -123,40 +126,78 @@ namespace BDAM
             {
                 var queue = assembler.GetQueue();
                 if (Session.logging)
-                    MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $"{queue[0].Blueprint.Id.SubtypeName} - {queue[0].Amount}  Last: {lastQueue.Blueprint.Id.SubtypeName} - {lastQueue.Amount}");
-                if (lastQueue.Blueprint == queue[0].Blueprint && lastQueue.Amount == queue[0].Amount)
+                    MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" Update check Queue: {queue[0].Blueprint.Id.SubtypeName} - {queue[0].Amount}  Last: {lastQueue.Blueprint.Id.SubtypeName} - {lastQueue.Amount}");
+                if (lastQueue.Blueprint == queue[0].Blueprint && lastQueue.Amount == queue[0].Amount && assembler.CurrentProgress == 0)
                 {
                     //TODO check if this throws a false positive if update occurs right after the stoppage was detected and before a pull
                     assembler.RemoveQueueItem(0, queue[0].Amount);
-                    if (buildList.ContainsKey((MyBlueprintDefinitionBase)queue[0].Blueprint))
+                    ListCompItem lComp;
+                    if (buildList.TryGetValue((MyBlueprintDefinitionBase)queue[0].Blueprint, out lComp))
                     {
-                        missingMats.Add((MyBlueprintDefinitionBase)queue[0].Blueprint, Session.Tick + 101);
+                        lComp.missingMats = true;
+                        var bp = (MyBlueprintDefinitionBase)queue[0].Blueprint;
+                        foreach (var item in bp.Prerequisites)
+                        {
+                            if ((!gridComp.inventoryList.ContainsKey(item.Id.SubtypeName) || gridComp.inventoryList[item.Id.SubtypeName] < item.Amount) && !missingMatTypes.Contains(item.Id.SubtypeName))
+                            {
+                                missingMatTypes.Add(item.Id.SubtypeName);
+
+                                var adjustedAmount = item.Amount * Session.assemblerEfficiency;
+                                if (!missingMatQueue.ContainsKey(bp))
+                                    missingMatQueue.Add(bp, new Dictionary<string, MyFixedPoint>() { { item.Id.SubtypeName, adjustedAmount } });
+                                else
+                                    missingMatQueue[bp].Add(item.Id.SubtypeName, adjustedAmount);                                                
+
+                                if(Session.logging)
+                                    MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName +$" Missing {item.Amount} ({adjustedAmount}) {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}");
+                            }
+                        }
+
                         if (Session.logging)
-                            MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats {queue[0].Blueprint.Id.SubtypeName}.  Progress: {assembler.CurrentProgress}"); //insufficient mats?
+                            MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats {queue[0].Blueprint.Id.SubtypeName}.  Progress: {assembler.CurrentProgress}");
                     }
                     else if (Session.logging)
                         MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" manually added {queue[0].Blueprint.Id.SubtypeName} missing mats, removed from queue ");
                 }
-            }
-            else
-            {
+
                 if (Session.logging)
-                    MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " skipping check- items in queue");
+                    MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " quick check - items in queue");
                 return;
             }
 
+
             //Missing mat checks
-            //TODO don't like time based as _any_ new inv item can trip the cycle.  Unsure if it's worth iterating all ingredients though
-            foreach (var item in buildList)
+            foreach (var type in missingMatTypes.ToArray())
             {
-                var lComp = item.Value;
-                if (!lComp.missingMats || lComp.missingMatsTime > Session.Tick)
-                    continue;
-                if (gridComp.lastInvUpdate > lComp.missingMatsTime)
+                //Check inv list for missing mat type
+                if(gridComp.inventoryList.ContainsKey(type))
                 {
-                    lComp.missingMats = false;
-                    if (Session.logging)
-                        MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" removed {lComp.label} from missing mat list");
+                    var amount = gridComp.inventoryList[type];
+                    bool remove = true;
+                    foreach (var queue in missingMatQueue.ToArray())
+                    {
+                        if (queue.Value.ContainsKey(type))
+                        {
+                            remove = false;
+                            if (queue.Value[type] <= amount)
+                            {
+                                queue.Value.Remove(type);
+                                if (queue.Value.Count == 0)
+                                {
+                                    ListCompItem lComp;
+                                    if (buildList.TryGetValue(queue.Key, out lComp))
+                                    {
+                                        lComp.missingMats = false;
+                                    }
+                                    missingMatQueue.Remove(queue.Key);
+                                    if (Session.logging)
+                                        MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" removed {lComp.label} from missing mat list");
+                                }
+                            }
+                        }
+                    }
+                    if (remove)
+                        missingMatTypes.Remove(type);
                 }
             }
 
@@ -175,42 +216,50 @@ namespace BDAM
 
         public bool AssemblerTryBuild()
         {
+            var timer = new Stopwatch();
+            timer.Start();
             if (Session.logging)
                 MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " checking for buildable items");
             for (int i = 1; i < 4; i++)
                 foreach (var listItem in buildList)
                 {
                     var lComp = listItem.Value;
-                    if (lComp.buildAmount == -1 || lComp.buildAmount <= lComp.grindAmount || lComp.priority != i || lComp.missingMats)
+                    if (lComp.missingMats && lComp.buildAmount == -1)
+                        lComp.missingMats = false;
+                    if (lComp.priority != i || lComp.buildAmount == -1 || lComp.buildAmount <= lComp.grindAmount || lComp.missingMats)
                         continue;
                     var itemName = listItem.Key.Results[0].Id.SubtypeName;
-                    if (gridComp.inventoryList.ContainsKey(itemName))
+                    MyFixedPoint amountAvail = 0;
+                    gridComp.inventoryList.TryGetValue(itemName, out amountAvail);
+                    var amountNeeded = lComp.buildAmount - amountAvail;
+                    if (amountNeeded > 0)
                     {
-                        var amountAvail = gridComp.inventoryList[itemName];
-                        var amountNeeded = lComp.buildAmount - amountAvail;
-                        if (amountNeeded > 0)
-                        {
-                            var queueAmount = amountNeeded > Session.maxQueueAmount ? Session.maxQueueAmount : amountNeeded;
-                            if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly)
-                                assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly;
-                            assembler.AddQueueItem(listItem.Key, queueAmount);
-                            if (Session.logging)
-                                MyLog.Default.WriteLineAndConsole($"{Session.modName}Queued build {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.buildAmount}");
-                            return true;
-                        }
+                        var queueAmount = amountNeeded > Session.maxQueueAmount ? Session.maxQueueAmount : amountNeeded;
+                        if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly)
+                            assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly;
+                        assembler.AddQueueItem(listItem.Key, queueAmount);
+                        lastQueue = new MyProductionQueueItem() { Blueprint = listItem.Key, Amount = queueAmount };
+                        if (Session.logging)
+                            MyLog.Default.WriteLineAndConsole($"{Session.modName}Queued build {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.buildAmount}");
+                        return true;
                     }
                 }
+            timer.Stop();
+            if (Session.logging)
+                MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" no buildable items found runtime: {timer.Elapsed.TotalMilliseconds}");
             return false;
         }
         public bool AssemblerTryGrind()
         {
+            var timer = new Stopwatch();
+            timer.Start();
             if (Session.logging)
                 MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " checking for grindable items");
             for (int i = 1; i < 4; i++)
                 foreach (var listItem in buildList)
                 {
                     var lComp = listItem.Value;
-                    if (lComp.grindAmount == -1 || lComp.grindAmount <= lComp.buildAmount || lComp.priority != i)
+                    if (lComp.priority != i || lComp.grindAmount == -1 || lComp.grindAmount <= lComp.buildAmount )
                         continue;
                     var itemName = listItem.Key.Results[0].Id.SubtypeName;
                     if (gridComp.inventoryList.ContainsKey(itemName))
@@ -229,6 +278,9 @@ namespace BDAM
                         }
                     }
                 }
+            timer.Stop();
+            if (Session.logging)
+                MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" no grindable items found runtime: {timer.Elapsed.TotalMilliseconds}");
             return false;
         }
 

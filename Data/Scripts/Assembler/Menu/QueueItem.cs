@@ -187,8 +187,6 @@ namespace BDAM
             {
                 lComp.buildAmount = -1;
                 buildAmount.Text = "---";
-                
-                lComp.missingMats = false;
             }
             else if (sender == dGrind)
             {
@@ -220,6 +218,8 @@ namespace BDAM
 
             if (sender == buildAmount)
             {
+                if(lComp.buildAmount == -1 && increase)
+                    amount += 1;
                 if (lComp.buildAmount + amount < 0)
                     lComp.buildAmount = -1;
                 else if (lComp.buildAmount + amount >= int.MaxValue)
@@ -227,11 +227,11 @@ namespace BDAM
                 else
                     lComp.buildAmount += amount;
                 buildAmount.Text = lComp.buildAmount <= -1 ? "---" : Session.NumberFormat(lComp.buildAmount);
-                if (lComp.buildAmount <= -1)
-                    lComp.missingMats = false;
             }
             else
             {
+                if (lComp.grindAmount == -1 && increase && (shift || control))
+                    amount += 1;
                 if (lComp.grindAmount + amount < 0)
                     lComp.grindAmount = -1;
                 else if (lComp.grindAmount + amount >= int.MaxValue)

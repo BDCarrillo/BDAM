@@ -37,10 +37,11 @@ namespace BDAM
         public static Stopwatch timer = new Stopwatch();
         internal static string modName = "[BDAM]";
         internal readonly Guid storageGuid = new Guid("95dd6473-8e17-4ac3-ba22-57d283755755");
+        public static float assemblerEfficiency = 1;
 
         //Future settings
         public static MyFixedPoint maxQueueAmount = 50; //Max amount to queue per check
-        public static int refreshTime = 180; //Ticks between inventory refreshes
+        public static int refreshTime = 500; //Ticks between inventory refreshes
 
         public Session()
         {
