@@ -1,16 +1,9 @@
-﻿using RichHudFramework.UI.Client;
-using Sandbox.Definitions;
+﻿using Sandbox.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
 using VRage.Game.Components;
 using VRage.Utils;
-using VRageMath;
-using RichHudFramework.Client;
-using RichHudFramework.UI;
-using RichHudFramework.UI.Client;
-using Sandbox.Game;
-using System.Reflection;
 
 namespace BDAM
 {

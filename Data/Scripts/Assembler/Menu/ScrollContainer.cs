@@ -4,7 +4,6 @@ using RichHudFramework.UI;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
 using Sandbox.Definitions;
-using VRage.Utils;
 
 namespace BDAM
 {

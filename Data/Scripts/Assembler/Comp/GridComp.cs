@@ -1,12 +1,10 @@
-﻿using RichHudFramework.Internal;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using VRage;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using VRage.Utils;
 
 namespace BDAM
@@ -106,7 +104,6 @@ namespace BDAM
             {
                 MyLog.Default.WriteLineAndConsole(Session.modName + $"Inv content change {item.Content.SubtypeName} {point}");
             }
-            //TODO suppress consumable pulls for reactors/h2o2 gens?
 
             if (inventoryList.ContainsKey(item.Content.SubtypeName))
             {
@@ -124,10 +121,9 @@ namespace BDAM
 
         internal void UpdateGrid()
         {
-            
+            //TODO look at dampening update cadence of this?
             var timer = new Stopwatch();
             timer.Start();
-
             inventoryList.Clear();
             MyInventoryBase inventory;
             foreach (var b in Grid.Inventories)
@@ -156,19 +152,17 @@ namespace BDAM
 
 
             //Assembler updates
-            //TODO schedule and thread
             if (Session.Server)
             {
                 foreach (var aComp in assemblerList.Values)
-                {
-                    
+                {                    
                     if (aComp.autoControl && !aComp.assembler.CooperativeMode && aComp.buildList.Count > 0)
                         aComp.AssemblerUpdate();
 
                     if (aComp.inputJammed)
                     {
                         if (aComp.unJamAttempts < 5)
-                            aComp.UnJamAssembler(this, aComp); //TODO scheduler for these
+                            aComp.UnJamAssembler(this, aComp);
                         else if (aComp.unJamAttempts < 6)
                         {
                             aComp.unJamAttempts++;

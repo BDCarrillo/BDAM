@@ -7,30 +7,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using VRage;
-using VRage.Game;
 using VRage.Utils;
-using static VRage.Game.ObjectBuilders.Definitions.MyObjectBuilder_GameDefinition;
 
 namespace BDAM
 {
-    [ProtoContract]
-    public class ListComp //Used for mod storage serialization
-    {
-        [ProtoMember(100)] public List<ListCompItem> compItems;
-        [ProtoMember(101)] public bool auto = false;
-    }
-    [ProtoContract]
-    public class ListCompItem
-    {
-        [ProtoMember(1)] public string bpBase;
-        [ProtoMember(2)] public int buildAmount = -1;
-        [ProtoMember(3)] public int grindAmount = -1;
-        [ProtoMember(4)] public int priority = 3;
-        [ProtoMember(5)] public string label;
-
-        public bool missingMats;
-    }
-
     internal partial class AssemblerComp
     {
         private Session _session;
@@ -127,9 +107,10 @@ namespace BDAM
                 var queue = assembler.GetQueue();
                 if (Session.logging)
                     MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" Update check Queue: {queue[0].Blueprint.Id.SubtypeName} - {queue[0].Amount}  Last: {lastQueue.Blueprint.Id.SubtypeName} - {lastQueue.Amount}");
+                
+                //Jam check due to missing mats
                 if (lastQueue.Blueprint == queue[0].Blueprint && lastQueue.Amount == queue[0].Amount && assembler.CurrentProgress == 0)
                 {
-                    //TODO check if this throws a false positive if update occurs right after the stoppage was detected and before a pull
                     assembler.RemoveQueueItem(0, queue[0].Amount);
                     ListCompItem lComp;
                     if (buildList.TryGetValue((MyBlueprintDefinitionBase)queue[0].Blueprint, out lComp))
@@ -166,7 +147,8 @@ namespace BDAM
             }
 
 
-            //Missing mat checks
+            //Missing mat list checks
+            //TODO look at dampening update cadence of this?
             foreach (var type in missingMatTypes.ToArray())
             {
                 //Check inv list for missing mat type
