@@ -57,6 +57,8 @@ namespace BDAM
                         var bpList = new List<MyBlueprintDefinitionBase>();
                         foreach (var bp in bpClass)
                         {
+                            if (bp.Public == false)
+                                continue;
                             bpList.Add(bp);
                             if(!BPLookup.ContainsKey(bp.Id.SubtypeName))
                                 BPLookup.Add(bp.Id.SubtypeName, bp);
