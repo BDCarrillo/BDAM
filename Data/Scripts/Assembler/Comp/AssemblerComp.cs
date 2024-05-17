@@ -78,6 +78,7 @@ namespace BDAM
                                 //Serialized string to BPs
                                 foreach (var saved in load.compItems)
                                 {
+                                    //TODO bounce saved items off recently loaded BP list to ensure it's not for an item that no longer exists in the world (IE mod removal)
                                     buildList.Add(Session.BPLookup[saved.bpBase], new ListCompItem() { bpBase = saved.bpBase, buildAmount = saved.buildAmount, grindAmount = saved.grindAmount, priority = saved.priority, label = saved.label });
                                 }
                                 autoControl = load.auto;
@@ -135,7 +136,7 @@ namespace BDAM
                         }
 
                         if (Session.logging)
-                            MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats {queue[0].Blueprint.Id.SubtypeName}.  Progress: {assembler.CurrentProgress}");
+                            MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats for {queue[0].Blueprint.Id.SubtypeName}.  Progress: {assembler.CurrentProgress}");
                     }
                     else if (Session.logging)
                         MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" manually added {queue[0].Blueprint.Id.SubtypeName} missing mats, removed from queue ");

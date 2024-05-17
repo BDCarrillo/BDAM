@@ -135,8 +135,17 @@ namespace BDAM
             if (GridMap.TryGetValue(block.CubeGrid, out gComp) && gComp.assemblerList.TryGetValue((MyCubeBlock)block, out aComp))
             {
                 AssemblerHud.Window.ToggleVisibility(aComp);
+                openAComp = aComp;
+                MyAPIGateway.Session.Player.Controller.ControlledEntityChanged += GridChange;
             }
         }
+
+        private void GridChange(VRage.Game.ModAPI.Interfaces.IMyControllableEntity entity1, VRage.Game.ModAPI.Interfaces.IMyControllableEntity entity2)
+        {
+            AssemblerHud.Window.ToggleVisibility(openAComp);
+            MyAPIGateway.Session.Player.Controller.ControlledEntityChanged -= GridChange;
+        }
+
         internal void SetAutoMode(IMyTerminalBlock block)
         {
             GridComp gComp;

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using VRage;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI.Ingame;
 using VRage.Utils;
 
 namespace BDAM
@@ -128,10 +129,31 @@ namespace BDAM
             MyInventoryBase inventory;
             foreach (var b in Grid.Inventories)
             {
-                if (!(b is IMyAssembler || b is IMyCargoContainer || b is IMyRefinery)) //TODO eval if needed- would skip ammo in weps currently
+                if (!(b is IMyAssembler || b is IMyCargoContainer || b is IMyRefinery || b is IMyShipConnector)) //TODO eval if needed- would skip ammo in weps currently
                     continue;
 
-                if (b.TryGetInventory(out inventory))
+                if(b is IMyAssembler || b is IMyRefinery)
+                {
+                    var prodBlock = b as IMyProductionBlock;
+                    var input = (MyInventoryBase)prodBlock.InputInventory;
+                    var output = (MyInventoryBase)prodBlock.OutputInventory;
+
+                    foreach (MyPhysicalInventoryItem item in input.GetItems())
+                    {
+                        if (inventoryList.ContainsKey(item.Content.SubtypeName))
+                            inventoryList[item.Content.SubtypeName] += item.Amount;
+                        else
+                            inventoryList.TryAdd(item.Content.SubtypeName, item.Amount);
+                    }
+                    foreach (MyPhysicalInventoryItem item in output.GetItems())
+                    {
+                        if (inventoryList.ContainsKey(item.Content.SubtypeName))
+                            inventoryList[item.Content.SubtypeName] += item.Amount;
+                        else
+                            inventoryList.TryAdd(item.Content.SubtypeName, item.Amount);
+                    }
+                }
+                else if (b.TryGetInventory(out inventory))
                 {
                     foreach (MyPhysicalInventoryItem item in inventory.GetItems())
                     {

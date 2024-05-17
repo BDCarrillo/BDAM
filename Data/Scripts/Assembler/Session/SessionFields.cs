@@ -38,6 +38,7 @@ namespace BDAM
         internal static string modName = "[BDAM]";
         internal readonly Guid storageGuid = new Guid("95dd6473-8e17-4ac3-ba22-57d283755755");
         public static float assemblerEfficiency = 1;
+        internal AssemblerComp openAComp = null;
 
         //Future settings
         public static MyFixedPoint maxQueueAmount = 50; //Max amount to queue per check
@@ -57,6 +58,7 @@ namespace BDAM
             assemblerBPs.Clear();
             BPClasses.Clear();
             BPLookup.Clear();
+            openAComp = null;
         }
     }
 }

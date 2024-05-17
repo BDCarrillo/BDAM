@@ -111,7 +111,7 @@ namespace BDAM
             };
 
             //Onhand qty
-            var itemName = lComp.bpBase;
+            var itemName = lComp.label;
             MyFixedPoint qty;
             if (AssemblerHud.Window.scrollContainer.aComp.gridComp.inventoryList.TryGetValue(itemName, out qty))
             {
