@@ -34,6 +34,7 @@ namespace BDAM
             Grid.OnFatBlockAdded += FatBlockAdded;
             Grid.OnFatBlockRemoved += FatBlockRemoved;
             nextUpdate = (int)(Session.Tick + Grid.EntityId % 100);
+            //TODO look at grid merge/change events to preserve aComp data
         }
 
         internal void FatBlockAdded(MyCubeBlock block)
@@ -190,12 +191,24 @@ namespace BDAM
                             aComp.unJamAttempts++;
                             if (Session.logging)
                                 MyLog.Default.WriteLineAndConsole(Session.modName + "Unable to unjam input for " + aComp.assembler.CustomName);
+                            if (Session.MPActive) //Send notification
+                            {
+                                var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(aComp.assembler.OwnerId);
+                                if (steamID > 0)
+                                    Session.SendPacketToClient(new NotificationPacket { Message = Session.modName + aComp.gridComp.Grid.DisplayName  + ": " + aComp.assembler.CustomName + $" Input inventory jammed" }, steamID);
+                            }
                         }
                     }
                     if (aComp.outputJammed)
                     {
                         if (Session.logging)
                             MyLog.Default.WriteLineAndConsole(Session.modName + $"Assembler {aComp.assembler.CustomName} stopped - output full");
+                        if (Session.MPActive) //Send notification
+                        {
+                            var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(aComp.assembler.OwnerId);
+                            if (steamID > 0)
+                                Session.SendPacketToClient(new NotificationPacket { Message = Session.modName + aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Output inventory jammed" }, steamID);
+                        }
                         aComp.outputJammed = false;
                     }
                 }

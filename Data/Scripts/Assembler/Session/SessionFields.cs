@@ -18,10 +18,12 @@ namespace BDAM
 
         public static bool Client;
         public static bool Server;
-        internal bool MPActive;
+        public static bool MPActive;
 
         internal bool controlInit;
-        internal static bool logging = true;
+        internal static bool logging = false;
+        internal static bool netlogging = true;
+
         public static WindowScrollContainer AssemblerMenu;
 
         private readonly Stack<GridComp> _gridCompPool = new Stack<GridComp>(128);

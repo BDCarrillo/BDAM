@@ -7,9 +7,17 @@ namespace BDAM
     [ProtoContract]
     public class ListComp //Used for mod storage serialization
     {
-        [ProtoMember(100)] public List<ListCompItem> compItems;
+        [ProtoMember(100)] public List<ListCompItem> compItems = new List<ListCompItem>();
         [ProtoMember(101)] public bool auto = false;
     }
+
+    [ProtoContract]
+    public class UpdateComp //Used for mod storage serialization
+    {
+        [ProtoMember(100)] public List<ListCompItem> compItemsUpdate = new List<ListCompItem>();
+        [ProtoMember(101)] public List<string> compItemsRemove = new List<string>();
+    }
+
     [ProtoContract]
     public class ListCompItem
     {
@@ -20,5 +28,6 @@ namespace BDAM
         [ProtoMember(5)] public string label;
 
         public bool missingMats;
+        public bool dirty;
     }
 }

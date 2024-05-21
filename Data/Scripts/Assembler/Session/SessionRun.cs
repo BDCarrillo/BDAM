@@ -15,15 +15,11 @@ namespace BDAM
             MPActive = MyAPIGateway.Multiplayer.MultiplayerActive;
             Server = (MPActive && MyAPIGateway.Multiplayer.IsServer) || !MPActive;
             Client = (MPActive && !MyAPIGateway.Multiplayer.IsServer) || !MPActive;
-            if (Server)
-                MyEntities.OnEntityCreate += OnEntityCreate;
+            MyEntities.OnEntityCreate += OnEntityCreate;
             if (Client)
             {
                 MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlGetter;
                 MyAPIGateway.TerminalControls.CustomActionGetter += CustomActionGetter;
-
-                if (logging)
-                    MyLog.Default.WriteLineAndConsole(modName + "Registered client controls");
             }
         }
 
@@ -31,6 +27,14 @@ namespace BDAM
         {
             if(Client)
                 AssemblerHud.Init();
+
+            if(MPActive)
+            {
+                if(Client)
+                    MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ClientPacketId, ProcessPacket);
+                else if(Server)
+                    MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ServerPacketId, ProcessPacket);
+            }
 
             if (Server)
                 assemblerEfficiency =  1 / Session.AssemblerEfficiencyMultiplier;
@@ -87,31 +91,33 @@ namespace BDAM
             for (int i = 0; i < GridList.Count; i++)
             {
                 var gridComp = GridList[i];
-                if (gridComp.assemblerList.Count > 0 && gridComp.nextUpdate <= Tick) //TODO look at dampening client updates to their own/faction owned grids
+                if (gridComp.assemblerList.Count > 0 && gridComp.nextUpdate <= Tick) //TODO look at dampening client updates to their own/faction owned grids (?)
                 {
-                    if (Server)//TODO look at sending updates/notifications to players on unjam failures/states
-                    {
-                        gridComp.UpdateGrid();
-                    }
+                    gridComp.UpdateGrid();
                 }
             }
             Tick++;
         }
         protected override void UnloadData()
         {
-            if (Server)
-            {
-                foreach (var gridComp in GridList)
-                    gridComp.Clean();
-                MyEntities.OnEntityCreate -= OnEntityCreate;
-                Clean();
-            }
+            foreach (var gridComp in GridList)
+                gridComp.Clean();
+            Clean();
+            MyEntities.OnEntityCreate -= OnEntityCreate;
+
             if (Client)
             {
                 MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlGetter;
                 MyAPIGateway.TerminalControls.CustomActionGetter -= CustomActionGetter;
             }
 
+            if (MPActive)
+            {
+                if (Client)
+                    MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(ClientPacketId, ProcessPacket);
+                else if (Server)
+                    MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(ServerPacketId, ProcessPacket);
+            }
         }
     }
 }

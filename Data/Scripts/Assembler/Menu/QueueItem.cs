@@ -171,6 +171,7 @@ namespace BDAM
             if (lComp.priority < 1)
                 lComp.priority = 1;
             priority.Text = "Pri: " + lComp.priority;
+            lComp.dirty = true;
         }
 
         private void priRightClicked(object sender, EventArgs e)
@@ -179,6 +180,7 @@ namespace BDAM
             if (lComp.priority > 3)
                 lComp.priority = 3;
             priority.Text = "Pri: " + lComp.priority;
+            lComp.dirty = true;
         }
 
         private void dLeftClicked(object sender, EventArgs e)
@@ -187,11 +189,13 @@ namespace BDAM
             {
                 lComp.buildAmount = -1;
                 buildAmount.Text = "---";
+                lComp.dirty = true;
             }
             else if (sender == dGrind)
             {
                 lComp.grindAmount = -1;
                 grindAmount.Text = "---";
+                lComp.dirty = true;
             }
             else
             {
@@ -240,6 +244,7 @@ namespace BDAM
                     lComp.grindAmount += amount;
                 grindAmount.Text = lComp.grindAmount <= -1 ? "---" : Session.NumberFormat(lComp.grindAmount);
             }
+            lComp.dirty = true;
         }
     }
 }

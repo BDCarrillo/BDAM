@@ -319,6 +319,7 @@
     <Compile Include="Data\Scripts\Assembler\Comp\GridComp.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
+    <Compile Include="Data\Scripts\Assembler\Session\SessionNetwork.cs" />
     <Compile Include="Data\Scripts\Assembler\Session\SessionRun.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>

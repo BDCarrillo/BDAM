@@ -4,6 +4,7 @@ using RichHudFramework.UI;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
 using Sandbox.Definitions;
+using VRage.Utils;
 
 namespace BDAM
 {
@@ -138,7 +139,7 @@ namespace BDAM
                 Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f),
                 AutoResize = false,
                 Width = 140,
-                Text = "Add",
+                Text = "Add(WIP)",
                 ZOffset = 50,
                 UseFocusFormatting = false,
                 TextPadding = new Vector2(8, 0),
@@ -200,7 +201,6 @@ namespace BDAM
                 AssemblerHud.Window.ToggleVisibility(aComp);
             else if(sender == addAll)
             {
-                ListComp tempListComp = new ListComp() { compItems = new List<ListCompItem>() };
                 foreach (var bp in Session.assemblerBP2[aComp.assembler.BlockDefinition.SubtypeId])
                 {
                     if(!aComp.buildList.ContainsKey(bp))
@@ -219,6 +219,13 @@ namespace BDAM
             {
                 aComp.autoControl = !aComp.autoControl;
                 autoMode.Text = "Auto: " + (aComp.autoControl ? "On" : "Off");
+                if (Session.MPActive)
+                {
+                    if (Session.netlogging)
+                        MyLog.Default.WriteLineAndConsole(Session.modName + $"Sending updated auto control state to server " + aComp.autoControl);
+                    var packet = new UpdateStatePacket { AssemblerAuto = aComp.autoControl, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId, GridEntID = aComp.assembler.CubeGrid.EntityId };
+                    Session.SendPacketToServer(packet);
+                }
             }
             else if (sender == summary)
             {
@@ -227,12 +234,15 @@ namespace BDAM
             else if (sender == add)
             {
                 //TODO open submenu for selection of available BPs
+                //Check and remove from removal list, if applicable
             }                   
         }
 
         public void RemoveQueueItem(MyBlueprintDefinitionBase key)
         {
             aComp.buildList.Remove(key);
+            if(!aComp.tempRemovalList.Contains(key.Id.SubtypeName))
+                aComp.tempRemovalList.Add(key.Id.SubtypeName);
             Update(true);
         }
 
@@ -291,6 +301,11 @@ namespace BDAM
         {
             if(delete)
             {
+                foreach (var item in aComp.buildList)
+                {
+                    if (!aComp.tempRemovalList.Contains(item.Key.Id.SubtypeName))
+                        aComp.tempRemovalList.Add(item.Key.Id.SubtypeName);
+                }
                 aComp.buildList.Clear();
             }
             while (queueList.Count > 0)

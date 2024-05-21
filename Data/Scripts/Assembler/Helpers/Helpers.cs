@@ -124,8 +124,14 @@ namespace BDAM
             if (GridMap.TryGetValue(block.CubeGrid, out gComp) && gComp.assemblerList.TryGetValue((MyCubeBlock)block, out aComp))
             {
                 aComp.autoControl = !aComp.autoControl;
+                if (MPActive)
+                {
+                    if (netlogging)
+                        MyLog.Default.WriteLineAndConsole(modName + $"Sending updated auto control state to server " + aComp.autoControl);
+                    var packet = new UpdateStatePacket { AssemblerAuto = aComp.autoControl, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId, GridEntID = block.CubeGrid.EntityId };
+                    SendPacketToServer(packet);
+                }
             }
-            //TODO hook and add network send
             return;
         }
         internal void OpenAssemblerMenu(IMyTerminalBlock block)
@@ -153,8 +159,14 @@ namespace BDAM
             if (GridMap.TryGetValue(block.CubeGrid, out gComp) && gComp.assemblerList.TryGetValue((MyCubeBlock)block, out aComp))
             {
                 aComp.autoControl = !aComp.autoControl;
+                if (MPActive)
+                {
+                    if (netlogging)
+                        MyLog.Default.WriteLineAndConsole(modName + $"Sending updated auto control state to server " + aComp.autoControl);
+                    var packet = new UpdateStatePacket { AssemblerAuto = aComp.autoControl, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId, GridEntID = block.CubeGrid.EntityId };
+                    SendPacketToServer(packet);
+                }
             }
-            //TODO hook and add network send
         }
 
         internal IMyTerminalAction CreateAssemblerMenuAction<T>() where T : IMyAssembler

@@ -1,4 +1,4 @@
-﻿using ProtoBuf;
+﻿using RichHudFramework.Internal;
 using Sandbox.Definitions;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Sockets;
 using VRage;
 using VRage.Utils;
 
@@ -25,6 +26,12 @@ namespace BDAM
         internal GridComp gridComp;
         internal List<string> missingMatTypes = new List<string>();
         internal Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>> missingMatQueue = new Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>>();
+        internal List<ulong> ReplicatedClients = new List<ulong>();
+
+        //Temps for networking updates/removals
+        internal List<ListCompItem> tempUpdateList = new List<ListCompItem>();
+        internal List<string> tempRemovalList = new List<string>();
+
 
         //Stats tracking
         internal int unJamAttempts = 0;
@@ -37,6 +44,7 @@ namespace BDAM
             _session = session;
             gridComp = comp;
             assembler = Assembler;
+            //TODO look at grid change events
             
             if (Session.Server)
             {
@@ -71,9 +79,7 @@ namespace BDAM
                         {
                             if (rawData != null && rawData.Length > 0)
                             {
-                                ListComp load = new ListComp() { compItems = new List<ListCompItem>() };
-                                var base64 = Convert.FromBase64String(rawData);
-                                load = MyAPIGateway.Utilities.SerializeFromBinary<ListComp>(base64);
+                                var load = MyAPIGateway.Utilities.SerializeFromBinary<ListComp>(Convert.FromBase64String(rawData));
 
                                 //Serialized string to BPs
                                 foreach (var saved in load.compItems)
@@ -98,7 +104,12 @@ namespace BDAM
                         MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage found but empty for {assembler.DisplayNameText}");
                 }
             }
-            //TODO client request data from server
+            else if (Session.Client && Session.MPActive)
+            {
+                if (Session.netlogging)
+                    MyLog.Default.WriteLineAndConsole(Session.modName + $"Updating replication list on server - addition");
+                Session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, GridEntID = gridComp.Grid.EntityId, add = true, Type = PacketType.Replication });
+            }
         }
 
         public void AssemblerUpdate()
@@ -130,7 +141,14 @@ namespace BDAM
                                 else
                                     missingMatQueue[bp].Add(item.Id.SubtypeName, adjustedAmount);                                                
 
-                                if(Session.logging)
+                                if (Session.MPActive) //Send notification
+                                {
+                                    var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(assembler.OwnerId);
+                                    if (steamID > 0)
+                                        Session.SendPacketToClient( new NotificationPacket { Message = Session.modName + gridComp.Grid.DisplayName + ": " + assembler.CustomName +$" missing {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}" }, steamID);
+                                }    
+
+                                if (Session.logging)
                                     MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName +$" Missing {item.Amount} ({adjustedAmount}) {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}");
                             }
                         }
@@ -271,7 +289,7 @@ namespace BDAM
         {
             if (Session.Server)
             {
-                ListComp tempListComp = new ListComp() { compItems = new List<ListCompItem>() };
+                var tempListComp = new ListComp();
                 foreach (var item in buildList.Values)
                     tempListComp.compItems.Add(item);
                 tempListComp.auto = autoControl;
@@ -280,10 +298,27 @@ namespace BDAM
                 if (Session.logging)
                     MyLog.Default.WriteLineAndConsole($"{Session.modName} Saving storage for {assembler.DisplayNameText} {tempListComp.auto}");
             }
-            else if (!Session.Server && Session.Client)
+            else if (!Session.Server && Session.Client && Session.MPActive)
             {
-                //TODO client network send of data update
+                //Roll up dirty list items
+                foreach (var item in buildList.ToArray())
+                {
+                    if (item.Value.dirty)
+                    {
+                        buildList[item.Key].dirty = false;
+                        tempUpdateList.Add(item.Value);
+                    }
+                }
+                var updates = new UpdateComp() { compItemsRemove = tempRemovalList, compItemsUpdate = tempUpdateList };
+                var data = Convert.ToBase64String(MyAPIGateway.Utilities.SerializeToBinary(updates));
+                Session.SendPacketToServer(new UpdateDataPacket { EntityId = assembler.EntityId, GridEntID = gridComp.Grid.EntityId, Type = PacketType.UpdateData, rawData = data });
+
+
+                if (Session.netlogging)
+                    MyLog.Default.WriteLineAndConsole($"{Session.modName} Sent updates to server");
             }
+            tempRemovalList.Clear();
+            tempUpdateList.Clear();
         }
         public void Clean()
         {
@@ -294,7 +329,15 @@ namespace BDAM
                 assembler.StoppedProducing -= Assembler_StoppedProducing;
                 assembler.StartedProducing -= Assembler_StartedProducing;
             }
+            else if (Session.Client && Session.MPActive)
+            {
+                if (Session.netlogging)
+                    MyLog.Default.WriteLineAndConsole(Session.modName + $"Updating replication list on server - removal");
+                Session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, GridEntID = gridComp.Grid.EntityId, add = false, Type = PacketType.Replication });
+            }
             buildList.Clear();
+            missingMatQueue.Clear();
+            missingMatTypes.Clear();
         }
     }
 }
