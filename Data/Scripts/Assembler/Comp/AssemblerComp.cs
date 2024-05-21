@@ -32,12 +32,10 @@ namespace BDAM
         internal List<ListCompItem> tempUpdateList = new List<ListCompItem>();
         internal List<string> tempRemovalList = new List<string>();
 
-
         //Stats tracking
         internal int unJamAttempts = 0;
         internal int countStart = 0;
         internal int countStop = 0;
-
 
         internal void Init(IMyAssembler Assembler, GridComp comp, Session session)
         {
@@ -301,21 +299,24 @@ namespace BDAM
             else if (!Session.Server && Session.Client && Session.MPActive)
             {
                 //Roll up dirty list items
-                foreach (var item in buildList.ToArray())
+                foreach (var item in buildList)
                 {
                     if (item.Value.dirty)
                     {
-                        buildList[item.Key].dirty = false;
+                        item.Value.dirty = false;
                         tempUpdateList.Add(item.Value);
                     }
                 }
-                var updates = new UpdateComp() { compItemsRemove = tempRemovalList, compItemsUpdate = tempUpdateList };
-                var data = Convert.ToBase64String(MyAPIGateway.Utilities.SerializeToBinary(updates));
-                Session.SendPacketToServer(new UpdateDataPacket { EntityId = assembler.EntityId, GridEntID = gridComp.Grid.EntityId, Type = PacketType.UpdateData, rawData = data });
 
+                if (tempRemovalList.Count + tempUpdateList.Count > 0)
+                {
+                    var updates = new UpdateComp() { compItemsRemove = tempRemovalList, compItemsUpdate = tempUpdateList };
+                    var data = Convert.ToBase64String(MyAPIGateway.Utilities.SerializeToBinary(updates));
+                    Session.SendPacketToServer(new UpdateDataPacket { EntityId = assembler.EntityId, GridEntID = gridComp.Grid.EntityId, Type = PacketType.UpdateData, rawData = data });
 
-                if (Session.netlogging)
-                    MyLog.Default.WriteLineAndConsole($"{Session.modName} Sent updates to server");
+                    if (Session.netlogging)
+                        MyLog.Default.WriteLineAndConsole($"{Session.modName} Sent updates to server");
+                }
             }
             tempRemovalList.Clear();
             tempUpdateList.Clear();

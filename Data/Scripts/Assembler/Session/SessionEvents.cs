@@ -14,6 +14,20 @@ namespace BDAM
 {
     public partial class Session : MySessionComponentBase
     {
+        private void PlayerDisco(long playerId)
+        {
+            if (netlogging)
+                MyLog.Default.WriteLineAndConsole(modName + $"Player disconnected - {playerId}");
+            var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(playerId);
+            if(steamID > 0)
+            {
+                foreach(var grid in GridList)
+                {
+                    foreach (var aComp in grid.assemblerList.Values)
+                        aComp.ReplicatedClients.Remove(steamID);
+                }
+            }
+        }
         private void CombineItemStacks(IMyTerminalBlock block)
         {
             timer.Restart();

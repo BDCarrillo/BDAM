@@ -27,7 +27,6 @@ namespace BDAM
         public static void SendPacketToClients(Packet packet, List<ulong> clients)
         {
             var rawData = MyAPIGateway.Utilities.SerializeToBinary(packet);
-
             foreach (var client in clients)
                 MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, rawData, client, true);
         }
@@ -101,6 +100,9 @@ namespace BDAM
                         if (rPacket.add)
                         {
                             aComp.ReplicatedClients.Add(sender);
+                            if (netlogging)
+                                MyLog.Default.WriteLineAndConsole(modName + $"Added client to replication data for aComp");
+
                             if (aComp.buildList.Count > 0)
                             {
                                 var tempListComp = new ListComp();
@@ -112,15 +114,21 @@ namespace BDAM
                                 if (netlogging)
                                     MyLog.Default.WriteLineAndConsole(modName + $"Sending initial aComp data to {sender}");
 
-                                SendPacketToClient(new FullDataPacket{
+                                SendPacketToClient(new FullDataPacket
+                                {
                                     EntityId = aComp.assembler.EntityId,
                                     GridEntID = gComp.Grid.EntityId,
-                                    Type = PacketType.UpdateData,
-                                    rawData = data}, sender);
+                                    Type = PacketType.FullData,
+                                    rawData = data
+                                }, sender);
                             }
                         }
                         else
+                        {
                             aComp.ReplicatedClients.Remove(sender);
+                            if (netlogging)
+                                MyLog.Default.WriteLineAndConsole(modName + $"Removed {sender} from aComp replication");
+                        }
                         break;
                     case PacketType.Notification:
                         var nPacket = packet as NotificationPacket;
@@ -133,13 +141,14 @@ namespace BDAM
                         if (Server)
                         {
                             if (netlogging)
-                                MyLog.Default.WriteLineAndConsole(modName + $"Received aComp data from client");
+                                MyLog.Default.WriteLineAndConsole(modName + $"Received aComp data from client - updates{load.compItemsUpdate.Count} - removals{load.compItemsRemove.Count}");
                             
                             //Actual acomp updates
                             foreach (var updated in load.compItemsUpdate)
                                 aComp.buildList[BPLookup[updated.bpBase]] = new ListCompItem() { bpBase = updated.bpBase, buildAmount = updated.buildAmount, grindAmount = updated.grindAmount, priority = updated.priority, label = updated.label };
                             foreach (var removed in load.compItemsRemove)
                                 aComp.buildList.Remove(BPLookup[removed]);
+                            aComp.Save();
 
                             //Send updates out to clients
                             var updateList = aComp.ReplicatedClients;
@@ -173,6 +182,7 @@ namespace BDAM
                                 MyLog.Default.WriteLineAndConsole(modName + $"Client received a full data set for an aComp but buildList.count > 0");
 
                             aComp.buildList.Clear();
+
                             foreach (var saved in loadFD.compItems)
                             {
                                 aComp.buildList.Add(BPLookup[saved.bpBase], new ListCompItem() { bpBase = saved.bpBase, buildAmount = saved.buildAmount, grindAmount = saved.grindAmount, priority = saved.priority, label = saved.label });
@@ -193,11 +203,11 @@ namespace BDAM
     }
 
     [ProtoContract]
-    [ProtoInclude(1, typeof(UpdateStatePacket))]
-    [ProtoInclude(2, typeof(NotificationPacket))]
-    [ProtoInclude(3, typeof(ReplicationPacket))]
-    [ProtoInclude(4, typeof(UpdateDataPacket))]
-    [ProtoInclude(5, typeof(FullDataPacket))]
+    [ProtoInclude(100, typeof(UpdateStatePacket))]
+    [ProtoInclude(200, typeof(NotificationPacket))]
+    [ProtoInclude(300, typeof(ReplicationPacket))]
+    [ProtoInclude(400, typeof(UpdateDataPacket))]
+    [ProtoInclude(500, typeof(FullDataPacket))]
 
 
 

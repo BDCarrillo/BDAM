@@ -1,6 +1,8 @@
 ﻿using Sandbox.Definitions;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using System;
 using System.Collections.Generic;
 using VRage.Game.Components;
 using VRage.Utils;
@@ -30,10 +32,13 @@ namespace BDAM
 
             if(MPActive)
             {
-                if(Client)
+                if (Client)
                     MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ClientPacketId, ProcessPacket);
-                else if(Server)
+                else if (Server)
+                {
                     MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ServerPacketId, ProcessPacket);
+                    MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisco;
+                }
             }
 
             if (Server)
@@ -98,6 +103,7 @@ namespace BDAM
             }
             Tick++;
         }
+
         protected override void UnloadData()
         {
             foreach (var gridComp in GridList)
@@ -116,7 +122,10 @@ namespace BDAM
                 if (Client)
                     MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(ClientPacketId, ProcessPacket);
                 else if (Server)
+                {
                     MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(ServerPacketId, ProcessPacket);
+                    MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisco;
+                }
             }
         }
     }
