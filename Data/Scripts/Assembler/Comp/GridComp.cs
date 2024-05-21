@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using VRage;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI.Ingame;
 using VRage.Utils;
 
 namespace BDAM
@@ -195,7 +194,7 @@ namespace BDAM
                             {
                                 var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(aComp.assembler.OwnerId);
                                 if (steamID > 0)
-                                    Session.SendPacketToClient(new NotificationPacket { Message = Session.modName + aComp.gridComp.Grid.DisplayName  + ": " + aComp.assembler.CustomName + $" Input inventory jammed" }, steamID);
+                                    Session.SendPacketToClient(new NotificationPacket { Message = aComp.gridComp.Grid.DisplayName  + ": " + aComp.assembler.CustomName + $" Input inventory jammed", Type = PacketType.Notification }, steamID);
                             }
                         }
                     }
@@ -207,7 +206,7 @@ namespace BDAM
                         {
                             var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(aComp.assembler.OwnerId);
                             if (steamID > 0)
-                                Session.SendPacketToClient(new NotificationPacket { Message = Session.modName + aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Output inventory jammed" }, steamID);
+                                Session.SendPacketToClient(new NotificationPacket { Message = aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Output inventory jammed", Type = PacketType.Notification }, steamID);
                         }
                         aComp.outputJammed = false;
                     }

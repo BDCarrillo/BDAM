@@ -21,7 +21,7 @@ namespace BDAM
         public static bool MPActive;
 
         internal bool controlInit;
-        internal static bool logging = false;
+        internal static bool logging = true;
         internal static bool netlogging = true;
 
         public static WindowScrollContainer AssemblerMenu;
@@ -44,7 +44,7 @@ namespace BDAM
 
         //Future settings
         public static MyFixedPoint maxQueueAmount = 50; //Max amount to queue per check
-        public static int refreshTime = 500; //Ticks between inventory refreshes
+        public static int refreshTime = 500; //Ticks between inventory and assembler refreshes
 
         public Session()
         {

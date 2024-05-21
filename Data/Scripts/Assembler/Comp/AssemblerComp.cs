@@ -121,7 +121,6 @@ namespace BDAM
                 //Jam check due to missing mats
                 if (lastQueue.Blueprint == queue[0].Blueprint && lastQueue.Amount == queue[0].Amount && assembler.CurrentProgress == 0)
                 {
-                    assembler.RemoveQueueItem(0, queue[0].Amount);
                     ListCompItem lComp;
                     if (buildList.TryGetValue((MyBlueprintDefinitionBase)queue[0].Blueprint, out lComp))
                     {
@@ -143,13 +142,15 @@ namespace BDAM
                                 {
                                     var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(assembler.OwnerId);
                                     if (steamID > 0)
-                                        Session.SendPacketToClient( new NotificationPacket { Message = Session.modName + gridComp.Grid.DisplayName + ": " + assembler.CustomName +$" missing {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}" }, steamID);
+                                        Session.SendPacketToClient(new NotificationPacket { Message = gridComp.Grid.DisplayName + ": " + assembler.CustomName +$" missing {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}", Type = PacketType.Notification }, steamID);
+                                    MyLog.Default.WriteLineAndConsole($"Missing mats: ownerID{assembler.OwnerId} steam {steamID}");
                                 }    
 
                                 if (Session.logging)
                                     MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName +$" Missing {item.Amount} ({adjustedAmount}) {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}");
                             }
                         }
+                        assembler.RemoveQueueItem(0, queue[0].Amount);
 
                         if (Session.logging)
                             MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats for {queue[0].Blueprint.Id.SubtypeName}.  Progress: {assembler.CurrentProgress}");

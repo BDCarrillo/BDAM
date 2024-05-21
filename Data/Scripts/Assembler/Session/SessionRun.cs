@@ -93,10 +93,13 @@ namespace BDAM
             if (!_startGrids.IsEmpty && Tick % 30 == 0)
                 StartComps();
 
+
+            //TODO look at dampening client updates to their own/faction owned grids (?)
+            //Clients only need a relatively fresh inventory count
             for (int i = 0; i < GridList.Count; i++)
             {
                 var gridComp = GridList[i];
-                if (gridComp.assemblerList.Count > 0 && gridComp.nextUpdate <= Tick) //TODO look at dampening client updates to their own/faction owned grids (?)
+                if (gridComp.assemblerList.Count > 0 && gridComp.nextUpdate <= Tick) 
                 {
                     gridComp.UpdateGrid();
                 }

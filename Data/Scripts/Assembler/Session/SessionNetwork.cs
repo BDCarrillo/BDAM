@@ -1,5 +1,4 @@
 ﻿using ProtoBuf;
-using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
@@ -132,7 +131,7 @@ namespace BDAM
                         break;
                     case PacketType.Notification:
                         var nPacket = packet as NotificationPacket;
-                        MyAPIGateway.Utilities.ShowNotification(nPacket.Message, 1500);
+                        MyAPIGateway.Utilities.ShowMessage(modName, nPacket.Message);
                         break;
                     case PacketType.UpdateData:
                         var udPacket = packet as UpdateDataPacket;
