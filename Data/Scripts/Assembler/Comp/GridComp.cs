@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.Entities;
+﻿using RichHudFramework.Internal;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -156,6 +157,7 @@ namespace BDAM
                         else
                             inventoryList.TryAdd(item.Content.SubtypeName, item.Amount);
                     }
+                    invCount += 2;
                 }
                 else if (b.TryGetInventory(out inventory))
                 {
@@ -194,24 +196,30 @@ namespace BDAM
                             aComp.unJamAttempts++;
                             if (Session.logging)
                                 MyLog.Default.WriteLineAndConsole(Session.modName + "Unable to unjam input for " + aComp.assembler.CustomName);
+                            var message = aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Input inventory jammed";
                             if (Session.MPActive) //Send notification
                             {
                                 var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(aComp.assembler.OwnerId);
                                 if (steamID > 0)
-                                    Session.SendPacketToClient(new NotificationPacket { Message = aComp.gridComp.Grid.DisplayName  + ": " + aComp.assembler.CustomName + $" Input inventory jammed", Type = PacketType.Notification }, steamID);
+                                    Session.SendPacketToClient(new NotificationPacket { Message = message, Type = PacketType.Notification }, steamID);
                             }
+                            else
+                                MyAPIGateway.Utilities.ShowMessage(Session.modName, message);
                         }
                     }
                     if (aComp.outputJammed)
                     {
                         if (Session.logging)
                             MyLog.Default.WriteLineAndConsole(Session.modName + $"Assembler {aComp.assembler.CustomName} stopped - output full");
+                        var message = aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Output inventory jammed";
                         if (Session.MPActive) //Send notification
                         {
                             var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(aComp.assembler.OwnerId);
                             if (steamID > 0)
-                                Session.SendPacketToClient(new NotificationPacket { Message = aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Output inventory jammed", Type = PacketType.Notification }, steamID);
+                                Session.SendPacketToClient(new NotificationPacket { Message = message, Type = PacketType.Notification }, steamID);
                         }
+                        else
+                            MyAPIGateway.Utilities.ShowMessage(Session.modName, message);
                         aComp.outputJammed = false;
                     }
                 }

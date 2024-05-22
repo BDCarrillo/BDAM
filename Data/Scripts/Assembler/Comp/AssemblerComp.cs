@@ -81,8 +81,8 @@ namespace BDAM
                                 //Serialized string to BPs
                                 foreach (var saved in load.compItems)
                                 {
-                                    //TODO bounce saved items off recently loaded BP list to ensure it's not for an item that no longer exists in the world (IE mod removal)
-                                    buildList.Add(Session.BPLookup[saved.bpBase], new ListCompItem() { bpBase = saved.bpBase, buildAmount = saved.buildAmount, grindAmount = saved.grindAmount, priority = saved.priority, label = saved.label });
+                                    if(Session.BPLookup.ContainsKey(saved.bpBase))
+                                        buildList.Add(Session.BPLookup[saved.bpBase], new ListCompItem() { bpBase = saved.bpBase, buildAmount = saved.buildAmount, grindAmount = saved.grindAmount, priority = saved.priority, label = saved.label });
                                 }
                                 autoControl = load.auto;
                                 if (Session.logging)
@@ -111,6 +111,14 @@ namespace BDAM
 
         public void AssemblerUpdate()
         {
+            if (assembler.CooperativeMode)
+            {
+                if (Session.logging)
+                    MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " mode switched to Cooperative, turning off auto control");
+                autoControl = false;
+                return;
+            }
+
             if (!assembler.IsQueueEmpty)
             {
                 var queue = assembler.GetQueue();
@@ -135,15 +143,17 @@ namespace BDAM
                                 if (!missingMatQueue.ContainsKey(bp))
                                     missingMatQueue.Add(bp, new Dictionary<string, MyFixedPoint>() { { item.Id.SubtypeName, adjustedAmount } });
                                 else
-                                    missingMatQueue[bp].Add(item.Id.SubtypeName, adjustedAmount);                                                
-
+                                    missingMatQueue[bp].Add(item.Id.SubtypeName, adjustedAmount);
+                                var message = gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" missing {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}";
                                 if (Session.MPActive) //Send notification
                                 {
                                     var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(assembler.OwnerId);
                                     if (steamID > 0)
-                                        Session.SendPacketToClient(new NotificationPacket { Message = gridComp.Grid.DisplayName + ": " + assembler.CustomName +$" missing {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}", Type = PacketType.Notification }, steamID);
+                                        Session.SendPacketToClient(new NotificationPacket { Message = message, Type = PacketType.Notification }, steamID);
                                     MyLog.Default.WriteLineAndConsole($"Missing mats: ownerID{assembler.OwnerId} steam {steamID}");
-                                }    
+                                }
+                                else
+                                    MyAPIGateway.Utilities.ShowMessage(Session.modName, message);
 
                                 if (Session.logging)
                                     MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName +$" Missing {item.Amount} ({adjustedAmount}) {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}");
@@ -166,39 +176,40 @@ namespace BDAM
 
             //Missing mat list checks
             //TODO look at dampening update cadence of this?
-            foreach (var type in missingMatTypes.ToArray())
-            {
-                //Check inv list for missing mat type
-                if(gridComp.inventoryList.ContainsKey(type))
+            if(missingMatTypes.Count > 0)
+                foreach (var type in missingMatTypes.ToArray())
                 {
-                    var amount = gridComp.inventoryList[type];
-                    bool remove = true;
-                    foreach (var queue in missingMatQueue.ToArray())
+                    //Check inv list for missing mat type
+                    if(gridComp.inventoryList.ContainsKey(type))
                     {
-                        if (queue.Value.ContainsKey(type))
+                        var amount = gridComp.inventoryList[type];
+                        bool remove = true;
+                        foreach (var queue in missingMatQueue.ToArray())
                         {
-                            remove = false;
-                            if (queue.Value[type] <= amount)
+                            if (queue.Value.ContainsKey(type))
                             {
-                                queue.Value.Remove(type);
-                                if (queue.Value.Count == 0)
+                                remove = false;
+                                if (queue.Value[type] <= amount)
                                 {
-                                    ListCompItem lComp;
-                                    if (buildList.TryGetValue(queue.Key, out lComp))
+                                    queue.Value.Remove(type);
+                                    if (queue.Value.Count == 0)
                                     {
-                                        lComp.missingMats = false;
+                                        ListCompItem lComp;
+                                        if (buildList.TryGetValue(queue.Key, out lComp))
+                                        {
+                                            lComp.missingMats = false;
+                                        }
+                                        missingMatQueue.Remove(queue.Key);
+                                        if (Session.logging)
+                                            MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" removed {lComp.label} from missing mat list");
                                     }
-                                    missingMatQueue.Remove(queue.Key);
-                                    if (Session.logging)
-                                        MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" removed {lComp.label} from missing mat list");
                                 }
                             }
                         }
+                        if (remove)
+                            missingMatTypes.Remove(type);
                     }
-                    if (remove)
-                        missingMatTypes.Remove(type);
                 }
-            }
 
             //Assemble/disassemble mode and iterations to see if something can be queued
             if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)

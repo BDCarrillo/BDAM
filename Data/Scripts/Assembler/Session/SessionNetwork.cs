@@ -42,18 +42,12 @@ namespace BDAM
                 }
 
                 //Get comps, unless it's just a notification packet
-                //TODO look at keeping a more streamlined assembler ent ID : aComp ref, simplify checks to obtain aComp
                 AssemblerComp aComp = null;
-                GridComp gComp = null;
                 if (packet.Type != PacketType.Notification)
                 {
-                    if(aCompMap.TryGetValue(packet.EntityId, out aComp)) 
+                    if(!aCompMap.TryGetValue(packet.EntityId, out aComp)) 
                     {
-                        gComp = aComp.gridComp;
-                    }
-                    if (gComp == null || aComp == null)
-                    {
-                        MyLog.Default.WriteLineAndConsole(modName + $"Invalid packet - packet.EntityId {packet.EntityId} gComp null: {gComp == null} aComp null: {aComp == null}");
+                        MyLog.Default.WriteLineAndConsole(modName + $"Invalid packet - packet.EntityId {packet.EntityId} aComp null: {aComp == null}");
                         return;
                     }
                 }
@@ -186,9 +180,6 @@ namespace BDAM
     [ProtoInclude(300, typeof(ReplicationPacket))]
     [ProtoInclude(400, typeof(UpdateDataPacket))]
     [ProtoInclude(500, typeof(FullDataPacket))]
-
-
-
 
     public class Packet
     {

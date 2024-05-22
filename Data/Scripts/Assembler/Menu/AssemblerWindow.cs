@@ -25,10 +25,11 @@ namespace BDAM
 
         public void ToggleVisibility(AssemblerComp AComp = null, bool closeOnly = false)
         {
+            //TODO split out inv update and toggle vis to a task + callback, checking if the assembler's menu is already open elsewhere (new packet on open? close action on update?)
             if (closeOnly && !Visible)
                 return;
 
-            if(!Visible)
+            if(!Visible && Session.MPActive)
             {
                 MyAPIGateway.Utilities.ShowNotification("Updating inventory...",500);
                 AComp.gridComp.UpdateGrid();
@@ -55,6 +56,5 @@ namespace BDAM
         {
             scrollContainer.Visible = true;
         }
-
     }
 }

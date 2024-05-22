@@ -112,6 +112,16 @@ namespace BDAM
         }
         public static void OpenSummary(IMyTerminalBlock block)
         {
+            AssemblerComp aComp;
+            var missing = "";
+            if(aCompMap.TryGetValue(block.EntityId, out aComp))
+            {
+                foreach(var missingMat in aComp.missingMatTypes)
+                {
+                    missing += missingMat + "\n";
+                }
+            }
+
             timer.Restart();
             var controlledGrid = (MyCubeGrid)block.CubeGrid;
             string d = "";
@@ -175,6 +185,13 @@ namespace BDAM
                     }
                 }
             }
+            if (missing.Length > 0)
+            {
+                d += "--Missing/Insufficient materials: \n";
+                d += missing + "\n";
+            }
+
+
             if (ammo.Count > 0)
                 d += "--Ammo: \n";
             foreach (var x in ammo)
@@ -183,7 +200,6 @@ namespace BDAM
                 d += "\n--Ore: \n";
             foreach (var x in ore)
                 d += x.Key.PadRight(padLen + 15, '.') + NumberFormat(x.Value) + "\n";
-
             if (ingot.Count > 0)
                 d += "\n --Ingots: \n";
             foreach (var x in ingot)
@@ -195,10 +211,10 @@ namespace BDAM
 
             timer.Stop();
             d += $"\n\n Runtime: {timer.Elapsed.TotalMilliseconds} ms";
-            if (ore.Count + ingot.Count + component.Count + ammo.Count > 0)
+            if (ore.Count + ingot.Count + component.Count + ammo.Count + missing.Length > 0)
                 MyAPIGateway.Utilities.ShowMissionScreen("Inventory Summary", "", "", d, null, "Close");
             else
-                MyAPIGateway.Utilities.ShowNotification("No ore, ingots, components, or ammo found");
+                MyAPIGateway.Utilities.ShowNotification("No ore, ingots, components, missing items, or ammo found");
         }
         private void OnGridClose(IMyEntity entity)
         {

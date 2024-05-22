@@ -21,8 +21,8 @@ namespace BDAM
         public static bool MPActive;
 
         internal bool controlInit;
-        internal static bool logging = true;
-        internal static bool netlogging = true;
+        internal static bool logging = false;
+        internal static bool netlogging = false;
 
         public static WindowScrollContainer AssemblerMenu;
 

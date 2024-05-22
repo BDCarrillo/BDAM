@@ -217,6 +217,12 @@ namespace BDAM
             }
             else if (sender == autoMode)
             {
+                //TODO check if co-op mode enabled
+                if(aComp.assembler.CooperativeMode)
+                {
+                    MyAPIGateway.Utilities.ShowNotification("Disable co-operative mode to utilize automatic control", font: "Red");
+                    return;
+                }
                 aComp.autoControl = !aComp.autoControl;
                 autoMode.Text = "Auto: " + (aComp.autoControl ? "On" : "Off");
                 if (Session.MPActive)

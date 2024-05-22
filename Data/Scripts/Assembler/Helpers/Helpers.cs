@@ -42,7 +42,6 @@ namespace BDAM
             foreach (var action in _customActions)
                 MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
-
         public static string NumberFormat(float number)
         {
             var numStr = ((int)number).ToString();
@@ -74,7 +73,6 @@ namespace BDAM
             c.Action = action;
             return c;
         }
-
         internal static IMyTerminalControlOnOffSwitch AddOnOff<T>(string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, bool> getter, Action<IMyTerminalBlock, bool> setter, Func<IMyTerminalBlock, bool> enabledGetter = null, Func<IMyTerminalBlock, bool> visibleGetter = null) where T : IMyTerminalBlock
         {
             var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlOnOffSwitch, T>(name);
@@ -88,7 +86,6 @@ namespace BDAM
             c.Setter = setter;
             return c;
         }
-
         public static bool VisibleTrue(IMyTerminalBlock block)
         {
             return true;
@@ -101,7 +98,6 @@ namespace BDAM
             else
                 return true;
         }
-
         internal bool GetActivated(IMyTerminalBlock block)
         {
             var assembler = block as IMyAssembler;
@@ -116,7 +112,6 @@ namespace BDAM
             }
             return false;
         }
-
         internal void SetActivated(IMyTerminalBlock block, bool activated)
         {
             GridComp gComp;
@@ -145,13 +140,11 @@ namespace BDAM
                 MyAPIGateway.Session.Player.Controller.ControlledEntityChanged += GridChange;
             }
         }
-
         private void GridChange(VRage.Game.ModAPI.Interfaces.IMyControllableEntity entity1, VRage.Game.ModAPI.Interfaces.IMyControllableEntity entity2)
         {
             AssemblerHud.Window.ToggleVisibility(openAComp, true);
             MyAPIGateway.Session.Player.Controller.ControlledEntityChanged -= GridChange;
         }
-
         internal void SetAutoMode(IMyTerminalBlock block)
         {
             GridComp gComp;
@@ -168,7 +161,6 @@ namespace BDAM
                 }
             }
         }
-
         internal IMyTerminalAction CreateAssemblerMenuAction<T>() where T : IMyAssembler
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("AssemblerMenu");
@@ -186,7 +178,7 @@ namespace BDAM
             action.Name = new StringBuilder("Assembler Auto Mode On/Off");
             action.Action = SetAutoMode;
             action.Writer = AutoActionWriter;
-            action.Enabled = IsTrue;
+            action.Enabled = NotCoOp;
             return action;
         }
         internal void MenuActionWriter(IMyTerminalBlock block, StringBuilder builder)
@@ -196,13 +188,32 @@ namespace BDAM
         internal void AutoActionWriter(IMyTerminalBlock block, StringBuilder builder)
         {
             bool auto = false;
-            GridComp gComp;
-            AssemblerComp aComp;
-            if (GridMap.TryGetValue(block.CubeGrid, out gComp) && gComp.assemblerList.TryGetValue((MyCubeBlock)block, out aComp))
+            AssemblerComp aComp;            
+            if (aCompMap.TryGetValue(block.EntityId, out aComp))
             {
-                auto = aComp.autoControl;
+                if (aComp.assembler.CooperativeMode)
+                {
+                    auto = false;
+                }
+                else
+                    auto = aComp.autoControl;
             }
             builder.Append("Auto: " + (auto ? "On" : "Off"));
+        }
+        internal bool NotCoOp(IMyTerminalBlock block)
+        {
+            AssemblerComp aComp;
+            if (aCompMap.TryGetValue(block.EntityId, out aComp))
+            {
+                if (aComp.assembler.CooperativeMode)
+                {
+                    aComp.autoControl = false;
+                    return false;
+                }
+                else
+                    return true;
+            }
+            return false;
         }
     }
 }
