@@ -47,31 +47,13 @@ namespace BDAM
                 GridComp gComp = null;
                 if (packet.Type != PacketType.Notification)
                 {
-                    if (packet.EntityId > 0 && packet.GridEntID > 0)
+                    if(aCompMap.TryGetValue(packet.EntityId, out aComp)) 
                     {
-                        foreach (var grid in GridMap)
-                        {
-                            if (grid.Value.Grid.EntityId == packet.GridEntID)
-                            {
-                                gComp = grid.Value;
-                                break;
-                            }
-                        }
-                        if (gComp != null)
-                        {
-                            foreach (var assembler in gComp.assemblerList)
-                            {
-                                if (assembler.Key.EntityId == packet.EntityId)
-                                {
-                                    aComp = assembler.Value;
-                                    break;
-                                }
-                            }
-                        }
+                        gComp = aComp.gridComp;
                     }
                     if (gComp == null || aComp == null)
                     {
-                        MyLog.Default.WriteLineAndConsole(modName + $"Invalid packet - packet.EntityId {packet.EntityId} packet.GridEntID {packet.GridEntID}  gComp null: {gComp == null} aComp null: {aComp == null}");
+                        MyLog.Default.WriteLineAndConsole(modName + $"Invalid packet - packet.EntityId {packet.EntityId} gComp null: {gComp == null} aComp null: {aComp == null}");
                         return;
                     }
                 }
@@ -90,8 +72,7 @@ namespace BDAM
                             SendPacketToClients(new UpdateStatePacket { 
                                 AssemblerAuto = aComp.autoControl, 
                                 Type = PacketType.UpdateState, 
-                                EntityId = aComp.assembler.EntityId, 
-                                GridEntID = gComp.Grid.EntityId }, updateList);
+                                EntityId = aComp.assembler.EntityId }, updateList);
                         }
                         break;
                     case PacketType.Replication:
@@ -116,7 +97,6 @@ namespace BDAM
                                 SendPacketToClient(new FullDataPacket
                                 {
                                     EntityId = aComp.assembler.EntityId,
-                                    GridEntID = gComp.Grid.EntityId,
                                     Type = PacketType.FullData,
                                     rawData = data
                                 }, sender);
@@ -155,8 +135,7 @@ namespace BDAM
                             SendPacketToClients(new UpdateDataPacket{
                                 rawData = udPacket.rawData,
                                 Type = PacketType.UpdateState,
-                                EntityId = aComp.assembler.EntityId,
-                                GridEntID = gComp.Grid.EntityId}, updateList);
+                                EntityId = aComp.assembler.EntityId }, updateList);
                         }
                         else
                         {
@@ -214,8 +193,7 @@ namespace BDAM
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
-        [ProtoMember(2)] internal long GridEntID;
-        [ProtoMember(3)] internal PacketType Type;
+        [ProtoMember(2)] internal PacketType Type;
     }
 
     [ProtoContract]

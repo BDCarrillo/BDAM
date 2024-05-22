@@ -223,7 +223,7 @@ namespace BDAM
                 {
                     if (Session.netlogging)
                         MyLog.Default.WriteLineAndConsole(Session.modName + $"Sending updated auto control state to server " + aComp.autoControl);
-                    var packet = new UpdateStatePacket { AssemblerAuto = aComp.autoControl, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId, GridEntID = aComp.assembler.CubeGrid.EntityId };
+                    var packet = new UpdateStatePacket { AssemblerAuto = aComp.autoControl, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
                     Session.SendPacketToServer(packet);
                 }
             }

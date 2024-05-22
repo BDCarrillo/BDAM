@@ -1,12 +1,10 @@
-﻿using RichHudFramework.Internal;
-using Sandbox.Definitions;
+﻿using Sandbox.Definitions;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Sockets;
 using VRage;
 using VRage.Utils;
 
@@ -42,6 +40,7 @@ namespace BDAM
             _session = session;
             gridComp = comp;
             assembler = Assembler;
+            Session.aCompMap.Add(assembler.EntityId, this);
             //TODO look at grid change events
             
             if (Session.Server)
@@ -106,7 +105,7 @@ namespace BDAM
             {
                 if (Session.netlogging)
                     MyLog.Default.WriteLineAndConsole(Session.modName + $"Updating replication list on server - addition");
-                Session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, GridEntID = gridComp.Grid.EntityId, add = true, Type = PacketType.Replication });
+                Session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, add = true, Type = PacketType.Replication });
             }
         }
 
@@ -313,7 +312,7 @@ namespace BDAM
                 {
                     var updates = new UpdateComp() { compItemsRemove = tempRemovalList, compItemsUpdate = tempUpdateList };
                     var data = Convert.ToBase64String(MyAPIGateway.Utilities.SerializeToBinary(updates));
-                    Session.SendPacketToServer(new UpdateDataPacket { EntityId = assembler.EntityId, GridEntID = gridComp.Grid.EntityId, Type = PacketType.UpdateData, rawData = data });
+                    Session.SendPacketToServer(new UpdateDataPacket { EntityId = assembler.EntityId, Type = PacketType.UpdateData, rawData = data });
 
                     if (Session.netlogging)
                         MyLog.Default.WriteLineAndConsole($"{Session.modName} Sent updates to server");
@@ -335,8 +334,10 @@ namespace BDAM
             {
                 if (Session.netlogging)
                     MyLog.Default.WriteLineAndConsole(Session.modName + $"Updating replication list on server - removal");
-                Session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, GridEntID = gridComp.Grid.EntityId, add = false, Type = PacketType.Replication });
+                Session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, add = false, Type = PacketType.Replication });
             }
+            Session.aCompMap.Remove(assembler.EntityId);
+
             buildList.Clear();
             missingMatQueue.Clear();
             missingMatTypes.Clear();

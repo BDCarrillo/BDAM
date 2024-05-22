@@ -21,7 +21,7 @@ namespace BDAM
             var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(playerId);
             if(steamID > 0)
             {
-                foreach(var grid in GridList)
+                foreach(var grid in GridMap.Values)
                 {
                     foreach (var aComp in grid.assemblerList.Values)
                         aComp.ReplicatedClients.Remove(steamID);
@@ -83,7 +83,6 @@ namespace BDAM
                     var gridComp = _gridCompPool.Count > 0 ? _gridCompPool.Pop() : new GridComp();
                     gridComp.Init(grid, this);
 
-                    GridList.Add(gridComp);
                     GridMap[grid] = gridComp;
                     grid.OnClose += OnGridClose;
                 }
@@ -125,10 +124,6 @@ namespace BDAM
             MyInventoryBase inventory;
             foreach (var b in controlledGrid.Inventories)
             {
-                if (!(b is IMyAssembler || b is IMyCargoContainer || b is IMyRefinery)) //TODO eval if needed- would skip ammo in weps currently
-                    continue;
-
-
                 if (b.TryGetInventory(out inventory))
                 {
                     var invList = inventory.GetItems();
@@ -211,8 +206,6 @@ namespace BDAM
             GridComp comp;
             if (GridMap.TryRemove(grid, out comp))
             {
-                GridList.Remove(comp);
-
                 comp.Clean();
                 _gridCompPool.Push(comp);
             }

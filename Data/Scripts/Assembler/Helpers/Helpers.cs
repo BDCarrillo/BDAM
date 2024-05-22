@@ -128,7 +128,7 @@ namespace BDAM
                 {
                     if (netlogging)
                         MyLog.Default.WriteLineAndConsole(modName + $"Sending updated auto control state to server " + aComp.autoControl);
-                    var packet = new UpdateStatePacket { AssemblerAuto = aComp.autoControl, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId, GridEntID = block.CubeGrid.EntityId };
+                    var packet = new UpdateStatePacket { AssemblerAuto = aComp.autoControl, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
                     SendPacketToServer(packet);
                 }
             }
@@ -148,7 +148,7 @@ namespace BDAM
 
         private void GridChange(VRage.Game.ModAPI.Interfaces.IMyControllableEntity entity1, VRage.Game.ModAPI.Interfaces.IMyControllableEntity entity2)
         {
-            AssemblerHud.Window.ToggleVisibility(openAComp);
+            AssemblerHud.Window.ToggleVisibility(openAComp, true);
             MyAPIGateway.Session.Player.Controller.ControlledEntityChanged -= GridChange;
         }
 
@@ -163,7 +163,7 @@ namespace BDAM
                 {
                     if (netlogging)
                         MyLog.Default.WriteLineAndConsole(modName + $"Sending updated auto control state to server " + aComp.autoControl);
-                    var packet = new UpdateStatePacket { AssemblerAuto = aComp.autoControl, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId, GridEntID = block.CubeGrid.EntityId };
+                    var packet = new UpdateStatePacket { AssemblerAuto = aComp.autoControl, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
                     SendPacketToServer(packet);
                 }
             }

@@ -2,10 +2,8 @@
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using System;
 using System.Collections.Generic;
 using VRage.Game.Components;
-using VRage.Utils;
 
 namespace BDAM
 {
@@ -93,23 +91,20 @@ namespace BDAM
             if (!_startGrids.IsEmpty && Tick % 30 == 0)
                 StartComps();
 
-
-            //TODO look at dampening client updates to their own/faction owned grids (?)
-            //Clients only need a relatively fresh inventory count
-            for (int i = 0; i < GridList.Count; i++)
-            {
-                var gridComp = GridList[i];
-                if (gridComp.assemblerList.Count > 0 && gridComp.nextUpdate <= Tick) 
+            if(Server)
+                foreach (var grid in GridMap.Values)
                 {
-                    gridComp.UpdateGrid();
+                    if (grid.assemblerList.Count > 0 && grid.nextUpdate <= Tick) 
+                    {
+                        grid.UpdateGrid();
+                    }
                 }
-            }
             Tick++;
         }
 
         protected override void UnloadData()
         {
-            foreach (var gridComp in GridList)
+            foreach (var gridComp in GridMap.Values)
                 gridComp.Clean();
             Clean();
             MyEntities.OnEntityCreate -= OnEntityCreate;

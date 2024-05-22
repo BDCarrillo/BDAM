@@ -32,10 +32,15 @@ namespace BDAM
 
             Grid.OnFatBlockAdded += FatBlockAdded;
             Grid.OnFatBlockRemoved += FatBlockRemoved;
+            Grid.OnGridMerge += OnGridMerge;
             nextUpdate = (int)(Session.Tick + Grid.EntityId % 100);
             //TODO look at grid merge/change events to preserve aComp data
         }
+        private void OnGridMerge(MyCubeGrid retainedGrid, MyCubeGrid removedGrid)
+        {
 
+            Grid.OnGridMerge -= OnGridMerge;
+        }
         internal void FatBlockAdded(MyCubeBlock block)
         {
             var assembler = block as IMyAssembler;
@@ -122,14 +127,13 @@ namespace BDAM
 
         internal void UpdateGrid()
         {
-            //TODO look at dampening update cadence of this?
             var timer = new Stopwatch();
             timer.Start();
             inventoryList.Clear();
             MyInventoryBase inventory;
             foreach (var b in Grid.Inventories)
             {
-                if (!(b is IMyAssembler || b is IMyCargoContainer || b is IMyRefinery || b is IMyShipConnector)) //TODO eval if needed- would skip ammo in weps currently
+                if (!(b is IMyAssembler || b is IMyCargoContainer || b is IMyRefinery || b is IMyShipConnector))
                     continue;
 
                 if(b is IMyAssembler || b is IMyRefinery)
@@ -211,8 +215,8 @@ namespace BDAM
                         aComp.outputJammed = false;
                     }
                 }
+                nextUpdate += Session.refreshTime;
             }
-            nextUpdate += Session.refreshTime;
         }
 
         internal void Clean()

@@ -29,7 +29,6 @@ namespace BDAM
         private readonly Stack<GridComp> _gridCompPool = new Stack<GridComp>(128);
         private readonly ConcurrentCachingList<MyCubeGrid> _startGrids = new ConcurrentCachingList<MyCubeGrid>();
         internal readonly ConcurrentDictionary<long, IMyPlayer> PlayerMap = new ConcurrentDictionary<long, IMyPlayer>();
-        internal readonly List<GridComp> GridList = new List<GridComp>();
         internal readonly ConcurrentDictionary<IMyCubeGrid, GridComp> GridMap = new ConcurrentDictionary<IMyCubeGrid, GridComp>();
         public static Dictionary<string, List<string>> assemblerBPs = new Dictionary<string, List<string>>();
         public static Dictionary<string, List<MyBlueprintDefinitionBase>> assemblerBP2 = new Dictionary<string, List<MyBlueprintDefinitionBase>>();
@@ -41,6 +40,7 @@ namespace BDAM
         internal readonly Guid storageGuid = new Guid("95dd6473-8e17-4ac3-ba22-57d283755755");
         public static float assemblerEfficiency = 1;
         internal AssemblerComp openAComp = null;
+        internal static Dictionary<long, AssemblerComp> aCompMap = new Dictionary<long, AssemblerComp>();
 
         //Future settings
         public static MyFixedPoint maxQueueAmount = 50; //Max amount to queue per check
@@ -55,12 +55,13 @@ namespace BDAM
             _gridCompPool.Clear();
             _startGrids.ClearImmediate();
             PlayerMap.Clear();
-            GridList.Clear();
             GridMap.Clear();
             assemblerBPs.Clear();
+            assemblerBP2.Clear();
             BPClasses.Clear();
             BPLookup.Clear();
             openAComp = null;
+            aCompMap.Clear();
         }
     }
 }
