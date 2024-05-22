@@ -5,7 +5,6 @@ using Sandbox.ModAPI;
 using System.Collections.Generic;
 using Sandbox.Definitions;
 using VRage.Utils;
-using System.Text;
 
 namespace BDAM
 {
@@ -287,7 +286,18 @@ namespace BDAM
                 foreach (var item in sortedList)
                 {
                     queueList.Add(refDict[item]);
-                }             
+                }
+
+                string infoString = "";
+                if (aComp.missingMatAmount.Count > 0)
+                {
+                    infoString += "Missing/Insufficient materials:\n";
+                    foreach (var missing in aComp.missingMatAmount)
+                    {
+                        infoString += "\t" + missing.Key + ": " + Session.NumberFormat(missing.Value) + "\n";
+                    }
+                }
+                infoPanel.Text = infoString;
             }
             
             //Starting offset to get scrollbox list items below header bar
@@ -306,29 +316,6 @@ namespace BDAM
                 qItem.Offset = new Vector2(-8, offset);
                 offset -= qItem.Size.Y + 5; //+5 for add'l spacing between rows
             }
-
-            /*
-            string infoString = "";
-            if (aComp.missingMatTypes.Count > 0)
-            {
-                infoString += "Missing/Insufficient materials:\n";
-                foreach (var missing in aComp.missingMatTypes)
-                {
-                    infoString += "\t" + missing + "\n";
-                }
-            }
-            infoPanel.Text = infoString;
-            */
-            string infoString = "";
-            if (aComp.missingMatAmount.Count > 0)
-            {
-                infoString += "Missing/Insufficient materials:\n";
-                foreach (var missing in aComp.missingMatAmount)
-                {
-                    infoString += "\t" + missing.Key + ": " + Session.NumberFormat(missing.Value) + "\n";
-                }
-            }
-            infoPanel.Text = infoString;
         }
 
         private void Clear(bool delete = false)

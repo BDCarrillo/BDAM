@@ -235,7 +235,7 @@ namespace BDAM
     }
 
     [ProtoContract]
-    public class MissingMatPacket : Packet
+    public class MissingMatPacket : Packet //TODO rework to a status packet of just info panel text?  JIT on open?
     {
         [ProtoMember(4)] internal Dictionary<string, int> data;
     }

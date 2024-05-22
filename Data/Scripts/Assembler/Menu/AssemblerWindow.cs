@@ -8,9 +8,7 @@ namespace BDAM
 {
     class AssemblerWindow : HudElementBase
     {
-        private readonly EmptyHudElement content;
         public WindowScrollContainer scrollContainer;
-
         public AssemblerWindow(HudParentBase parent) : base(parent)
         {
             AssemblerHud.Window = this;
@@ -22,7 +20,6 @@ namespace BDAM
             UseCursor = true;
             ShareCursor = true;
         }
-
         public void ToggleVisibility(AssemblerComp AComp = null, bool closeOnly = false)
         {
             //TODO split out inv update and toggle vis to a task + callback, checking if the assembler's menu is already open elsewhere (new packet on open? close action on update?)
@@ -45,16 +42,6 @@ namespace BDAM
                 scrollContainer.title.Text = AComp.assembler.DisplayNameText + " on " + AComp.assembler.CubeGrid.DisplayName;
             if (!Visible && AComp != null)
                 AComp.Save();
-        }
-
-        public void ToggleContentVisibility(bool value)
-        {
-            content.Visible = value;
-        }
-
-        public void SetContentToScroll()
-        {
-            scrollContainer.Visible = true;
         }
     }
 }
