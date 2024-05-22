@@ -94,6 +94,15 @@ namespace BDAM
                                     Type = PacketType.FullData,
                                     rawData = data
                                 }, sender);
+                                if (aComp.missingMatAmount.Count > 0)
+                                {
+                                    SendPacketToClient(new MissingMatPacket
+                                    {
+                                        EntityId = aComp.assembler.EntityId,
+                                        Type = PacketType.MissingMatData,
+                                        data = aComp.missingMatAmount
+                                    }, sender);
+                                }
                             }
                         }
                         else
@@ -162,6 +171,12 @@ namespace BDAM
                             aComp.autoControl = loadFD.auto;
                         }
                         break;
+                    case PacketType.MissingMatData:
+                        var mmPacket = packet as MissingMatPacket;
+                        aComp.missingMatAmount = mmPacket.data;
+                        if (netlogging)
+                            MyLog.Default.WriteLineAndConsole(modName + $"Received missing mat data from server");
+                        break;
                     default:
                         MyLog.Default.WriteLineAndConsole(modName + $"Invalid packet type - {packet.GetType()}");
                         break;
@@ -180,6 +195,8 @@ namespace BDAM
     [ProtoInclude(300, typeof(ReplicationPacket))]
     [ProtoInclude(400, typeof(UpdateDataPacket))]
     [ProtoInclude(500, typeof(FullDataPacket))]
+    [ProtoInclude(600, typeof(MissingMatPacket))]
+
 
     public class Packet
     {
@@ -217,6 +234,12 @@ namespace BDAM
         [ProtoMember(4)] internal string rawData;
     }
 
+    [ProtoContract]
+    public class MissingMatPacket : Packet
+    {
+        [ProtoMember(4)] internal Dictionary<string, int> data;
+    }
+
     public enum PacketType
     {
         UpdateState,
@@ -224,5 +247,6 @@ namespace BDAM
         Replication,
         UpdateData,
         FullData,
+        MissingMatData,
     }
 }

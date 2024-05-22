@@ -14,7 +14,7 @@ namespace BDAM
         public AssemblerWindow(HudParentBase parent) : base(parent)
         {
             AssemblerHud.Window = this;
-            Size = new Vector2(1000, 700);
+            Size = new Vector2(1300, 700);
             Offset = new Vector2(0,0);
             scrollContainer = new WindowScrollContainer(this);
 

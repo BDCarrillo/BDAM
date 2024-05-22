@@ -5,13 +5,14 @@ using Sandbox.ModAPI;
 using System.Collections.Generic;
 using Sandbox.Definitions;
 using VRage.Utils;
+using System.Text;
 
 namespace BDAM
 {
     public class WindowScrollContainer : HudElementBase
     {
         public readonly LabelBox title;
-        public readonly TextBox labelBuildQty, labelGrindQty;
+        public readonly TextBox infoPanel;
         private readonly BorderedButton close, add, clearAll, addAll, autoMode, summary;
         public List<QueueItem> queueList = new List<QueueItem>();
         internal AssemblerComp aComp;
@@ -149,7 +150,6 @@ namespace BDAM
             add.background.Width = add.Width;
             add.background.Padding = Vector2.Zero;
 
-
             addAll = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
@@ -186,6 +186,20 @@ namespace BDAM
             clearAll.background.Width = clearAll.Width;
             clearAll.background.Padding = Vector2.Zero;
 
+            //Info panel
+            infoPanel = new TextBox(this)
+            {
+                ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
+                Width = 300,
+                Height = 640,
+                Offset = new Vector2(0, -60),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f),
+                AutoResize = false,
+                VertCenterText = false,
+                InputEnabled = false,
+                BuilderMode = TextBuilderModes.Lined,
+            };
+
             //Controls
             summary.MouseInput.LeftClicked += LeftClick;
             autoMode.MouseInput.LeftClicked += LeftClick;
@@ -201,11 +215,12 @@ namespace BDAM
                 AssemblerHud.Window.ToggleVisibility(aComp);
             else if(sender == addAll)
             {
+                aComp.tempRemovalList.Clear();
                 foreach (var bp in Session.assemblerBP2[aComp.assembler.BlockDefinition.SubtypeId])
                 {
                     if(!aComp.buildList.ContainsKey(bp))
                     {
-                        var tempListCompItem = new ListCompItem() { bpBase = bp.Id.SubtypeName, label = bp.Results[0].Id.SubtypeName };
+                        var tempListCompItem = new ListCompItem() { bpBase = bp.Id.SubtypeName, label = bp.Results[0].Id.SubtypeName, dirty = true };
                         aComp.buildList.Add(bp, tempListCompItem);
                     }
                 }
@@ -217,7 +232,6 @@ namespace BDAM
             }
             else if (sender == autoMode)
             {
-                //TODO check if co-op mode enabled
                 if(aComp.assembler.CooperativeMode)
                 {
                     MyAPIGateway.Utilities.ShowNotification("Disable co-operative mode to utilize automatic control", font: "Red");
@@ -273,16 +287,7 @@ namespace BDAM
                 foreach (var item in sortedList)
                 {
                     queueList.Add(refDict[item]);
-                }
-
-                //Plain addition w/o sorting
-                /*
-                foreach (var listItem in aComp.buildList)
-                {
-                    var qItem = new QueueItem(listItem.Value, listItem.Key, this);
-                    queueList.Add(qItem);
-                }
-                */                
+                }             
             }
             
             //Starting offset to get scrollbox list items below header bar
@@ -301,6 +306,29 @@ namespace BDAM
                 qItem.Offset = new Vector2(-8, offset);
                 offset -= qItem.Size.Y + 5; //+5 for add'l spacing between rows
             }
+
+            /*
+            string infoString = "";
+            if (aComp.missingMatTypes.Count > 0)
+            {
+                infoString += "Missing/Insufficient materials:\n";
+                foreach (var missing in aComp.missingMatTypes)
+                {
+                    infoString += "\t" + missing + "\n";
+                }
+            }
+            infoPanel.Text = infoString;
+            */
+            string infoString = "";
+            if (aComp.missingMatAmount.Count > 0)
+            {
+                infoString += "Missing/Insufficient materials:\n";
+                foreach (var missing in aComp.missingMatAmount)
+                {
+                    infoString += "\t" + missing.Key + ": " + Session.NumberFormat(missing.Value) + "\n";
+                }
+            }
+            infoPanel.Text = infoString;
         }
 
         private void Clear(bool delete = false)

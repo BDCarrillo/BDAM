@@ -116,9 +116,9 @@ namespace BDAM
             var missing = "";
             if(aCompMap.TryGetValue(block.EntityId, out aComp))
             {
-                foreach(var missingMat in aComp.missingMatTypes)
+                foreach(var missingMat in aComp.missingMatAmount)
                 {
-                    missing += missingMat + "\n";
+                    missing += missingMat.Key + ": " + NumberFormat(missingMat.Value) + "\n";
                 }
             }
 
