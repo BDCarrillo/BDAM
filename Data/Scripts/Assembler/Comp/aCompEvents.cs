@@ -1,5 +1,8 @@
-﻿using Sandbox.Game.Entities;
+﻿using Sandbox.Game;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
+using VRage.Game.ModAPI.Ingame;
 using VRage.Utils;
 
 namespace BDAM
@@ -67,9 +70,20 @@ namespace BDAM
             var grid = gComp.Grid;
             var aCube = aComp.assembler as MyCubeBlock;
             var aInput = aComp.assembler.InputInventory;
-            var aFirstItem = aInput.GetItemAt(0);
 
-            if (aFirstItem == null)
+            MyFixedPoint max = 0;
+            MyInventoryItem? largestStack = null;
+            for (int i = 0; i < aInput.ItemCount; i++)
+            {
+                var curItem = aInput.GetItemAt(i);
+                if (curItem.Value.Amount > max)
+                {
+                    max = curItem.Value.Amount;
+                    largestStack = (MyInventoryItem)curItem;
+                }
+            }
+
+            if (largestStack == null)
                 return;
 
             foreach (var block in grid.Inventories)
@@ -81,11 +95,11 @@ namespace BDAM
                 if (blockInv == null)
                     continue;
 
-                bool canTransfer = aInput.CanTransferItemTo(blockInv, aFirstItem.Value.Type);
-                var transferAmount = VRage.MyFixedPoint.MultiplySafe(aFirstItem.Value.Amount, 0.5f);
+                bool canTransfer = aInput.CanTransferItemTo(blockInv, largestStack.Value.Type);
+                var transferAmount = VRage.MyFixedPoint.MultiplySafe(largestStack.Value.Amount, 0.5f);
                 if (canTransfer)
                 {
-                    if (aInput.TransferItemTo(blockInv, aFirstItem.Value, transferAmount))
+                    if (aInput.TransferItemTo(blockInv, largestStack.Value, transferAmount))
                         break;
                 }
             }
