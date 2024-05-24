@@ -58,14 +58,12 @@ namespace BDAM
                 if (assembler.Storage == null)
                 {
                     assembler.Storage = new MyModStorageComponent { [_session.storageGuid] = "" };
-                    if (Session.logging)
-                        MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage was null, initting for {assembler.DisplayNameText}");
+                    if (Session.logging) MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage was null, initting for {assembler.DisplayNameText}");
                 }
                 else if (!assembler.Storage.ContainsKey(_session.storageGuid))
                 {
                     assembler.Storage[_session.storageGuid] = "";
-                    if (Session.logging)
-                        MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage not null, but no matching GUID for  {assembler.DisplayNameText}");
+                    if (Session.logging) MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage not null, but no matching GUID for  {assembler.DisplayNameText}");
                 }
                 else if (assembler.Storage.ContainsKey(_session.storageGuid))
                 {
@@ -86,26 +84,21 @@ namespace BDAM
                                         buildList.Add(Session.BPLookup[saved.bpBase], new ListCompItem() { bpBase = saved.bpBase, buildAmount = saved.buildAmount, grindAmount = saved.grindAmount, priority = saved.priority, label = saved.label });
                                 }
                                 autoControl = load.auto;
-                                if (Session.logging)
-                                    MyLog.Default.WriteLineAndConsole($"{Session.modName} Loaded storage for {assembler.DisplayNameText} items found: {load.compItems.Count}  auto: {load.auto}");
+                                if (Session.logging) MyLog.Default.WriteLineAndConsole($"{Session.modName} Loaded storage for {assembler.DisplayNameText} items found: {load.compItems.Count}  auto: {load.auto}");
                             }
-                            else if (Session.logging)
-                                MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage found but empty for {assembler.DisplayNameText}");
+                            else if (Session.logging) MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage found but empty for {assembler.DisplayNameText}");
                         }
                         catch (Exception e)
                         {
-                            if (Session.logging)
-                                MyLog.Default.WriteLineAndConsole($"{Session.modName} Error reading storage for {assembler.DisplayNameText} {e}");
+                            if (Session.logging) MyLog.Default.WriteLineAndConsole($"{Session.modName} Error reading storage for {assembler.DisplayNameText} {e}");
                         }
                     }
-                    else if (Session.logging)
-                        MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage found but empty for {assembler.DisplayNameText}");
+                    else if (Session.logging) MyLog.Default.WriteLineAndConsole($"{Session.modName} Storage found but empty for {assembler.DisplayNameText}");
                 }
             }
             else if (Session.Client && Session.MPActive)
             {
-                if (Session.netlogging)
-                    MyLog.Default.WriteLineAndConsole(Session.modName + $"Updating replication list on server - addition");
+                if (Session.netlogging) MyLog.Default.WriteLineAndConsole(Session.modName + $"Updating replication list on server - addition");
                 Session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, add = true, Type = PacketType.Replication });
             }
         }
@@ -114,8 +107,7 @@ namespace BDAM
         {
             if (assembler.CooperativeMode)
             {
-                if (Session.logging)
-                    MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " mode switched to Cooperative, turning off auto control");
+                if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " mode switched to Cooperative, turning off auto control");
                 autoControl = false;
                 return;
             }
@@ -123,8 +115,7 @@ namespace BDAM
             if (!assembler.IsQueueEmpty)
             {
                 var queue = assembler.GetQueue();
-                if (Session.logging)
-                    MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" Update check Queue: {queue[0].Blueprint.Id.SubtypeName} - {queue[0].Amount}  Last: {lastQueue.Blueprint.Id.SubtypeName} - {lastQueue.Amount}");
+                if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" Update check Queue: {queue[0].Blueprint.Id.SubtypeName} - {queue[0].Amount}  Last: {lastQueue.Blueprint.Id.SubtypeName} - {lastQueue.Amount}");
 
                 //Jam check due to missing mats
                 if (lastQueue.Blueprint == queue[0].Blueprint && lastQueue.Amount == queue[0].Amount && assembler.CurrentProgress == 0)
@@ -151,21 +142,17 @@ namespace BDAM
                                 if (Session.MPActive)
                                     SendMissingMatUpdates();                              
 
-                                if (Session.logging)
-                                    MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" Missing {item.Amount} ({adjustedAmount}) {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}");
+                                if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" Missing {item.Amount} ({adjustedAmount}) {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}");
                             }
                         }
                         assembler.RemoveQueueItem(0, queue[0].Amount);
 
-                        if (Session.logging)
-                            MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats for {queue[0].Blueprint.Id.SubtypeName}.  Progress: {assembler.CurrentProgress}");
+                        if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats for {queue[0].Blueprint.Id.SubtypeName}.  Progress: {assembler.CurrentProgress}");
                     }
-                    else if (Session.logging)
-                        MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" manually added {queue[0].Blueprint.Id.SubtypeName} missing mats, removed from queue ");
+                    else if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" manually added {queue[0].Blueprint.Id.SubtypeName} missing mats, removed from queue ");
                 }
 
-                if (Session.logging)
-                    MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " quick check - items in queue");
+                if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " quick check - items in queue");
                 return;
             }
 
@@ -196,8 +183,7 @@ namespace BDAM
                                             lComp.missingMats = false;
                                         }
                                         missingMatQueue.Remove(queue.Key);
-                                        if (Session.logging)
-                                            MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" removed {lComp.label} from missing mat list");
+                                        if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" removed {lComp.label} from missing mat list");
                                     }
                                 }
                             }
@@ -247,8 +233,7 @@ namespace BDAM
         {
             var timer = new Stopwatch();
             timer.Start();
-            if (Session.logging)
-                MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " checking for buildable items");
+            if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " checking for buildable items");
             for (int i = 1; i < 4; i++)
                 foreach (var listItem in buildList)
                 {
@@ -268,22 +253,19 @@ namespace BDAM
                             assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly;
                         assembler.AddQueueItem(listItem.Key, queueAmount);
                         lastQueue = new MyProductionQueueItem() { Blueprint = listItem.Key, Amount = queueAmount };
-                        if (Session.logging)
-                            MyLog.Default.WriteLineAndConsole($"{Session.modName}Queued build {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.buildAmount}");
+                        if (Session.logging) MyLog.Default.WriteLineAndConsole($"{Session.modName}Queued build {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.buildAmount}");
                         return true;
                     }
                 }
             timer.Stop();
-            if (Session.logging)
-                MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" no buildable items found runtime: {timer.Elapsed.TotalMilliseconds}");
+            if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" no buildable items found runtime: {timer.Elapsed.TotalMilliseconds}");
             return false;
         }
         public bool AssemblerTryGrind()
         {
             var timer = new Stopwatch();
             timer.Start();
-            if (Session.logging)
-                MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " checking for grindable items");
+            if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " checking for grindable items");
             for (int i = 1; i < 4; i++)
                 foreach (var listItem in buildList)
                 {
@@ -301,15 +283,13 @@ namespace BDAM
                             if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
                                 assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly;
                             assembler.AddQueueItem(listItem.Key, queueAmount);
-                            if (Session.logging)
-                                MyLog.Default.WriteLineAndConsole($"{Session.modName}Queued grind {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.grindAmount}");
+                            if (Session.logging) MyLog.Default.WriteLineAndConsole($"{Session.modName}Queued grind {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.grindAmount}");
                             return true;
                         }
                     }
                 }
             timer.Stop();
-            if (Session.logging)
-                MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" no grindable items found runtime: {timer.Elapsed.TotalMilliseconds}");
+            if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" no grindable items found runtime: {timer.Elapsed.TotalMilliseconds}");
             return false;
         }
 
@@ -323,8 +303,7 @@ namespace BDAM
                 tempListComp.auto = autoControl;
                 var binary = MyAPIGateway.Utilities.SerializeToBinary(tempListComp);
                 assembler.Storage[_session.storageGuid] = Convert.ToBase64String(binary);
-                if (Session.logging)
-                    MyLog.Default.WriteLineAndConsole($"{Session.modName} Saving storage for {assembler.DisplayNameText} {tempListComp.auto}");
+                if (Session.logging) MyLog.Default.WriteLineAndConsole($"{Session.modName} Saving storage for {assembler.DisplayNameText} {tempListComp.auto}");
             }
             else if (!Session.Server && Session.Client && Session.MPActive)
             {

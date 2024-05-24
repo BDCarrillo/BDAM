@@ -1,5 +1,4 @@
-﻿using Sandbox.Game;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.ModAPI.Ingame;
@@ -25,12 +24,7 @@ namespace BDAM
             if (runStopTick == Session.Tick)
                 return;
             countStop++;
-
-            if (assembler.IsQueueEmpty)
-            {
-                if (Session.logging)
-                    MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " finished queue");
-            }
+            if (Session.logging && assembler.IsQueueEmpty) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " finished queue");
             //Production stopped
             if (assembler.IsFunctional && assembler.Enabled && !assembler.IsQueueEmpty)
             {

@@ -93,12 +93,8 @@ namespace BDAM
 
             if(Server)
                 foreach (var grid in GridMap.Values)
-                {
                     if (grid.assemblerList.Count > 0 && grid.nextUpdate <= Tick) 
-                    {
                         grid.UpdateGrid();
-                    }
-                }
             Tick++;
         }
 

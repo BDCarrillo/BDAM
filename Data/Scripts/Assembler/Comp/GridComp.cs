@@ -112,8 +112,7 @@ namespace BDAM
             lastInvUpdate = Session.Tick;
             updateCargos++;
             timer.Stop();
-            if (Session.logging)
-                MyLog.Default.WriteLineAndConsole($"{Session.modName}{Grid.DisplayName} inventory update runtime: {timer.Elapsed.TotalMilliseconds}");
+            if (Session.logging) MyLog.Default.WriteLineAndConsole($"{Session.modName}{Grid.DisplayName} inventory update runtime: {timer.Elapsed.TotalMilliseconds}");
             
 
 
@@ -132,15 +131,13 @@ namespace BDAM
                         else if (aComp.unJamAttempts < 6)
                         {
                             aComp.unJamAttempts++;
-                            if (Session.logging)
-                                MyLog.Default.WriteLineAndConsole(Session.modName + "Unable to unjam input for " + aComp.assembler.CustomName);
+                            if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + "Unable to unjam input for " + aComp.assembler.CustomName);
                             aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Input inventory jammed");
                         }
                     }
                     if (aComp.outputJammed)
                     {
-                        if (Session.logging)
-                            MyLog.Default.WriteLineAndConsole(Session.modName + $"Assembler {aComp.assembler.CustomName} stopped - output full");
+                        if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + $"Assembler {aComp.assembler.CustomName} stopped - output full");
                         aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Output inventory jammed");
                         aComp.outputJammed = false;
                     }
