@@ -307,8 +307,7 @@ namespace BDAM
                     foreach (var addItem in addMulti)
                     {
                         var details = addItem.Element as AddItem;
-
-                        if (details.addBox.IsBoxChecked)
+                        if (details.boxChecked)
                         {
                             var bp = details.bp;
                             var tempListCompItem = new ListCompItem() { bpBase = bp.Id.SubtypeName, label = bp.Results[0].Id.SubtypeName, dirty = true };
@@ -354,6 +353,7 @@ namespace BDAM
         {
             if (rebuild)
             {
+                startPos = 0;
                 autoMode.Text = "Auto: " + (aComp.autoControl ? "On" : "Off");
                 Clear();
 
@@ -415,6 +415,7 @@ namespace BDAM
                 }
                 aComp.buildList.Clear();
                 infoPanel.Text = "";
+                UpdateAddMulti();
             }
             while (queueList.Count > 0)
             {

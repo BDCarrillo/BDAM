@@ -9,8 +9,8 @@ namespace BDAM
     {
         public readonly MyBlueprintDefinitionBase bp;
         private readonly TextBox labelBox;
-        private readonly BorderedButton checkBox;
         public readonly BorderedCheckBox addBox;
+        public bool boxChecked = false;
 
         public AddItem(MyBlueprintDefinitionBase BP, HudElementBase parent) : base(parent)
         {
@@ -28,6 +28,7 @@ namespace BDAM
                 UseFocusFormatting = false,
                 IsBoxChecked = false,
             };
+            addBox.MouseInput.LeftClicked += MouseInput_LeftClicked;
 
             labelBox = new TextBox(this)
             {
@@ -40,6 +41,11 @@ namespace BDAM
                 Text = bp.Results[0].Id.SubtypeName,
                 InputEnabled = false,
             };
+        }
+
+        private void MouseInput_LeftClicked(object sender, EventArgs e)
+        {
+            boxChecked = addBox.IsBoxChecked;
         }
     }
 }
