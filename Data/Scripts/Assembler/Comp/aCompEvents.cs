@@ -50,6 +50,7 @@ namespace BDAM
         }
         public void UnJamAssembler(GridComp gComp, AssemblerComp aComp)
         {
+            //TODO: Look at ejecting items not needed by the current recipe
             var aCube = aComp.assembler as MyCubeBlock;
             var aInput = aComp.assembler.InputInventory;
 

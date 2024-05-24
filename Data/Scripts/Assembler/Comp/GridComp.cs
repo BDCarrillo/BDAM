@@ -23,13 +23,21 @@ namespace BDAM
         internal int countUnjamAttempts = 0;
         internal int lastInvUpdate = 0;
         internal int nextUpdate = 0;
+        internal bool fatblocksDirty = false;
         internal void Init(MyCubeGrid grid, Session session)
         {
             _session = session;
             Grid = grid;
 
-            foreach (var fat in grid.GetFatBlocks())
-                FatBlockAdded(fat);
+            try
+            {
+                foreach (var fat in grid.GetFatBlocks())
+                    FatBlockAdded(fat);
+            }
+            catch
+            {
+                fatblocksDirty = true;
+            }
 
             Grid.OnFatBlockAdded += FatBlockAdded;
             Grid.OnFatBlockRemoved += FatBlockRemoved;
@@ -143,6 +151,20 @@ namespace BDAM
                     }
                 }
                 nextUpdate += Session.refreshTime;
+            }
+
+            if(fatblocksDirty)
+            {
+                fatblocksDirty = false;
+                foreach (var fat in Grid.GetFatBlocks())
+                {
+                    if (fat is IMyAssembler)
+                    {
+                        if (assemblerList.ContainsKey(fat))
+                            continue;
+                        FatBlockAdded(fat);
+                    }
+                }
             }
         }
 

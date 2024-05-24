@@ -231,8 +231,6 @@ namespace BDAM
         }
         public bool AssemblerTryBuild()
         {
-            var timer = new Stopwatch();
-            timer.Start();
             if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " checking for buildable items");
             for (int i = 1; i < 4; i++)
                 foreach (var listItem in buildList)
@@ -257,14 +255,11 @@ namespace BDAM
                         return true;
                     }
                 }
-            timer.Stop();
-            if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" no buildable items found runtime: {timer.Elapsed.TotalMilliseconds}");
+            if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" no buildable items found");
             return false;
         }
         public bool AssemblerTryGrind()
         {
-            var timer = new Stopwatch();
-            timer.Start();
             if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " checking for grindable items");
             for (int i = 1; i < 4; i++)
                 foreach (var listItem in buildList)
@@ -288,8 +283,7 @@ namespace BDAM
                         }
                     }
                 }
-            timer.Stop();
-            if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" no grindable items found runtime: {timer.Elapsed.TotalMilliseconds}");
+            if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + $" no grindable items found");
             return false;
         }
 
