@@ -250,15 +250,23 @@ namespace BDAM
         }
 
         private void LeftClick(object sender, EventArgs e)
-        {           
-            if(sender == close) 
-                AssemblerHud.Window.ToggleVisibility(aComp);
-            else if(sender == addAll)
+        {
+            if (sender == close)
+            {
+                if(addMulti.Visible)
+                {
+                    CycleInputMasking(true);
+                    UpdateAddMulti();
+                }
+                else
+                    AssemblerHud.Window.ToggleVisibility(aComp);
+            }
+            else if (sender == addAll)
             {
                 aComp.tempRemovalList.Clear();
                 foreach (var bp in Session.assemblerBP2[aComp.assembler.BlockDefinition.SubtypeId])
                 {
-                    if(!aComp.buildList.ContainsKey(bp))
+                    if (!aComp.buildList.ContainsKey(bp))
                     {
                         var tempListCompItem = new ListCompItem() { bpBase = bp.Id.SubtypeName, label = bp.Results[0].Id.SubtypeName, dirty = true };
                         aComp.buildList.Add(bp, tempListCompItem);
@@ -266,13 +274,13 @@ namespace BDAM
                 }
                 Update(true);
             }
-            else if (sender == clearAll) 
+            else if (sender == clearAll)
             {
                 Clear(true);
             }
             else if (sender == autoMode)
             {
-                if(aComp.assembler.CooperativeMode)
+                if (aComp.assembler.CooperativeMode)
                 {
                     MyAPIGateway.Utilities.ShowNotification("Disable co-operative mode to utilize automatic control", font: "Red");
                     return;
@@ -293,14 +301,14 @@ namespace BDAM
             }
             else if (sender == add)
             {
-                if(addMulti.Visible)
+                if (addMulti.Visible)
                 {
                     bool needUpdate = false;
-                    foreach(var addItem in addMulti)
+                    foreach (var addItem in addMulti)
                     {
                         var details = addItem.Element as AddItem;
-                        
-                        if(details.addBox.IsBoxChecked)
+
+                        if (details.addBox.IsBoxChecked)
                         {
                             var bp = details.bp;
                             var tempListCompItem = new ListCompItem() { bpBase = bp.Id.SubtypeName, label = bp.Results[0].Id.SubtypeName, dirty = true };
@@ -364,17 +372,6 @@ namespace BDAM
                 {
                     queueList.Add(refDict[item]);
                 }
-
-                string infoString = "";
-                if (aComp.missingMatAmount.Count > 0)
-                {
-                    infoString += "Missing/Insufficient materials:\n";
-                    foreach (var missing in aComp.missingMatAmount)
-                    {
-                        infoString += "\t" + missing.Key + ": " + Session.NumberFormat(missing.Value) + "\n";
-                    }
-                }
-                infoPanel.Text = infoString;
             }
             
             //Starting offset to get scrollbox list items below header bar
@@ -394,6 +391,17 @@ namespace BDAM
                 offset -= qItem.Size.Y + 5; //+5 for add'l spacing between rows
             }
             UpdateAddMulti();
+
+            string infoString = "";
+            if (aComp.missingMatAmount.Count > 0)
+            {
+                infoString += "Missing/Insufficient materials:\n";
+                foreach (var missing in aComp.missingMatAmount)
+                {
+                    infoString += "\t" + missing.Key + ": " + Session.NumberFormat(missing.Value) + "\n";
+                }
+            }
+            infoPanel.Text = infoString;
         }
 
         private void Clear(bool delete = false)
@@ -406,6 +414,7 @@ namespace BDAM
                         aComp.tempRemovalList.Add(item.Key.Id.SubtypeName);
                 }
                 aComp.buildList.Clear();
+                infoPanel.Text = "";
             }
             while (queueList.Count > 0)
             {
