@@ -11,7 +11,6 @@ namespace BDAM
     public class WindowScrollContainer : HudElementBase
     {
         public readonly ScrollBox addMulti;
-        public readonly ListBox<MyBlueprintDefinitionBase> addSingle;
         public readonly LabelBox title;
         public readonly TextBox infoPanel;
         private readonly BorderedButton close, add, clearAll, addAll, autoMode, summary;
@@ -202,18 +201,6 @@ namespace BDAM
                 ZOffset = 0,
             };
 
-            addSingle = new ListBox<MyBlueprintDefinitionBase>(this)
-            {                
-                ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Width = 300,
-                Height = 640,
-                Offset = new Vector2(0, -60),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1f),
-                ZOffset = 1,
-                InputEnabled = false,
-                Visible = false,
-            };
-
             addMulti = new ScrollBox(true, this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
@@ -224,6 +211,8 @@ namespace BDAM
                 InputEnabled = false,
                 Visible = false,
             };
+            addMulti.MinLength = 10;
+            
 
             //Controls
             summary.MouseInput.LeftClicked += LeftClick;
@@ -233,32 +222,15 @@ namespace BDAM
             add.MouseInput.LeftClicked += LeftClick;
             close.MouseInput.LeftClicked += LeftClick;
         }
-
-        private void UpdateAddList()
-        {
-            addSingle.ClearEntries();
-            var tempDict = new Dictionary<string, MyBlueprintDefinitionBase>();
-            var sortList = new List<string>();
-            foreach (var bp in Session.assemblerBP2[aComp.assembler.BlockDefinition.SubtypeId])
-            {
-                if (!aComp.buildList.ContainsKey(bp))
-                {
-                    tempDict.Add(bp.Results[0].Id.SubtypeName, bp);
-                    sortList.Add(bp.Results[0].Id.SubtypeName);
-                }
-            }
-            sortList.Sort();
-
-            foreach (var bp in sortList)
-            {
-                addSingle.Add(bp, tempDict[bp]);
-            }
-        }
         private void UpdateAddMulti()
         {
-            foreach (var item in addMulti)
-                item.Element.Unregister();
-            addMulti.Clear();
+            while (addMulti.Count > 0)
+            {
+                //addMulti.RemoveChild(addMulti[0].Element);
+                //addMulti[0].Element.Unregister();
+                addMulti.RemoveAt(0);
+            }
+
             var tempDict = new Dictionary<string, MyBlueprintDefinitionBase>();
             var sortList = new List<string>();
             foreach (var bp in Session.assemblerBP2[aComp.assembler.BlockDefinition.SubtypeId])
@@ -321,38 +293,45 @@ namespace BDAM
             }
             else if (sender == add)
             {
-                /*
                 if(addMulti.Visible)
                 {
-
-                }
-                else
-                {
-                    addMulti.Visible = !addMulti.Visible;
-                    addMulti.InputEnabled = addMulti.Visible;
-                    infoPanel.Visible = !addMulti.Visible;
-                }
-                */
-                if (addSingle.Visible)
-                {
-                    addSingle.Visible = false;
-                    addSingle.InputEnabled = false;
-                    if (addSingle.Selection != null)
+                    bool needUpdate = false;
+                    foreach(var addItem in addMulti)
                     {
-                        var bp = addSingle.Selection.AssocMember;
-                        var tempListCompItem = new ListCompItem() { bpBase = bp.Id.SubtypeName, label = bp.Results[0].Id.SubtypeName, dirty = true };
-                        aComp.buildList.Add(bp, tempListCompItem);
-                        Update(true);
-                        if(aComp.tempRemovalList.Contains(bp.Id.SubtypeName))
-                            aComp.tempRemovalList.Remove(bp.Id.SubtypeName);
+                        var details = addItem.Element as AddItem;
+                        
+                        if(details.addBox.IsBoxChecked)
+                        {
+                            var bp = details.bp;
+                            var tempListCompItem = new ListCompItem() { bpBase = bp.Id.SubtypeName, label = bp.Results[0].Id.SubtypeName, dirty = true };
+                            aComp.buildList.Add(bp, tempListCompItem);
+                            if (aComp.tempRemovalList.Contains(bp.Id.SubtypeName))
+                                aComp.tempRemovalList.Remove(bp.Id.SubtypeName);
+                            needUpdate = true;
+                        }
                     }
+                    CycleInputMasking(true);
+                    if (needUpdate) Update(true);
                 }
                 else
                 {
-                    addSingle.Visible = !addSingle.Visible;
-                    addSingle.InputEnabled = addSingle.Visible;
+                    CycleInputMasking(false);
                 }
             }
+        }
+
+        private void CycleInputMasking(bool enable)
+        {
+            foreach (var item in queueList)
+                item.InputEnabled = enable;
+            autoMode.InputEnabled = enable;
+            addAll.InputEnabled = enable;
+            clearAll.InputEnabled = enable;
+            summary.InputEnabled = enable;
+
+            addMulti.Visible = !enable;
+            addMulti.InputEnabled = !enable;
+            infoPanel.Visible = !addMulti.Visible;
         }
 
         public void RemoveQueueItem(MyBlueprintDefinitionBase key)
@@ -414,8 +393,7 @@ namespace BDAM
                 qItem.Offset = new Vector2(-8, offset);
                 offset -= qItem.Size.Y + 5; //+5 for add'l spacing between rows
             }
-            UpdateAddList();
-            //UpdateAddMulti();
+            UpdateAddMulti();
         }
 
         private void Clear(bool delete = false)
