@@ -10,6 +10,8 @@ namespace BDAM
 {
     public class WindowScrollContainer : HudElementBase
     {
+        public readonly ScrollBox addMulti;
+        public readonly ListBox<MyBlueprintDefinitionBase> addSingle;
         public readonly LabelBox title;
         public readonly TextBox infoPanel;
         private readonly BorderedButton close, add, clearAll, addAll, autoMode, summary;
@@ -139,7 +141,7 @@ namespace BDAM
                 Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f),
                 AutoResize = false,
                 Width = 140,
-                Text = "Add(WIP)",
+                Text = "Add",
                 ZOffset = 50,
                 UseFocusFormatting = false,
                 TextPadding = new Vector2(8, 0),
@@ -197,6 +199,30 @@ namespace BDAM
                 VertCenterText = false,
                 InputEnabled = false,
                 BuilderMode = TextBuilderModes.Lined,
+                ZOffset = 0,
+            };
+
+            addSingle = new ListBox<MyBlueprintDefinitionBase>(this)
+            {                
+                ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
+                Width = 300,
+                Height = 640,
+                Offset = new Vector2(0, -60),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1f),
+                ZOffset = 1,
+                InputEnabled = false,
+                Visible = false,
+            };
+
+            addMulti = new ScrollBox(true, this)
+            {
+                ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
+                Width = 300,
+                Height = 640,
+                Offset = new Vector2(0, -60),
+                ZOffset = 1,
+                InputEnabled = false,
+                Visible = false,
             };
 
             //Controls
@@ -206,6 +232,49 @@ namespace BDAM
             clearAll.MouseInput.LeftClicked += LeftClick;
             add.MouseInput.LeftClicked += LeftClick;
             close.MouseInput.LeftClicked += LeftClick;
+        }
+
+        private void UpdateAddList()
+        {
+            addSingle.ClearEntries();
+            var tempDict = new Dictionary<string, MyBlueprintDefinitionBase>();
+            var sortList = new List<string>();
+            foreach (var bp in Session.assemblerBP2[aComp.assembler.BlockDefinition.SubtypeId])
+            {
+                if (!aComp.buildList.ContainsKey(bp))
+                {
+                    tempDict.Add(bp.Results[0].Id.SubtypeName, bp);
+                    sortList.Add(bp.Results[0].Id.SubtypeName);
+                }
+            }
+            sortList.Sort();
+
+            foreach (var bp in sortList)
+            {
+                addSingle.Add(bp, tempDict[bp]);
+            }
+        }
+        private void UpdateAddMulti()
+        {
+            foreach (var item in addMulti)
+                item.Element.Unregister();
+            addMulti.Clear();
+            var tempDict = new Dictionary<string, MyBlueprintDefinitionBase>();
+            var sortList = new List<string>();
+            foreach (var bp in Session.assemblerBP2[aComp.assembler.BlockDefinition.SubtypeId])
+            {
+                if (!aComp.buildList.ContainsKey(bp))
+                {
+                    tempDict.Add(bp.Results[0].Id.SubtypeName, bp);
+                    sortList.Add(bp.Results[0].Id.SubtypeName);
+                }
+            }
+            sortList.Sort();
+
+            foreach (var bp in sortList)
+            {
+                addMulti.Add(new AddItem(tempDict[bp], null));
+            }
         }
 
         private void LeftClick(object sender, EventArgs e)
@@ -252,9 +321,38 @@ namespace BDAM
             }
             else if (sender == add)
             {
-                //TODO open submenu for selection of available BPs
-                //Check and remove from removal list, if applicable
-            }                   
+                /*
+                if(addMulti.Visible)
+                {
+
+                }
+                else
+                {
+                    addMulti.Visible = !addMulti.Visible;
+                    addMulti.InputEnabled = addMulti.Visible;
+                    infoPanel.Visible = !addMulti.Visible;
+                }
+                */
+                if (addSingle.Visible)
+                {
+                    addSingle.Visible = false;
+                    addSingle.InputEnabled = false;
+                    if (addSingle.Selection != null)
+                    {
+                        var bp = addSingle.Selection.AssocMember;
+                        var tempListCompItem = new ListCompItem() { bpBase = bp.Id.SubtypeName, label = bp.Results[0].Id.SubtypeName, dirty = true };
+                        aComp.buildList.Add(bp, tempListCompItem);
+                        Update(true);
+                        if(aComp.tempRemovalList.Contains(bp.Id.SubtypeName))
+                            aComp.tempRemovalList.Remove(bp.Id.SubtypeName);
+                    }
+                }
+                else
+                {
+                    addSingle.Visible = !addSingle.Visible;
+                    addSingle.InputEnabled = addSingle.Visible;
+                }
+            }
         }
 
         public void RemoveQueueItem(MyBlueprintDefinitionBase key)
@@ -316,6 +414,8 @@ namespace BDAM
                 qItem.Offset = new Vector2(-8, offset);
                 offset -= qItem.Size.Y + 5; //+5 for add'l spacing between rows
             }
+            UpdateAddList();
+            //UpdateAddMulti();
         }
 
         private void Clear(bool delete = false)
