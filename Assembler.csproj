@@ -185,7 +185,6 @@
     <Compile Include="Data\Scripts\Assembler\Menu\AddItem.cs" />
     <Compile Include="Data\Scripts\Assembler\Menu\ScrollContainer.cs" />
     <Compile Include="Data\Scripts\Assembler\Menu\QueueItem.cs" />
-    <Compile Include="Data\Scripts\Assembler\Menu\AssemblerHud.cs" />
     <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\ApiContainers.cs" />
     <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\Collections.cs" />
     <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Shared\General\Extensions\CollectionExtensions.cs" />

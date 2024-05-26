@@ -10,7 +10,7 @@ using VRage.Utils;
 
 namespace BDAM
 {
-    internal partial class AssemblerComp
+    public partial class AssemblerComp
     {
         private Session _session;
         internal IMyAssembler assembler;

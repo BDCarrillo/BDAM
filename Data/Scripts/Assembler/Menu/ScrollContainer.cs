@@ -259,7 +259,7 @@ namespace BDAM
                     UpdateAddMulti();
                 }
                 else
-                    AssemblerHud.Window.ToggleVisibility(aComp);
+                    Session.aWindow.ToggleVisibility(aComp);
             }
             else if (sender == addAll)
             {
@@ -322,7 +322,11 @@ namespace BDAM
                 }
                 else
                 {
-                    CycleInputMasking(false);
+                    //Check if all possible BPs already in list (IE add all clicked)
+                    if (aComp.buildList.Count < Session.assemblerBP2[aComp.assembler.BlockDefinition.SubtypeId].Count)
+                        CycleInputMasking(false);
+                    else
+                        MyAPIGateway.Utilities.ShowNotification("All possible items already added", font: "Red");
                 }
             }
         }

@@ -113,7 +113,7 @@ namespace BDAM
             //Onhand qty
             var itemName = lComp.label;
             MyFixedPoint qty;
-            if (AssemblerHud.Window.scrollContainer.aComp.gridComp.inventoryList.TryGetValue(itemName, out qty))
+            if (Session.aWindow.scrollContainer.aComp.gridComp.inventoryList.TryGetValue(itemName, out qty))
             {
                 onHand.Text = "Inv: " + Session.NumberFormat(qty.ToIntSafe());
             }
@@ -199,7 +199,7 @@ namespace BDAM
             }
             else
             {
-                AssemblerHud.Window.scrollContainer.RemoveQueueItem(bp);
+                Session.aWindow.scrollContainer.RemoveQueueItem(bp);
             }
         }
         private void RightClicked(object sender, EventArgs e) 

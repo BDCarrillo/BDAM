@@ -24,8 +24,6 @@ namespace BDAM
         internal static bool logging = false;
         internal static bool netlogging = false;
 
-        public static WindowScrollContainer AssemblerMenu;
-
         private readonly Stack<GridComp> _gridCompPool = new Stack<GridComp>(128);
         private readonly ConcurrentCachingList<MyCubeGrid> _startGrids = new ConcurrentCachingList<MyCubeGrid>();
         internal readonly ConcurrentDictionary<long, IMyPlayer> PlayerMap = new ConcurrentDictionary<long, IMyPlayer>();
@@ -41,6 +39,8 @@ namespace BDAM
         public static float assemblerEfficiency = 1;
         internal AssemblerComp openAComp = null;
         internal static Dictionary<long, AssemblerComp> aCompMap = new Dictionary<long, AssemblerComp>();
+        public static AssemblerWindow aWindow;
+
 
         //Future settings
         public static MyFixedPoint maxQueueAmount = 50; //Max amount to queue per check

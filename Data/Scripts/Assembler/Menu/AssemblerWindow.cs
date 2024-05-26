@@ -6,12 +6,11 @@ using Sandbox.ModAPI;
 
 namespace BDAM
 {
-    class AssemblerWindow : HudElementBase
+    public class AssemblerWindow : HudElementBase
     {
         public WindowScrollContainer scrollContainer;
         public AssemblerWindow(HudParentBase parent) : base(parent)
         {
-            AssemblerHud.Window = this;
             Size = new Vector2(1300, 700);
             Offset = new Vector2(0,0);
             scrollContainer = new WindowScrollContainer(this);

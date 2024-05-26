@@ -1,9 +1,13 @@
-﻿using Sandbox.Definitions;
+﻿using RichHudFramework.Client;
+using RichHudFramework.UI.Client;
+using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
+using VRage.Game;
 using VRage.Game.Components;
+using VRage.Utils;
 
 namespace BDAM
 {
@@ -23,12 +27,33 @@ namespace BDAM
             }
         }
 
+        public override void Init(MyObjectBuilder_SessionComponent sessionComponent)
+        {
+            RichHudClient.Init("BDAM", HudInit, ClientReset);
+        }
+        private void HudInit()
+        {
+            aWindow = new AssemblerWindow(HudMain.Root)
+            {
+                Visible = false,
+            };
+        }
+        private void ClientReset()
+        {
+            /* At this point, your client has been unregistered and all of 
+            your framework members will stop working.
+
+            This will be called in one of three cases:
+            1) The game session is unloading.
+            2) An unhandled exception has been thrown and caught on either the client
+            or on master.
+            3) RichHudClient.Reset() has been called manually.
+            */
+        }
+
         public override void BeforeStart()
         {
-            if(Client)
-                AssemblerHud.Init();
-
-            if(MPActive)
+            if (MPActive)
             {
                 if (Client)
                     MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ClientPacketId, ProcessPacket);

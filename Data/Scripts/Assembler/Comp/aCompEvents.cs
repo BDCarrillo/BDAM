@@ -6,7 +6,7 @@ using VRage.Utils;
 
 namespace BDAM
 {
-    internal partial class AssemblerComp
+    public partial class AssemblerComp
     {
         private void Assembler_StartedProducing()
         {

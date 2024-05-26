@@ -10,7 +10,7 @@ using VRage.Utils;
 
 namespace BDAM
 {
-    internal class GridComp
+    public class GridComp
     {
         private Session _session;
         internal MyCubeGrid Grid;
