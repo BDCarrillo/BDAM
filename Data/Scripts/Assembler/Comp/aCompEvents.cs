@@ -59,21 +59,32 @@ namespace BDAM
             for (int i = 0; i < aInput.ItemCount - 1; i++)
             {
                 var curItem = aInput.GetItemAt(i);
+                if (curItem == null)
+                {
+                    MyLog.Default.Error(Session.modName + assembler.CustomName + " Current item was null in unjam attempt");
+                    continue;
+                }
                 if (curItem.Value.Amount > max)
                 {
                     max = curItem.Value.Amount;
                     largestStack = (MyInventoryItem)curItem;
                 }
             }
-            var transferAmount = MyFixedPoint.MultiplySafe(largestStack.Value.Amount, 0.5f);
-            foreach (var block in gComp.Grid.Inventories)
+            if (largestStack != null)
             {
-                if (block == aCube || !(block is IMyCargoContainer))
-                    continue;
+                var transferAmount = MyFixedPoint.MultiplySafe(largestStack.Value.Amount, 0.5f);
+                foreach (var block in gComp.Grid.Inventories)
+                {
+                    if (block == aCube || !(block is IMyCargoContainer))
+                        continue;
 
-                if (aInput.TransferItemTo(block.GetInventory(), largestStack.Value, transferAmount))
-                    break;
+                    if (aInput.TransferItemTo(block.GetInventory(), largestStack.Value, transferAmount))
+                        break;
+                }
             }
+            else
+                MyLog.Default.Error(Session.modName + assembler.CustomName + " Largest stack was null in unjam attempt");
+
             aComp.unJamAttempts++;
             gComp.countUnjamAttempts++;
         }
