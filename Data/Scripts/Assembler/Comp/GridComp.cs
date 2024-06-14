@@ -67,9 +67,14 @@ namespace BDAM
             var assembler = block as IMyAssembler;
             if (assembler != null)
             {
-                assemblerList[block].Clean();
-                assemblerList.Remove(block);
-                return;
+                if (assemblerList.ContainsKey(block))
+                {
+                    assemblerList[block].Clean();
+                    assemblerList.Remove(block);
+                    return;
+                }
+                else
+                    MyLog.Default.WriteLineAndConsole($"{Session.modName} {Grid.DisplayName} Assembler type {block.DisplayNameText} was not in AssemblerList of the grid comp");
             }
         }
         internal void UpdateGrid()

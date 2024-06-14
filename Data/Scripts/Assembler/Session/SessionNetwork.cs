@@ -45,9 +45,9 @@ namespace BDAM
                 AssemblerComp aComp = null;
                 if (packet.Type != PacketType.Notification)
                 {
-                    if(!aCompMap.TryGetValue(packet.EntityId, out aComp)) 
+                    if(!aCompMap.TryGetValue(packet.EntityId, out aComp) || aComp == null) 
                     {
-                        MyLog.Default.WriteLineAndConsole(modName + $"Invalid packet - packet.EntityId {packet.EntityId} aComp null: {aComp == null}");
+                        MyLog.Default.WriteLineAndConsole(modName + $"Invalid packet - packet.EntityId {packet.EntityId} aComp null: {aComp == null}  type: {packet.Type}");
                         return;
                     }
                 }
@@ -63,10 +63,12 @@ namespace BDAM
                         {
                             var updateList = aComp.ReplicatedClients;
                             updateList.Remove(sender);
-                            SendPacketToClients(new UpdateStatePacket { 
-                                AssemblerAuto = aComp.autoControl, 
-                                Type = PacketType.UpdateState, 
-                                EntityId = aComp.assembler.EntityId }, updateList);
+                            SendPacketToClients(new UpdateStatePacket
+                            {
+                                AssemblerAuto = aComp.autoControl,
+                                Type = PacketType.UpdateState,
+                                EntityId = aComp.assembler.EntityId
+                            }, updateList);
                         }
                         break;
                     case PacketType.Replication:
@@ -184,7 +186,8 @@ namespace BDAM
             }
             catch (Exception ex)
             {
-                MyLog.Default.WriteLineAndConsole(modName + $"Exception in ProcessPacket: {ex}");
+                var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
+                MyLog.Default.WriteLineAndConsole(modName + $"Exception in ProcessPacket: {ex} Type {packet.Type}");
             }
         }
     }
