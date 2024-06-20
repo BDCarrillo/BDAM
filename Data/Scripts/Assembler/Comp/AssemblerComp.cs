@@ -225,7 +225,7 @@ namespace BDAM
             Session.SendPacketToClients(new MissingMatPacket
             {
                 data = missingMatAmount,
-                Type = PacketType.Notification,
+                Type = PacketType.MissingMatData,
                 EntityId = assembler.EntityId
             }, ReplicatedClients);
         }
