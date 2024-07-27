@@ -7,7 +7,6 @@ using Sandbox.ModAPI;
 using System.Collections.Generic;
 using VRage.Game;
 using VRage.Game.Components;
-using VRage.Utils;
 
 namespace BDAM
 {
@@ -134,6 +133,10 @@ namespace BDAM
             {
                 MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlGetter;
                 MyAPIGateway.TerminalControls.CustomActionGetter -= CustomActionGetter;
+                if (aWindow != null)
+                {
+                    aWindow.Unregister();
+                }
             }
 
             if (MPActive)

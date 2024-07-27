@@ -235,9 +235,9 @@ namespace BDAM
             var sortList = new List<string>();
             foreach (var bp in Session.assemblerBP2[aComp.assembler.BlockDefinition.SubtypeId])
             {
-                if (!aComp.buildList.ContainsKey(bp))
+                if (!aComp.buildList.ContainsKey(bp) && !sortList.Contains(bp.Results[0].Id.SubtypeName))
                 {
-                    tempDict.Add(bp.Results[0].Id.SubtypeName, bp);
+                    tempDict[bp.Results[0].Id.SubtypeName] = bp;
                     sortList.Add(bp.Results[0].Id.SubtypeName);
                 }
             }

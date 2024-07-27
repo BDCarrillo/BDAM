@@ -70,6 +70,7 @@ namespace BDAM
                     largestStack = (MyInventoryItem)curItem;
                 }
             }
+
             if (largestStack != null)
             {
                 var transferAmount = MyFixedPoint.MultiplySafe(largestStack.Value.Amount, 0.5f);
@@ -83,7 +84,10 @@ namespace BDAM
                 }
             }
             else
-                MyLog.Default.Error(Session.modName + assembler.CustomName + " Largest stack was null in unjam attempt");
+            {
+                MyLog.Default.Error(Session.modName + assembler.CustomName + " Largest stack was null in unjam attempt - cancelling unjam attempts");
+                aComp.unJamAttempts = 4;
+            }
 
             aComp.unJamAttempts++;
             gComp.countUnjamAttempts++;

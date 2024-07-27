@@ -47,7 +47,7 @@ namespace BDAM
                 {
                     if(!aCompMap.TryGetValue(packet.EntityId, out aComp) || aComp == null) 
                     {
-                        MyLog.Default.WriteLineAndConsole(modName + $"Invalid packet - packet.EntityId {packet.EntityId} aComp null: {aComp == null}  type: {packet.Type}");
+                        MyLog.Default.WriteLineAndConsole(modName + $"Invalid packet - packet.EntityId {packet.EntityId} aComp null: {aComp == null}  type: {packet.Type} sender: {sender}");
                         return;
                     }
                 }
