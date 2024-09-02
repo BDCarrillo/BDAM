@@ -368,7 +368,7 @@ namespace BDAM
                 {
                     var qItem = new QueueItem(item.Value, item.Key, this);
                     sortedList.Add(item.Value.label);
-                    refDict.Add(item.Value.label, qItem);
+                    refDict[item.Value.label] = qItem;
                 }
                 sortedList.Sort();
 

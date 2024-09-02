@@ -3,7 +3,7 @@
     <EntityComponent xsi:type="MyObjectBuilder_ModStorageComponentDefinition">
       <Id>
         <TypeId>ModStorageComponent</TypeId>
-        <SubtypeId>StickTheLanding</SubtypeId>
+        <SubtypeId>BDAM</SubtypeId>
       </Id>
       <RegisteredStorageGuids>
         <guid>95dd6473-8e17-4ac3-ba22-57d283755755</guid>

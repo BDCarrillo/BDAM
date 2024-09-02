@@ -53,7 +53,7 @@ namespace BDAM
         internal void FatBlockAdded(MyCubeBlock block)
         {
             var assembler = block as IMyAssembler;
-            if (assembler != null)
+            if (assembler != null && !assemblerList.ContainsKey(block))
             {
                 var aComp = new AssemblerComp();
                 aComp.Init(assembler, this, _session);
