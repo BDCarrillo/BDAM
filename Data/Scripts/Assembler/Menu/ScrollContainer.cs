@@ -120,10 +120,10 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
                 Height = 30,
                 Offset = new Vector2(autoMode.Offset.X + autoMode.Width, 0),// -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 0.75f),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 0.9f),
                 AutoResize = false,
                 Width = 140,
-                Text = "Msg: Owner",
+                Text = "Msg: ---",
                 ZOffset = 50,
                 UseFocusFormatting = false,
                 TextPadding = new Vector2(8, 0),
@@ -321,7 +321,7 @@ namespace BDAM
                 aComp.notification++;
                 if (aComp.notification > 2)
                     aComp.notification = 0;
-                notify.Text = "Msg: " + (aComp.notification == 0 ? "Owner" : aComp.notification == 1 ? "Faction" :"Off");
+                notify.Text = "Msg: " + (aComp.notification == 0 ? "Own" : aComp.notification == 1 ? "Fac" :"Off");
                 if (Session.MPActive)
                 {
                     if (Session.netlogging)
@@ -393,7 +393,7 @@ namespace BDAM
             if (rebuild)
             {
                 startPos = 0;
-                notify.Text = "Msg: " + (aComp.notification == 0 ? "Owner" : aComp.notification == 1 ? "Faction" : "Off");
+                notify.Text = "Msg: " + (aComp.notification == 0 ? "Own" : aComp.notification == 1 ? "Fac" : "Off");
                 autoMode.Text = "Auto: " + (aComp.autoControl ? "On" : "Off");
                 Clear();
 
