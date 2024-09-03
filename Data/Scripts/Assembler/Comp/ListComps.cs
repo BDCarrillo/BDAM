@@ -30,6 +30,7 @@ namespace BDAM
         [ProtoMember(5)] public string label;
 
         public bool missingMats;
+        public bool inaccessibleComps;
         public bool dirty;
     }
 }

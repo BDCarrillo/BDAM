@@ -113,6 +113,15 @@ namespace BDAM
                                         data = aComp.missingMatAmount
                                     }, sender);
                                 }
+                                if (aComp.inaccessibleItems.Count > 0)
+                                {
+                                    SendPacketToClient(new InaccessibleCompPacket
+                                    {
+                                        EntityId = aComp.assembler.EntityId,
+                                        Type = PacketType.InaccessibleData,
+                                        data = aComp.inaccessibleItems
+                                    }, sender);
+                                }
                             }
                         }
                         else
@@ -185,6 +194,12 @@ namespace BDAM
                         if (netlogging)
                             Log.WriteLine(modName + $"Received missing mat data from server");
                         break;
+                    case PacketType.InaccessibleData:
+                        var inPacket = packet as InaccessibleCompPacket;
+                        aComp.inaccessibleItems = inPacket.data;
+                        if (netlogging)
+                            Log.WriteLine(modName + $"Received inaccessible item data from server");
+                        break;
                     default:
                         Log.WriteLine(modName + $"Invalid packet type - {packet.GetType()}");
                         break;
@@ -205,7 +220,7 @@ namespace BDAM
     [ProtoInclude(400, typeof(UpdateDataPacket))]
     [ProtoInclude(500, typeof(FullDataPacket))]
     [ProtoInclude(600, typeof(MissingMatPacket))]
-
+    [ProtoInclude(700, typeof(InaccessibleCompPacket))]
 
     public class Packet
     {
@@ -249,6 +264,11 @@ namespace BDAM
     {
         [ProtoMember(4)] internal Dictionary<string, int> data;
     }
+    [ProtoContract]
+    public class InaccessibleCompPacket : Packet //TODO rework to a status packet of just info panel text?  JIT on open?
+    {
+        [ProtoMember(4)] internal Dictionary<string, int> data;
+    }
 
     public enum PacketType
     {
@@ -258,6 +278,7 @@ namespace BDAM
         UpdateData,
         FullData,
         MissingMatData,
+        InaccessibleData,
     }
     public enum UpdateType
     {

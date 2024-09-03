@@ -30,8 +30,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Center,              
             };       
 
-            //TODO add max queue qty option (temp hardcoded to 50)
-            //TODO add faction notification option
+            //TODO add max queue qty option (temp hardcoded to 200)
 
             title = new LabelBox(this)
             {
@@ -437,9 +436,15 @@ namespace BDAM
             {
                 infoString += "Missing/Insufficient materials:\n";
                 foreach (var missing in aComp.missingMatAmount)
-                {
-                    infoString += "\t" + missing.Key + ": " + Session.NumberFormat(missing.Value) + "\n";
-                }
+                    infoString += "  " + missing.Key + ": " + Session.NumberFormat(missing.Value) + "\n";
+            }
+            if (aComp.inaccessibleItems.Count > 0)
+            {
+                if (infoString.Length > 0)
+                    infoString += "\n";
+                infoString += "Inaccessible items:\n";
+                foreach (var inaccessible in aComp.inaccessibleItems)
+                    infoString += "  " + inaccessible.Key + ": " + Session.NumberFormat(inaccessible.Value) + "\n";
             }
             infoPanel.Text = infoString;
         }
