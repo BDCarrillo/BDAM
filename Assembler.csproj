@@ -149,6 +149,7 @@
     </Compile>
     <Compile Include="Data\Scripts\Assembler\Comp\ListComps.cs" />
     <Compile Include="Data\Scripts\Assembler\Helpers\Helpers.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\Log.cs" />
     <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\RichHudClient.cs" />
     <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\BindManager\Bind.cs" />
     <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\BindManager\BindGroup.cs" />

@@ -115,7 +115,7 @@ namespace BDAM
         protected override void UnloadData()
         {
             foreach (var gridComp in GridMap.Values)
-                gridComp.Clean();
+                gridComp.Clean(false);
             Clean();
             MyEntities.OnEntityCreate -= OnEntityCreate;
 
@@ -129,8 +129,6 @@ namespace BDAM
                 }
             }
 
-            Log.Close();
-
             if (MPActive)
             {
                 if (Client)
@@ -141,6 +139,7 @@ namespace BDAM
                     MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisco;
                 }
             }
+            Log.Close();
         }
     }
 }

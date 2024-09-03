@@ -43,7 +43,7 @@ namespace BDAM
                 if(!(inputJammed || outputJammed)) //Missing materials.  Will be eval'd on next update, as it may still pull resources
                 {
                     lastQueue = assembler.GetQueue()[0];
-                    if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + " stopped - missing materials");
+                    if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + " stopped - missing materials - Keen attempting pull");
                 }
             }
             runStopTick = Session.Tick; //Dumb... action runs twice/assembler

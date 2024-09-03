@@ -3,10 +3,8 @@ using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using VRage;
-using VRage.Utils;
 
 namespace BDAM
 {
@@ -58,12 +56,12 @@ namespace BDAM
                 if (assembler.Storage == null)
                 {
                     assembler.Storage = new MyModStorageComponent { [_session.storageGuid] = "" };
-                    if (Session.logging) Log.WriteLine($"{Session.modName} Storage was null, initting for {assembler.DisplayNameText}");
+                    //if (Session.logging) Log.WriteLine($"{Session.modName} Storage was null, initting for {assembler.DisplayNameText}");
                 }
                 else if (!assembler.Storage.ContainsKey(_session.storageGuid))
                 {
                     assembler.Storage[_session.storageGuid] = "";
-                    if (Session.logging) Log.WriteLine($"{Session.modName} Storage not null, but no matching GUID for  {assembler.DisplayNameText}");
+                    //if (Session.logging) Log.WriteLine($"{Session.modName} Storage not null, but no matching GUID for  {assembler.DisplayNameText}");
                 }
                 else if (assembler.Storage.ContainsKey(_session.storageGuid))
                 {
@@ -86,19 +84,21 @@ namespace BDAM
                                 autoControl = load.auto;
                                 if (Session.logging) Log.WriteLine($"{Session.modName} Loaded storage for {assembler.DisplayNameText} items found: {load.compItems.Count}  auto: {load.auto}");
                             }
-                            else if (Session.logging) Log.WriteLine($"{Session.modName} Storage found but empty for {assembler.DisplayNameText}");
+                            //else if (Session.logging) Log.WriteLine($"{Session.modName} Storage found but empty for {assembler.DisplayNameText}");
                         }
                         catch (Exception e)
                         {
+                            buildList.Clear();
+                            autoControl = false;
                             if (Session.logging) Log.WriteLine($"{Session.modName} Error reading storage for {assembler.DisplayNameText} {e}");
                         }
                     }
-                    else if (Session.logging) Log.WriteLine($"{Session.modName} Storage found but empty for {assembler.DisplayNameText}");
+                    //else if (Session.logging) Log.WriteLine($"{Session.modName} Storage found but empty for {assembler.DisplayNameText}");
                 }
             }
             else if (Session.Client && Session.MPActive)
             {
-                if (Session.netlogging) Log.WriteLine(Session.modName + $"Updating replication list on server - addition");
+                if (Session.netlogging) Log.WriteLine(Session.modName + $"Updating replication list on server - addition for {assembler.DisplayNameText}");
                 Session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, add = true, Type = PacketType.Replication });
             }
         }
@@ -123,7 +123,6 @@ namespace BDAM
                     ListCompItem lComp;
                     if (buildList.TryGetValue((MyBlueprintDefinitionBase)queue[0].Blueprint, out lComp))
                     {
-                        lComp.missingMats = true;
                         var bp = (MyBlueprintDefinitionBase)queue[0].Blueprint;
                         foreach (var item in bp.Prerequisites)
                         {
@@ -140,14 +139,16 @@ namespace BDAM
                                     missingMatQueue[bp].Add(item.Id.SubtypeName, adjustedAmount);
                                 SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" missing {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}");
                                 if (Session.MPActive)
-                                    SendMissingMatUpdates();                              
-
+                                    SendMissingMatUpdates();
+                                lComp.missingMats = true;
                                 if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Missing {item.Amount} ({adjustedAmount}) {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}");
                             }
                         }
-                        assembler.RemoveQueueItem(0, queue[0].Amount);
+                        //If it was indeed missing materials, remove item from queue
+                        if (lComp.missingMats)
+                            assembler.RemoveQueueItem(0, queue[0].Amount);
 
-                        if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats for {queue[0].Blueprint.Id.SubtypeName}.  Progress: {assembler.CurrentProgress}");
+                        if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats checked for {queue[0].Blueprint.Id.SubtypeName}.  Progress: {assembler.CurrentProgress}  Actually missing: {lComp.missingMats}");
                     }
                     else if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" manually added {queue[0].Blueprint.Id.SubtypeName} missing mats, removed from queue ");
                 }
@@ -324,7 +325,7 @@ namespace BDAM
             tempRemovalList.Clear();
             tempUpdateList.Clear();
         }
-        public void Clean()
+        public void Clean(bool sendUpdate)
         {
             if (Session.Server)
             {
@@ -333,7 +334,7 @@ namespace BDAM
                 assembler.StoppedProducing -= Assembler_StoppedProducing;
                 assembler.StartedProducing -= Assembler_StartedProducing;
             }
-            else if (Session.Client && Session.MPActive)
+            else if (sendUpdate && Session.Client && Session.MPActive)
             {
                 if (Session.netlogging)
                     Log.WriteLine(Session.modName + $"Updating replication list on server - removal");

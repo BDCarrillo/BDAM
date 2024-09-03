@@ -121,12 +121,10 @@ namespace BDAM
                     case PacketType.UpdateData:
                         var udPacket = packet as UpdateDataPacket;
                         var load = MyAPIGateway.Utilities.SerializeFromBinary<UpdateComp>(Convert.FromBase64String(udPacket.rawData));
-
                         if (Server)
                         {
                             if (netlogging)
-                                Log.WriteLine(modName + $"Received aComp data from client - updates{load.compItemsUpdate.Count} - removals{load.compItemsRemove.Count}");
-                            
+                                Log.WriteLine(modName + $"Received aComp data from client - updates{load.compItemsUpdate.Count} - removals{load.compItemsRemove.Count}");                            
                             //Actual acomp updates
                             foreach (var updated in load.compItemsUpdate)
                                 aComp.buildList[BPLookup[updated.bpBase]] = new ListCompItem() { bpBase = updated.bpBase, buildAmount = updated.buildAmount, grindAmount = updated.grindAmount, priority = updated.priority, label = updated.label };
@@ -139,14 +137,13 @@ namespace BDAM
                             updateList.Remove(sender);
                             SendPacketToClients(new UpdateDataPacket{
                                 rawData = udPacket.rawData,
-                                Type = PacketType.UpdateState,
+                                Type = PacketType.UpdateData,
                                 EntityId = aComp.assembler.EntityId }, updateList);
                         }
                         else
                         {
                             if (netlogging)
-                                Log.WriteLine(modName + $"Received aComp data from server");
-
+                                Log.WriteLine(modName + $"Received aComp data from server - Updates{load.compItemsUpdate.Count} Removals{load.compItemsRemove.Count}");
                             foreach (var updated in load.compItemsUpdate)
                                 aComp.buildList[BPLookup[updated.bpBase]] = new ListCompItem() { bpBase = updated.bpBase, buildAmount = updated.buildAmount, grindAmount = updated.grindAmount, priority = updated.priority, label = updated.label };
                             foreach (var removed in load.compItemsRemove)

@@ -222,7 +222,7 @@ namespace BDAM
             GridComp comp;
             if (GridMap.TryRemove(grid, out comp))
             {
-                comp.Clean();
+                comp.Clean(true);
                 _gridCompPool.Push(comp);
             }
         }
