@@ -17,6 +17,7 @@ namespace BDAM
         internal bool inputJammed;
         internal bool outputJammed;
         internal bool autoControl = false;
+        internal int notification = 0; // 0 = Owner, 1 = faction, 2 = none
         internal MyProductionQueueItem lastQueue;
         internal Dictionary<MyBlueprintDefinitionBase, ListCompItem> buildList = new Dictionary<MyBlueprintDefinitionBase, ListCompItem>();
         internal GridComp gridComp;
@@ -76,6 +77,7 @@ namespace BDAM
                                         buildList.Add(Session.BPLookup[saved.bpBase], new ListCompItem() { bpBase = saved.bpBase, buildAmount = saved.buildAmount, grindAmount = saved.grindAmount, priority = saved.priority, label = saved.label });
                                 }
                                 autoControl = load.auto;
+                                notification = load.notif;
                             }
                         }
                         catch (Exception e)
@@ -105,6 +107,7 @@ namespace BDAM
                 if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Update check Queue: {queue[0].Blueprint.Id.SubtypeName} - {queue[0].Amount}  Last: {lastQueue.Blueprint.Id.SubtypeName} - {lastQueue.Amount}");
 
                 //Jam check due to missing mats
+                //TODO queue jam check for disassembly of inaccessible items
                 if (lastQueue.Blueprint == queue[0].Blueprint && lastQueue.Amount == queue[0].Amount && assembler.CurrentProgress == 0)
                 {
                     ListCompItem lComp;
@@ -124,7 +127,8 @@ namespace BDAM
                                     missingMatQueue.Add(bp, new Dictionary<string, MyFixedPoint>() { { item.Id.SubtypeName, adjustedAmount } });
                                 else
                                     missingMatQueue[bp].Add(item.Id.SubtypeName, adjustedAmount);
-                                SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" missing {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}");
+                                if (notification < 2) 
+                                    SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" missing {item.Id.SubtypeName} for {queue[0].Blueprint.Id.SubtypeName}");
                                 if (Session.MPActive)
                                     SendMissingMatUpdates();
                                 lComp.missingMats = true;
@@ -203,7 +207,25 @@ namespace BDAM
             {
                 var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(assembler.OwnerId); //TODO look at faction notifications?
                 if (steamID > 0)
-                    Session.SendPacketToClient(new NotificationPacket { Message = message, Type = PacketType.Notification }, steamID);
+                {
+                    if (notification == 1)
+                    {
+                        var playerFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(assembler.OwnerId);
+                        if (playerFaction != null && playerFaction.AcceptHumans && !playerFaction.IsEveryoneNpc())
+                        {
+                            foreach (var member in playerFaction.Members)
+                            {
+                                var facMbrID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(member.Value.PlayerId);
+                                if (facMbrID > 0 && Session.PlayerMap.ContainsKey(facMbrID))
+                                    Session.SendPacketToClient(new NotificationPacket { Message = message, Type = PacketType.Notification }, facMbrID);
+                            }
+                        }
+                        else
+                            Session.SendPacketToClient(new NotificationPacket { Message = message, Type = PacketType.Notification }, steamID);
+                    }
+                    else
+                        Session.SendPacketToClient(new NotificationPacket { Message = message, Type = PacketType.Notification }, steamID);
+                }
             }
             else
                 MyAPIGateway.Utilities.ShowMessage(Session.modName, message);
@@ -283,6 +305,7 @@ namespace BDAM
                 foreach (var item in buildList.Values)
                     tempListComp.compItems.Add(item);
                 tempListComp.auto = autoControl;
+                tempListComp.notif = notification;
                 var binary = MyAPIGateway.Utilities.SerializeToBinary(tempListComp);
                 assembler.Storage[_session.storageGuid] = Convert.ToBase64String(binary);
                 if (Session.logging) Log.WriteLine($"{Session.modName} Saving storage for {assembler.DisplayNameText} {tempListComp.auto}");

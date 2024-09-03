@@ -21,12 +21,12 @@ namespace BDAM
         public static bool MPActive;
 
         internal bool controlInit;
-        internal static bool logging = false;
-        internal static bool netlogging = false;
+        internal static bool logging = true;
+        internal static bool netlogging = true;
 
         private readonly Stack<GridComp> _gridCompPool = new Stack<GridComp>(128);
         private readonly ConcurrentCachingList<MyCubeGrid> _startGrids = new ConcurrentCachingList<MyCubeGrid>();
-        internal readonly ConcurrentDictionary<long, IMyPlayer> PlayerMap = new ConcurrentDictionary<long, IMyPlayer>();
+        public static ConcurrentDictionary<ulong, IMyPlayer> PlayerMap = new ConcurrentDictionary<ulong, IMyPlayer>();
         internal readonly ConcurrentDictionary<IMyCubeGrid, GridComp> GridMap = new ConcurrentDictionary<IMyCubeGrid, GridComp>();
         public static Dictionary<string, List<string>> assemblerBPs = new Dictionary<string, List<string>>();
         public static Dictionary<string, List<MyBlueprintDefinitionBase>> assemblerBP2 = new Dictionary<string, List<MyBlueprintDefinitionBase>>();

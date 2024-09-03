@@ -28,7 +28,6 @@ namespace BDAM
             {
                 MyAPIGateway.Utilities.ShowNotification("Updating inventory...",500);
                 AComp.gridComp.UpdateGrid();
-                if(Session.logging) Log.WriteLine($"{Session.modName} inventory update called on {AComp.gridComp.Grid.DisplayName}");
             }
 
             scrollContainer.aComp = AComp;

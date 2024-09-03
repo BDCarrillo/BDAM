@@ -9,6 +9,8 @@ namespace BDAM
     {
         [ProtoMember(100)] public List<ListCompItem> compItems = new List<ListCompItem>();
         [ProtoMember(101)] public bool auto = false;
+        [ProtoMember(102)] public int notif = 0;
+
     }
 
     [ProtoContract]

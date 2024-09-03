@@ -123,7 +123,7 @@ namespace BDAM
                 {
                     if (netlogging)
                         Log.WriteLine(modName + $"Sending updated auto control state to server " + aComp.autoControl);
-                    var packet = new UpdateStatePacket { AssemblerAuto = aComp.autoControl, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
+                    var packet = new UpdateStatePacket { Var = UpdateType.autoControl, Value = aComp.autoControl ? 1 : 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
                     SendPacketToServer(packet);
                 }
             }
@@ -156,7 +156,7 @@ namespace BDAM
                 {
                     if (netlogging)
                         Log.WriteLine(modName + $"Sending updated auto control state to server " + aComp.autoControl);
-                    var packet = new UpdateStatePacket { AssemblerAuto = aComp.autoControl, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
+                    var packet = new UpdateStatePacket { Var = UpdateType.autoControl, Value = aComp.autoControl ? 1 : 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
                     SendPacketToServer(packet);
                 }
             }

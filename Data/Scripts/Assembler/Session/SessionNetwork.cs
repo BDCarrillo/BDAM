@@ -2,6 +2,8 @@
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using VRage.Utils;
+using static BDAM.Session;
 
 namespace BDAM
 {
@@ -57,23 +59,29 @@ namespace BDAM
                 {
                     case PacketType.UpdateState:
                         var uPacket = packet as UpdateStatePacket;
-                        aComp.autoControl = uPacket.AssemblerAuto;
+                        switch (uPacket.Var)
+                        {
+                            case UpdateType.autoControl:
+                                aComp.autoControl = uPacket.Value >= 1;
+                                break;
+                            case UpdateType.notification:
+                                aComp.notification = uPacket.Value;
+                                break;
+                        }
                         if (Server)
                         {
                             var updateList = aComp.ReplicatedClients;
                             updateList.Remove(sender);
-                            SendPacketToClients(new UpdateStatePacket
-                            {
-                                AssemblerAuto = aComp.autoControl,
-                                Type = PacketType.UpdateState,
-                                EntityId = aComp.assembler.EntityId
-                            }, updateList);
+                            SendPacketToClients(uPacket, updateList);
                         }
                         break;
                     case PacketType.Replication:
                         var rPacket = packet as ReplicationPacket;
                         if (rPacket.add)
-                        {
+                        {   
+                            if(!PlayerMap.ContainsKey(sender))
+                                PlayerConnected(sender);
+
                             aComp.ReplicatedClients.Add(sender);
                             if (netlogging)
                                 Log.WriteLine(modName + $"Added client to replication data for aComp");
@@ -84,6 +92,7 @@ namespace BDAM
                                 foreach (var item in aComp.buildList.Values)
                                     tempListComp.compItems.Add(item);
                                 tempListComp.auto = aComp.autoControl;
+                                tempListComp.notif = aComp.notification;
                                 var data = Convert.ToBase64String(MyAPIGateway.Utilities.SerializeToBinary(tempListComp));
 
                                 if (netlogging)
@@ -167,6 +176,7 @@ namespace BDAM
                                 aComp.buildList.Add(BPLookup[saved.bpBase], new ListCompItem() { bpBase = saved.bpBase, buildAmount = saved.buildAmount, grindAmount = saved.grindAmount, priority = saved.priority, label = saved.label });
                             }
                             aComp.autoControl = loadFD.auto;
+                            aComp.notification = loadFD.notif;
                         }
                         break;
                     case PacketType.MissingMatData:
@@ -206,7 +216,8 @@ namespace BDAM
     [ProtoContract]
     public class UpdateStatePacket : Packet
     {
-        [ProtoMember(4)] internal bool AssemblerAuto;
+        [ProtoMember(4)] internal UpdateType Var;
+        [ProtoMember(5)] internal int Value;
     }
 
     [ProtoContract]
@@ -247,5 +258,11 @@ namespace BDAM
         UpdateData,
         FullData,
         MissingMatData,
+    }
+    public enum UpdateType
+    {
+        autoControl,
+        notification,
+        maxQueueAmount
     }
 }

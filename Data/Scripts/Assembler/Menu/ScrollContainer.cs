@@ -12,7 +12,7 @@ namespace BDAM
         public readonly ScrollBox addMulti;
         public readonly LabelBox title;
         public readonly TextBox infoPanel;
-        private readonly BorderedButton close, add, clearAll, addAll, autoMode, summary;
+        private readonly BorderedButton close, add, clearAll, addAll, autoMode, summary, notify;
         public List<QueueItem> queueList = new List<QueueItem>();
         internal AssemblerComp aComp;
         internal int startPos = 0;
@@ -115,11 +115,29 @@ namespace BDAM
             autoMode.background.Width = autoMode.Width;
             autoMode.background.Padding = Vector2.Zero;
 
-            summary = new BorderedButton(this)
+            notify = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
                 Height = 30,
                 Offset = new Vector2(autoMode.Offset.X + autoMode.Width, 0),// -title.Height * 0.5f),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 0.75f),
+                AutoResize = false,
+                Width = 140,
+                Text = "Msg: Owner",
+                ZOffset = 50,
+                UseFocusFormatting = false,
+                TextPadding = new Vector2(8, 0),
+                Padding = new Vector2(8, 0),
+
+            };
+            notify.background.Width = autoMode.Width;
+            notify.background.Padding = Vector2.Zero;
+
+            summary = new BorderedButton(this)
+            {
+                ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
+                Height = 30,
+                Offset = new Vector2(notify.Offset.X + autoMode.Width, 0),// -title.Height * 0.5f),
                 Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f),
                 AutoResize = false,
                 Width = 140,
@@ -214,9 +232,10 @@ namespace BDAM
                 Visible = false,
             };
             addMulti.MinLength = 10;
-            
+
 
             //Controls
+            notify.MouseInput.LeftClicked += LeftClick;
             summary.MouseInput.LeftClicked += LeftClick;
             autoMode.MouseInput.LeftClicked += LeftClick;
             addAll.MouseInput.LeftClicked += LeftClick;
@@ -293,7 +312,21 @@ namespace BDAM
                 {
                     if (Session.netlogging)
                         Log.WriteLine(Session.modName + $"Sending updated auto control state to server " + aComp.autoControl);
-                    var packet = new UpdateStatePacket { AssemblerAuto = aComp.autoControl, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
+                    var packet = new UpdateStatePacket { Var = UpdateType.autoControl, Value = aComp.autoControl ? 1 : 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
+                    Session.SendPacketToServer(packet);
+                }
+            }
+            else if (sender == notify)
+            {
+                aComp.notification++;
+                if (aComp.notification > 2)
+                    aComp.notification = 0;
+                notify.Text = "Msg: " + (aComp.notification == 0 ? "Owner" : aComp.notification == 1 ? "Faction" :"Off");
+                if (Session.MPActive)
+                {
+                    if (Session.netlogging)
+                        Log.WriteLine(Session.modName + $"Sending updated notification state to server " + aComp.notification);
+                    var packet = new UpdateStatePacket { Var = UpdateType.notification, Value = aComp.notification, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
                     Session.SendPacketToServer(packet);
                 }
             }
@@ -360,6 +393,7 @@ namespace BDAM
             if (rebuild)
             {
                 startPos = 0;
+                notify.Text = "Msg: " + (aComp.notification == 0 ? "Owner" : aComp.notification == 1 ? "Faction" : "Off");
                 autoMode.Text = "Auto: " + (aComp.autoControl ? "On" : "Off");
                 Clear();
 

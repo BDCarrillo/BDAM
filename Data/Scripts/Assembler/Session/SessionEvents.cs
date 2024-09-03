@@ -14,6 +14,22 @@ namespace BDAM
 {
     public partial class Session : MySessionComponentBase
     {
+        private void PlayerConnected(ulong playerId)
+        {
+            if (netlogging)
+                Log.WriteLine(modName + $"Player connected - {playerId}");
+            MyAPIGateway.Multiplayer.Players.GetPlayers(null, myPlayer => FindPlayer(myPlayer, playerId));
+        }
+        private bool FindPlayer(IMyPlayer player, ulong id)
+        {
+            if (player.SteamUserId == id)
+            {
+                PlayerMap.TryAdd(id, player);
+                if (netlogging)
+                    Log.WriteLine(modName + $"Player added to map - {player.DisplayName} {id}");
+            }
+            return false;
+        }
         private void PlayerDisco(long playerId)
         {
             if (netlogging)
@@ -21,6 +37,8 @@ namespace BDAM
             var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(playerId);
             if(steamID > 0)
             {
+                IMyPlayer plyr;
+                PlayerMap.TryRemove(steamID, out plyr);
                 foreach(var grid in GridMap.Values)
                 {
                     foreach (var aComp in grid.assemblerList.Values)
