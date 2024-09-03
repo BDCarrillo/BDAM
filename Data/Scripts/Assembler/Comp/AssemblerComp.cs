@@ -54,15 +54,9 @@ namespace BDAM
                 assembler.StartedProducing += Assembler_StartedProducing;
                 //Check/init storage
                 if (assembler.Storage == null)
-                {
                     assembler.Storage = new MyModStorageComponent { [_session.storageGuid] = "" };
-                    //if (Session.logging) Log.WriteLine($"{Session.modName} Storage was null, initting for {assembler.DisplayNameText}");
-                }
                 else if (!assembler.Storage.ContainsKey(_session.storageGuid))
-                {
                     assembler.Storage[_session.storageGuid] = "";
-                    //if (Session.logging) Log.WriteLine($"{Session.modName} Storage not null, but no matching GUID for  {assembler.DisplayNameText}");
-                }
                 else if (assembler.Storage.ContainsKey(_session.storageGuid))
                 {
                     //Serialize storage
@@ -82,32 +76,25 @@ namespace BDAM
                                         buildList.Add(Session.BPLookup[saved.bpBase], new ListCompItem() { bpBase = saved.bpBase, buildAmount = saved.buildAmount, grindAmount = saved.grindAmount, priority = saved.priority, label = saved.label });
                                 }
                                 autoControl = load.auto;
-                                if (Session.logging) Log.WriteLine($"{Session.modName} Loaded storage for {assembler.DisplayNameText} items found: {load.compItems.Count}  auto: {load.auto}");
                             }
-                            //else if (Session.logging) Log.WriteLine($"{Session.modName} Storage found but empty for {assembler.DisplayNameText}");
                         }
                         catch (Exception e)
                         {
                             buildList.Clear();
                             autoControl = false;
-                            if (Session.logging) Log.WriteLine($"{Session.modName} Error reading storage for {assembler.DisplayNameText} {e}");
+                            Log.WriteLine($"{Session.modName} Error reading storage for {assembler.DisplayNameText} {e}");
                         }
                     }
-                    //else if (Session.logging) Log.WriteLine($"{Session.modName} Storage found but empty for {assembler.DisplayNameText}");
                 }
             }
             else if (Session.Client && Session.MPActive)
-            {
-                if (Session.netlogging) Log.WriteLine(Session.modName + $"Updating replication list on server - addition for {assembler.DisplayNameText}");
                 Session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, add = true, Type = PacketType.Replication });
-            }
         }
 
         public void AssemblerUpdate()
         {
             if (assembler.CooperativeMode)
             {
-                if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + " mode switched to Cooperative, turning off auto control");
                 autoControl = false;
                 return;
             }
@@ -150,7 +137,7 @@ namespace BDAM
 
                         if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats checked for {queue[0].Blueprint.Id.SubtypeName}.  Progress: {assembler.CurrentProgress}  Actually missing: {lComp.missingMats}");
                     }
-                    else if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" manually added {queue[0].Blueprint.Id.SubtypeName} missing mats, removed from queue ");
+                    else if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" manually added {queue[0].Blueprint.Id.SubtypeName} missing mats"); // wat do?
                 }
 
                 if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + " quick check - items in queue");
@@ -214,7 +201,7 @@ namespace BDAM
         {
             if (Session.MPActive)
             {
-                var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(assembler.OwnerId);
+                var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(assembler.OwnerId); //TODO look at faction notifications?
                 if (steamID > 0)
                     Session.SendPacketToClient(new NotificationPacket { Message = message, Type = PacketType.Notification }, steamID);
             }

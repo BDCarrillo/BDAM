@@ -52,9 +52,7 @@ namespace BDAM
             }
 
             if (Server)
-            {
                 assemblerEfficiency = 1 / Session.AssemblerEfficiencyMultiplier;
-            }
 
             //Find assemblers and BP classes they can make
             foreach (var def in MyDefinitionManager.Static.GetAllDefinitions())
@@ -124,9 +122,7 @@ namespace BDAM
                 MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlGetter;
                 MyAPIGateway.TerminalControls.CustomActionGetter -= CustomActionGetter;
                 if (aWindow != null)
-                {
                     aWindow.Unregister();
-                }
             }
 
             if (MPActive)

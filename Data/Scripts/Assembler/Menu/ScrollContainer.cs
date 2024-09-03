@@ -4,7 +4,6 @@ using RichHudFramework.UI;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
 using Sandbox.Definitions;
-using VRage.Utils;
 
 namespace BDAM
 {
@@ -30,6 +29,9 @@ namespace BDAM
                 DimAlignment = DimAlignments.Both,
                 ParentAlignment = ParentAlignments.Center,              
             };       
+
+            //TODO add max queue qty option (temp hardcoded to 50)
+            //TODO add faction notification option
 
             title = new LabelBox(this)
             {

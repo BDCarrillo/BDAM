@@ -1,7 +1,6 @@
 ﻿using VRageMath;
 using RichHudFramework.UI;
 using RichHudFramework.UI.Client;
-using VRage.Utils;
 using Sandbox.ModAPI;
 
 namespace BDAM

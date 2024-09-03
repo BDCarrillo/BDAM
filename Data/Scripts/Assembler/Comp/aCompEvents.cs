@@ -28,13 +28,13 @@ namespace BDAM
             //Production stopped
             if (assembler.IsFunctional && assembler.Enabled && !assembler.IsQueueEmpty)
             {
-                if (assembler.InputInventory.VolumeFillFactor > 0.95f) //Input jammed up (less than 5% space remaining)
+                if (assembler.InputInventory.VolumeFillFactor > 0.90f) //Input jammed up (less than 10% space remaining)
                 {
                     if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + " Input jammed" + assembler.InputInventory.VolumeFillFactor * 100 + " % full");
                     inputJammed = true;
                 }
 
-                if (assembler.OutputInventory.VolumeFillFactor > 0.95f) //Output jammed up (less than 5% space remaining)
+                if (assembler.OutputInventory.VolumeFillFactor > 0.90f) //Output jammed up (less than 10% space remaining)
                 {
                     if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + " Output jammed" + assembler.OutputInventory.VolumeFillFactor * 100 + " % full");
                     outputJammed = true;
@@ -50,7 +50,7 @@ namespace BDAM
         }
         public void UnJamAssembler(GridComp gComp, AssemblerComp aComp)
         {
-            //TODO: Look at ejecting items not needed by the current recipe
+            //TODO: Look at ejecting items not needed by the current recipe?
             var aCube = aComp.assembler as MyCubeBlock;
             var aInput = aComp.assembler.InputInventory;
 

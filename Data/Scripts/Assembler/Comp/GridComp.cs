@@ -1,12 +1,10 @@
-﻿using RichHudFramework.Internal;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using VRage;
 using VRage.Game.Entity;
-using VRage.Utils;
 
 namespace BDAM
 {
