@@ -21,8 +21,8 @@ namespace BDAM
         public static bool MPActive;
 
         internal bool controlInit;
-        internal static bool logging = false;
-        internal static bool netlogging = false;
+        internal static bool logging = true;
+        internal static bool netlogging = true;
 
         private readonly Stack<GridComp> _gridCompPool = new Stack<GridComp>(128);
         private readonly ConcurrentCachingList<MyCubeGrid> _startGrids = new ConcurrentCachingList<MyCubeGrid>();
@@ -44,7 +44,7 @@ namespace BDAM
 
         //Future settings
         public static MyFixedPoint maxQueueAmount = 50; //Max amount to queue per check
-        public static int refreshTime = 500; //Ticks between inventory and assembler refreshes
+        public static int refreshTime = 600; //Ticks between inventory and assembler refreshes
 
         public Session()
         {

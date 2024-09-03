@@ -24,11 +24,12 @@ namespace BDAM
                 MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlGetter;
                 MyAPIGateway.TerminalControls.CustomActionGetter += CustomActionGetter;
             }
+            Log.InitLogs();
         }
 
         public override void Init(MyObjectBuilder_SessionComponent sessionComponent)
         {
-            RichHudClient.Init("BDAM", HudInit, ClientReset);
+            RichHudClient.Init("BDAM", HudInit, null);
         }
         private void HudInit()
         {
@@ -37,19 +38,6 @@ namespace BDAM
                 Visible = false,
             };
         }
-        private void ClientReset()
-        {
-            /* At this point, your client has been unregistered and all of 
-            your framework members will stop working.
-
-            This will be called in one of three cases:
-            1) The game session is unloading.
-            2) An unhandled exception has been thrown and caught on either the client
-            or on master.
-            3) RichHudClient.Reset() has been called manually.
-            */
-        }
-
         public override void BeforeStart()
         {
             if (MPActive)
@@ -64,7 +52,9 @@ namespace BDAM
             }
 
             if (Server)
-                assemblerEfficiency =  1 / Session.AssemblerEfficiencyMultiplier;
+            {
+                assemblerEfficiency = 1 / Session.AssemblerEfficiencyMultiplier;
+            }
 
             //Find assemblers and BP classes they can make
             foreach (var def in MyDefinitionManager.Static.GetAllDefinitions())
@@ -138,6 +128,8 @@ namespace BDAM
                     aWindow.Unregister();
                 }
             }
+
+            Log.Close();
 
             if (MPActive)
             {

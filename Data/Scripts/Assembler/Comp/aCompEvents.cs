@@ -16,7 +16,7 @@ namespace BDAM
             inputJammed = false;
             outputJammed = false;
             unJamAttempts = 0;
-            if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " started");
+            if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + " started production ");
             runStartTick = Session.Tick; //Dumb... action runs twice/assembler
         }
         private void Assembler_StoppedProducing()
@@ -24,26 +24,26 @@ namespace BDAM
             if (runStopTick == Session.Tick)
                 return;
             countStop++;
-            if (Session.logging && assembler.IsQueueEmpty) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " finished queue");
+            if (Session.logging && assembler.IsQueueEmpty) Log.WriteLine(Session.modName + assembler.CustomName + " finished queue");
             //Production stopped
             if (assembler.IsFunctional && assembler.Enabled && !assembler.IsQueueEmpty)
             {
                 if (assembler.InputInventory.VolumeFillFactor > 0.95f) //Input jammed up (less than 5% space remaining)
                 {
-                    if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " Input jammed" + assembler.InputInventory.VolumeFillFactor * 100 + " % full");
+                    if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + " Input jammed" + assembler.InputInventory.VolumeFillFactor * 100 + " % full");
                     inputJammed = true;
                 }
 
                 if (assembler.OutputInventory.VolumeFillFactor > 0.95f) //Output jammed up (less than 5% space remaining)
                 {
-                    if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " Output jammed" + assembler.OutputInventory.VolumeFillFactor * 100 + " % full");
+                    if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + " Output jammed" + assembler.OutputInventory.VolumeFillFactor * 100 + " % full");
                     outputJammed = true;
                 }
 
                 if(!(inputJammed || outputJammed)) //Missing materials.  Will be eval'd on next update, as it may still pull resources
                 {
                     lastQueue = assembler.GetQueue()[0];
-                    if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + assembler.CustomName + " stopped - missing materials");
+                    if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + " stopped - missing materials");
                 }
             }
             runStopTick = Session.Tick; //Dumb... action runs twice/assembler

@@ -53,7 +53,7 @@ namespace BDAM
         internal void FatBlockAdded(MyCubeBlock block)
         {
             var assembler = block as IMyAssembler;
-            if (assembler != null && !assemblerList.ContainsKey(block))
+            if (assembler != null && !assemblerList.ContainsKey(block) && !block.CubeGrid.IsPreview)
             {
                 var aComp = new AssemblerComp();
                 aComp.Init(assembler, this, _session);
@@ -74,7 +74,7 @@ namespace BDAM
                     return;
                 }
                 else
-                    MyLog.Default.WriteLineAndConsole($"{Session.modName} {Grid.DisplayName} Assembler type {block.DisplayNameText} was not in AssemblerList of the grid comp");
+                    Log.WriteLine($"{Session.modName} {Grid.DisplayName} Assembler type {block.DisplayNameText} was not in AssemblerList of the grid comp");
             }
         }
         internal void UpdateGrid()
@@ -125,7 +125,7 @@ namespace BDAM
             lastInvUpdate = Session.Tick;
             updateCargos++;
             timer.Stop();
-            if (Session.logging) MyLog.Default.WriteLineAndConsole($"{Session.modName}{Grid.DisplayName} inventory update runtime: {timer.Elapsed.TotalMilliseconds}");
+            if (Session.logging) Log.WriteLine($"{Session.modName}{Grid.DisplayName} inventory update runtime: {timer.Elapsed.TotalMilliseconds}");
             
 
 
@@ -144,13 +144,13 @@ namespace BDAM
                         else if (aComp.unJamAttempts < 6)
                         {
                             aComp.unJamAttempts++;
-                            if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + "Unable to unjam input for " + aComp.assembler.CustomName);
+                            if (Session.logging) Log.WriteLine(Session.modName + "Unable to unjam input for " + aComp.assembler.CustomName);
                             aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Input inventory jammed");
                         }
                     }
                     if (aComp.outputJammed)
                     {
-                        if (Session.logging) MyLog.Default.WriteLineAndConsole(Session.modName + $"Assembler {aComp.assembler.CustomName} stopped - output full");
+                        if (Session.logging) Log.WriteLine(Session.modName + $"Assembler {aComp.assembler.CustomName} stopped - output full");
                         aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Output inventory jammed");
                         aComp.outputJammed = false;
                     }
@@ -179,7 +179,7 @@ namespace BDAM
                 aComp.Clean();
 
             if (Session.logging && Session.Server)
-                MyLog.Default.WriteLineAndConsole($"{Session.modName} Grid {Grid.DisplayName} closed \n" +
+                Log.WriteLine($"{Session.modName} Grid {Grid.DisplayName} closed \n" +
                     $"Grid assembler qty: {assemblerList.Count}  inventories checked: {invCount}  cargo updates: {updateCargos}\n" +
                     $"Assembler starts: {countAStart}  stops: {countAStop}  unjam attempts: {countUnjamAttempts}\n");
 

@@ -290,7 +290,7 @@ namespace BDAM
                 if (Session.MPActive)
                 {
                     if (Session.netlogging)
-                        MyLog.Default.WriteLineAndConsole(Session.modName + $"Sending updated auto control state to server " + aComp.autoControl);
+                        Log.WriteLine(Session.modName + $"Sending updated auto control state to server " + aComp.autoControl);
                     var packet = new UpdateStatePacket { AssemblerAuto = aComp.autoControl, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
                     Session.SendPacketToServer(packet);
                 }

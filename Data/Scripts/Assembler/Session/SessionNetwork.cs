@@ -37,7 +37,7 @@ namespace BDAM
                 var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
                 if (packet == null)
                 {
-                    MyLog.Default.WriteLineAndConsole(modName + $"Invalid packet - null:{packet == null}");
+                    Log.WriteLine(modName + $"Invalid packet - null:{packet == null}");
                     return;
                 }
 
@@ -47,12 +47,12 @@ namespace BDAM
                 {
                     if(!aCompMap.TryGetValue(packet.EntityId, out aComp) || aComp == null) 
                     {
-                        MyLog.Default.WriteLineAndConsole(modName + $"Invalid packet - packet.EntityId {packet.EntityId} aComp null: {aComp == null}  type: {packet.Type} sender: {sender}");
+                        Log.WriteLine(modName + $"Invalid packet - packet.EntityId {packet.EntityId} aComp null: {aComp == null}  type: {packet.Type} sender: {sender}");
                         return;
                     }
                 }
                 if (netlogging)
-                    MyLog.Default.WriteLineAndConsole(modName + $"Packet type received: {packet.Type}");
+                    Log.WriteLine(modName + $"Packet type received: {packet.Type}");
 
                 switch (packet.Type)
                 {
@@ -77,7 +77,7 @@ namespace BDAM
                         {
                             aComp.ReplicatedClients.Add(sender);
                             if (netlogging)
-                                MyLog.Default.WriteLineAndConsole(modName + $"Added client to replication data for aComp");
+                                Log.WriteLine(modName + $"Added client to replication data for aComp");
 
                             if (aComp.buildList.Count > 0)
                             {
@@ -88,7 +88,7 @@ namespace BDAM
                                 var data = Convert.ToBase64String(MyAPIGateway.Utilities.SerializeToBinary(tempListComp));
 
                                 if (netlogging)
-                                    MyLog.Default.WriteLineAndConsole(modName + $"Sending initial aComp data to {sender}");
+                                    Log.WriteLine(modName + $"Sending initial aComp data to {sender}");
 
                                 SendPacketToClient(new FullDataPacket
                                 {
@@ -111,7 +111,7 @@ namespace BDAM
                         {
                             aComp.ReplicatedClients.Remove(sender);
                             if (netlogging)
-                                MyLog.Default.WriteLineAndConsole(modName + $"Removed {sender} from aComp replication");
+                                Log.WriteLine(modName + $"Removed {sender} from aComp replication");
                         }
                         break;
                     case PacketType.Notification:
@@ -125,7 +125,7 @@ namespace BDAM
                         if (Server)
                         {
                             if (netlogging)
-                                MyLog.Default.WriteLineAndConsole(modName + $"Received aComp data from client - updates{load.compItemsUpdate.Count} - removals{load.compItemsRemove.Count}");
+                                Log.WriteLine(modName + $"Received aComp data from client - updates{load.compItemsUpdate.Count} - removals{load.compItemsRemove.Count}");
                             
                             //Actual acomp updates
                             foreach (var updated in load.compItemsUpdate)
@@ -145,7 +145,7 @@ namespace BDAM
                         else
                         {
                             if (netlogging)
-                                MyLog.Default.WriteLineAndConsole(modName + $"Received aComp data from server");
+                                Log.WriteLine(modName + $"Received aComp data from server");
 
                             foreach (var updated in load.compItemsUpdate)
                                 aComp.buildList[BPLookup[updated.bpBase]] = new ListCompItem() { bpBase = updated.bpBase, buildAmount = updated.buildAmount, grindAmount = updated.grindAmount, priority = updated.priority, label = updated.label };
@@ -159,10 +159,10 @@ namespace BDAM
                         {
                             var loadFD = MyAPIGateway.Utilities.SerializeFromBinary<ListComp>(Convert.FromBase64String(fdPacket.rawData));
                             if (netlogging)
-                                MyLog.Default.WriteLineAndConsole(modName + $"Received initial aComp data from server");
+                                Log.WriteLine(modName + $"Received initial aComp data from server");
 
                             if (logging && aComp.buildList.Count > 0)
-                                MyLog.Default.WriteLineAndConsole(modName + $"Client received a full data set for an aComp but buildList.count > 0");
+                                Log.WriteLine(modName + $"Client received a full data set for an aComp but buildList.count > 0");
 
                             aComp.buildList.Clear();
 
@@ -177,17 +177,17 @@ namespace BDAM
                         var mmPacket = packet as MissingMatPacket;
                         aComp.missingMatAmount = mmPacket.data;
                         if (netlogging)
-                            MyLog.Default.WriteLineAndConsole(modName + $"Received missing mat data from server");
+                            Log.WriteLine(modName + $"Received missing mat data from server");
                         break;
                     default:
-                        MyLog.Default.WriteLineAndConsole(modName + $"Invalid packet type - {packet.GetType()}");
+                        Log.WriteLine(modName + $"Invalid packet type - {packet.GetType()}");
                         break;
                 }
             }
             catch (Exception ex)
             {
                 var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
-                MyLog.Default.WriteLineAndConsole(modName + $"Exception in ProcessPacket: {ex} Type {packet.Type}");
+                Log.WriteLine(modName + $"Exception in ProcessPacket: {ex} Type {packet.Type}");
             }
         }
     }

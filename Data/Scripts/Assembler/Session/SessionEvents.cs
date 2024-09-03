@@ -17,7 +17,7 @@ namespace BDAM
         private void PlayerDisco(long playerId)
         {
             if (netlogging)
-                MyLog.Default.WriteLineAndConsole(modName + $"Player disconnected - {playerId}");
+                Log.WriteLine(modName + $"Player disconnected - {playerId}");
             var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(playerId);
             if(steamID > 0)
             {
@@ -90,7 +90,7 @@ namespace BDAM
             }
             catch (Exception ex)
             {
-                MyLog.Default.WriteLineAndConsole($"{modName} Error with StartComps {ex}");
+                Log.WriteLine($"{modName} Error with StartComps {ex}");
             }
         }
         private void OnEntityCreate(MyEntity entity)
