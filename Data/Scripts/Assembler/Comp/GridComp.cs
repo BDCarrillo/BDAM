@@ -3,6 +3,7 @@ using Sandbox.ModAPI;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using VRage;
 using VRage.Game.Entity;
 
@@ -82,7 +83,7 @@ namespace BDAM
             timer.Start();
             inventoryList.Clear();
             MyInventoryBase inventory;
-            foreach (var b in Grid.Inventories)
+            foreach (var b in Grid.Inventories.ToArray())
             {
                 if (!(b is IMyAssembler || b is IMyCargoContainer || b is IMyRefinery || b is IMyShipConnector))
                     continue;
