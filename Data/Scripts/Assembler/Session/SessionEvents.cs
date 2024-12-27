@@ -14,6 +14,16 @@ namespace BDAM
 {
     public partial class Session : MySessionComponentBase
     {
+        private void OnMessageEnteredSender(ulong sender, string messageText, ref bool sendToOthers)
+        {
+            var msg = messageText.ToLower();
+            if (msg.Contains("/bdam log"))
+            {
+                MyAPIGateway.Utilities.ShowNotification($"BDAM Verbose logging {(logging ? "ON" : "OFF")}");
+                sendToOthers = false;
+            }
+            return;
+        }
         private void PlayerConnected(ulong playerId)
         {
             if (netlogging)
@@ -118,14 +128,10 @@ namespace BDAM
             {
                 _startGrids.Add(grid);
             }
-            if (Client && !controlInit)
+            if (Client && !controlInit && entity is IMyAssembler)
             {
-                var assembler = entity as IMyAssembler;
-                if (assembler != null)
-                {
-                    CreateTerminalControls<IMyAssembler>();
-                    controlInit = true;
-                }
+                controlInit = true;
+                CreateTerminalControls<IMyAssembler>();
             }
         }
         public static void OpenSummary(IMyTerminalBlock block)

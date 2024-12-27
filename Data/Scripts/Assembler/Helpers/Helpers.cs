@@ -13,22 +13,6 @@ namespace BDAM
     {
         private List<IMyTerminalControl> _customControls = new List<IMyTerminalControl>();
         internal readonly HashSet<IMyTerminalAction> _customActions = new HashSet<IMyTerminalAction>();
-
-        internal void CustomActionGetter(IMyTerminalBlock block, List<IMyTerminalAction> actions)
-        {
-            if (!(block is IMyAssembler))
-                return;
-
-        }
-        internal void CustomControlGetter(IMyTerminalBlock block, List<IMyTerminalControl> controls)
-        {
-            if (!(block is IMyAssembler))
-                return;
-
-            foreach (var newControl in _customControls)
-                controls.Add(newControl);
-
-        }
         internal void CreateTerminalControls<T>() where T : IMyAssembler
         {
             _customControls.Add(Separator<T>());
@@ -41,6 +25,8 @@ namespace BDAM
 
             foreach (var action in _customActions)
                 MyAPIGateway.TerminalControls.AddAction<T>(action);
+            foreach (var control in _customControls)
+                MyAPIGateway.TerminalControls.AddControl<T>(control);
         }
         public static string NumberFormat(float number)
         {

@@ -74,13 +74,28 @@ namespace BDAM
             if (largestStack != null)
             {
                 var transferAmount = MyFixedPoint.MultiplySafe(largestStack.Value.Amount, 0.5f);
+                var moveSuccess = false;
                 foreach (var block in gComp.Grid.Inventories)
                 {
                     if (block == aCube || !(block is IMyCargoContainer))
                         continue;
 
                     if (aInput.TransferItemTo(block.GetInventory(), largestStack.Value, transferAmount))
+                    {
+                        moveSuccess = true;
                         break;
+                    }
+                }
+                if(moveSuccess)
+                {
+                    if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" moved {transferAmount} of {largestStack.Value.Type} out of input inventory");
+                    aComp.unJamAttempts = 0;
+                    aComp.inputJammed = false;
+                    return;
+                }
+                else
+                {
+                    if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" failed to move {transferAmount} of {largestStack.Value.Type} out of input inventory");
                 }
             }
             else
@@ -88,7 +103,6 @@ namespace BDAM
                 MyLog.Default.Error(Session.modName + assembler.CustomName + " Largest stack was null in unjam attempt - cancelling unjam attempts");
                 aComp.unJamAttempts = 4;
             }
-
             aComp.unJamAttempts++;
             gComp.countUnjamAttempts++;
         }

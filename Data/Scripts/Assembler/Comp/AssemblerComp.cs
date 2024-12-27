@@ -320,7 +320,7 @@ namespace BDAM
                     var lComp = listItem.Value;
                     if (lComp.missingMats && lComp.buildAmount == -1)
                         lComp.missingMats = false;
-                    if (lComp.priority != i || lComp.buildAmount == -1 || lComp.buildAmount <= lComp.grindAmount || lComp.missingMats)
+                    if (lComp.priority != i || lComp.buildAmount == -1 || lComp.buildAmount < lComp.grindAmount || lComp.missingMats)
                         continue;
                     var itemName = listItem.Key.Results[0].Id.SubtypeName;
                     MyFixedPoint amountAvail = 0;
@@ -347,7 +347,7 @@ namespace BDAM
                 foreach (var listItem in buildList)
                 {
                     var lComp = listItem.Value;
-                    if (lComp.priority != i || lComp.grindAmount == -1 || lComp.grindAmount <= lComp.buildAmount || lComp.inaccessibleComps)
+                    if (lComp.priority != i || lComp.grindAmount == -1 || lComp.grindAmount < lComp.buildAmount || lComp.inaccessibleComps)
                         continue;
                     var itemName = listItem.Key.Results[0].Id.SubtypeName;
                     if (gridComp.inventoryList.ContainsKey(itemName))

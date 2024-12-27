@@ -46,10 +46,6 @@ namespace BDAM
         public static MyFixedPoint maxQueueAmount = 200; //Max amount to queue per check
         public static int refreshTime = 600; //Ticks between inventory and assembler refreshes
 
-        public Session()
-        {
-            
-        }
         private void Clean()
         {
             _gridCompPool.Clear();

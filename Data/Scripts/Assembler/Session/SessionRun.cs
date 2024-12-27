@@ -19,11 +19,6 @@ namespace BDAM
             Server = (MPActive && MyAPIGateway.Multiplayer.IsServer) || !MPActive;
             Client = (MPActive && !MyAPIGateway.Multiplayer.IsServer) || !MPActive;
             MyEntities.OnEntityCreate += OnEntityCreate;
-            if (Client)
-            {
-                MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlGetter;
-                MyAPIGateway.TerminalControls.CustomActionGetter += CustomActionGetter;
-            }
             Log.InitLogs();
         }
 
@@ -43,7 +38,10 @@ namespace BDAM
             if (MPActive)
             {
                 if (Client)
+                {
+                    MyAPIGateway.Utilities.MessageEnteredSender += OnMessageEnteredSender;
                     MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ClientPacketId, ProcessPacket);
+                }
                 else if (Server)
                 {
                     MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ServerPacketId, ProcessPacket);
@@ -98,6 +96,7 @@ namespace BDAM
             }
         }
 
+
         public override void UpdateBeforeSimulation()
         {
             if (!_startGrids.IsEmpty && Tick % 30 == 0)
@@ -119,8 +118,7 @@ namespace BDAM
 
             if (Client)
             {
-                MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlGetter;
-                MyAPIGateway.TerminalControls.CustomActionGetter -= CustomActionGetter;
+                MyAPIGateway.Utilities.MessageEnteredSender -= OnMessageEnteredSender;
                 if (aWindow != null)
                     aWindow.Unregister();
             }
@@ -128,7 +126,9 @@ namespace BDAM
             if (MPActive)
             {
                 if (Client)
+                {
                     MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(ClientPacketId, ProcessPacket);
+                }
                 else if (Server)
                 {
                     MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(ServerPacketId, ProcessPacket);
