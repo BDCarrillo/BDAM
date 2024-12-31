@@ -140,8 +140,7 @@ namespace BDAM
                         var load = MyAPIGateway.Utilities.SerializeFromBinary<UpdateComp>(Convert.FromBase64String(udPacket.rawData));
                         if (Server)
                         {
-                            if (netlogging)
-                                Log.WriteLine(modName + $"Received aComp data from client - updates{load.compItemsUpdate.Count} - removals{load.compItemsRemove.Count}");                            
+                            if (netlogging) Log.WriteLine(modName + $"Received aComp data from client - updates{load.compItemsUpdate.Count} - removals{load.compItemsRemove.Count}");                            
                             //Actual acomp updates
                             foreach (var updated in load.compItemsUpdate)
                                 aComp.buildList[BPLookup[updated.bpBase]] = new ListCompItem() { bpBase = updated.bpBase, buildAmount = updated.buildAmount, grindAmount = updated.grindAmount, priority = updated.priority, label = updated.label };

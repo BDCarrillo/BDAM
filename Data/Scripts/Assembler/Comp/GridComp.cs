@@ -131,38 +131,39 @@ namespace BDAM
             //Assembler updates
             if (Session.Server)
             {
-                foreach (var aComp in assemblerList.Values)
-                {                    
-                    if (aComp.autoControl && !aComp.assembler.CooperativeMode && aComp.buildList.Count > 0)
-                        aComp.AssemblerUpdate();
-
-                    if (aComp.inputJammed)
+                lock (assemblerList)
+                    foreach (var aComp in assemblerList.Values)
                     {
-                        if (aComp.unJamAttempts < 5)
-                            aComp.UnJamAssembler(this, aComp);
-                        else if (aComp.unJamAttempts < 6)
+                        if (aComp.autoControl && !aComp.assembler.CooperativeMode && aComp.buildList.Count > 0)
+                            aComp.AssemblerUpdate();
+
+                        if (aComp.inputJammed)
                         {
-                            aComp.unJamAttempts++;
-                            if (Session.logging) Log.WriteLine(Session.modName + aComp.gridComp.Grid.DisplayName + "Unable to unjam input for " + aComp.assembler.CustomName);
+                            if (aComp.unJamAttempts < 5)
+                                aComp.UnJamAssembler(this, aComp);
+                            else if (aComp.unJamAttempts < 6)
+                            {
+                                aComp.unJamAttempts++;
+                                if (Session.logging) Log.WriteLine(Session.modName + aComp.gridComp.Grid.DisplayName + "Unable to unjam input for " + aComp.assembler.CustomName);
+                                if (aComp.notification < 2)
+                                    aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Input inventory jammed");
+                            }
+                        }
+                        if (aComp.outputJammed)
+                        {
+                            if (Session.logging) Log.WriteLine(Session.modName + aComp.gridComp.Grid.DisplayName + $"Assembler {aComp.assembler.CustomName} stopped - output full");
                             if (aComp.notification < 2)
-                                aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Input inventory jammed");
+                                aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Output inventory jammed");
+                            aComp.outputJammed = false;
                         }
                     }
-                    if (aComp.outputJammed)
-                    {
-                        if (Session.logging) Log.WriteLine(Session.modName + aComp.gridComp.Grid.DisplayName + $"Assembler {aComp.assembler.CustomName} stopped - output full");
-                        if (aComp.notification < 2)
-                            aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Output inventory jammed");
-                        aComp.outputJammed = false;
-                    }
-                }
                 nextUpdate += Session.refreshTime;
             }
 
             if(fatblocksDirty)
             {
                 fatblocksDirty = false;
-                foreach (var fat in Grid.GetFatBlocks())
+                foreach (var fat in Grid.GetFatBlocks().ToHashSet())
                 {
                     if (fat is IMyAssembler)
                     {

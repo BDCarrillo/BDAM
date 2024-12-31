@@ -18,7 +18,9 @@ namespace BDAM
             _customControls.Add(Separator<T>());
             _customControls.Add(AddOnOff<T>("queueOnOff", "Automatic Control", "", "On", "Off", GetActivated, SetActivated, CheckMode, VisibleTrue));
             _customControls.Add(AddButton<T>("showInv", "Inventory Summary", "Inventory Summary", OpenSummary, VisibleTrue, VisibleTrue));
-            _customControls.Add(AddButton<T>("sortInv", "Combine Item Stacks", "Combine Item Stacks", CombineItemStacks, VisibleTrue, VisibleTrue));
+            _customControls.Add(AddButton<T>("sortInv", "Combine Item Stacks", "Combine items stacks on this grid (within each cargo container)", CombineItemStacks, VisibleTrue, VisibleTrue));
+            _customControls.Add(AddButton<T>("exportQueue", "Export To Custom Data", "Export BDAM queue to custom data", ExportCustomData, VisibleTrue, VisibleTrue));
+            _customControls.Add(AddButton<T>("importQueue", "Import From Custom Data", "Import BDAM queue updates/additions from custom data", ImportCustomData, VisibleTrue, VisibleTrue));
             _customControls.Add(Separator<T>());
             _customActions.Add(CreateAssemblerMenuAction<T>());
             _customActions.Add(CreateAssemblerAutoAction<T>());
@@ -93,9 +95,7 @@ namespace BDAM
             GridComp gComp;
             AssemblerComp aComp;
             if (GridMap.TryGetValue(block.CubeGrid, out gComp) && gComp.assemblerList.TryGetValue((MyCubeBlock)block, out aComp))
-            {
                 return aComp.autoControl;
-            }
             return false;
         }
         internal void SetActivated(IMyTerminalBlock block, bool activated)
@@ -107,8 +107,7 @@ namespace BDAM
                 aComp.autoControl = !aComp.autoControl;
                 if (MPActive)
                 {
-                    if (netlogging)
-                        Log.WriteLine(modName + $"Sending updated auto control state to server " + aComp.autoControl);
+                    if (netlogging) Log.WriteLine(modName + $"Sending updated auto control state to server " + aComp.autoControl);
                     var packet = new UpdateStatePacket { Var = UpdateType.autoControl, Value = aComp.autoControl ? 1 : 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
                     SendPacketToServer(packet);
                 }
@@ -140,8 +139,7 @@ namespace BDAM
                 aComp.autoControl = !aComp.autoControl;
                 if (MPActive)
                 {
-                    if (netlogging)
-                        Log.WriteLine(modName + $"Sending updated auto control state to server " + aComp.autoControl);
+                    if (netlogging) Log.WriteLine(modName + $"Sending updated auto control state to server " + aComp.autoControl);
                     var packet = new UpdateStatePacket { Var = UpdateType.autoControl, Value = aComp.autoControl ? 1 : 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
                     SendPacketToServer(packet);
                 }
@@ -178,9 +176,7 @@ namespace BDAM
             if (aCompMap.TryGetValue(block.EntityId, out aComp))
             {
                 if (aComp.assembler.CooperativeMode)
-                {
                     auto = false;
-                }
                 else
                     auto = aComp.autoControl;
             }

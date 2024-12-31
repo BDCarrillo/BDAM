@@ -33,6 +33,7 @@ namespace BDAM
 
         public static Dictionary<string, List<MyBlueprintDefinitionBase>> BPClasses = new Dictionary<string, List<MyBlueprintDefinitionBase>>();
         public static Dictionary<string, MyBlueprintDefinitionBase> BPLookup = new Dictionary<string, MyBlueprintDefinitionBase>();
+        public static Dictionary<string, MyBlueprintDefinitionBase> BPLookupFriendly = new Dictionary<string, MyBlueprintDefinitionBase>();
         public static Stopwatch timer = new Stopwatch();
         internal static string modName = "[BDAM]";
         internal readonly Guid storageGuid = new Guid("95dd6473-8e17-4ac3-ba22-57d283755755");
@@ -56,6 +57,7 @@ namespace BDAM
             assemblerBP2.Clear();
             BPClasses.Clear();
             BPLookup.Clear();
+            BPLookupFriendly.Clear();
             openAComp = null;
             aCompMap.Clear();
         }

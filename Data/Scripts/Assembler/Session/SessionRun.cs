@@ -77,8 +77,10 @@ namespace BDAM
                             if (bp.Public == false)
                                 continue;
                             bpList.Add(bp);
-                            if(!BPLookup.ContainsKey(bp.Id.SubtypeName))
+                            if (!BPLookup.ContainsKey(bp.Id.SubtypeName))
                                 BPLookup.Add(bp.Id.SubtypeName, bp);
+                            if (!BPLookupFriendly.ContainsKey(bp.Results[0].Id.SubtypeName))
+                                BPLookupFriendly.Add(bp.Results[0].Id.SubtypeName, bp);
                         }
                         BPClasses.Add(bpClass.Id.SubtypeName, bpList);                           
                     }

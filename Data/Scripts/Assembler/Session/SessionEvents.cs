@@ -3,6 +3,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -248,6 +249,93 @@ namespace BDAM
             {
                 comp.Clean(true);
                 _gridCompPool.Push(comp);
+            }
+        }
+        private void ExportCustomData(IMyTerminalBlock block)
+        {
+            AssemblerComp aComp;
+            if (aCompMap.TryGetValue(block.EntityId, out aComp))
+            {
+                var output = "Item; Build amount; Grind amount; Priority";
+                foreach(var item in aComp.buildList)
+                    output += "\n" + item.Value.label + ";" + item.Value.buildAmount + ";" + item.Value.grindAmount + ";" + item.Value.priority;
+                block.CustomData = output;
+            }
+        }
+        private void ImportCustomData(IMyTerminalBlock block)
+        {
+            AssemblerComp aComp;
+            if (aCompMap.TryGetValue(block.EntityId, out aComp))
+            {
+                string[] import = block.CustomData.Split('\n');
+                bool changesMade = false;
+                MyAPIGateway.Utilities.ShowMessage("BDAM", $"Importing {import.Length - 1} lines");
+                for (int i = 1; i < import.Length - 1; i++)
+                {
+                    string[] input = import[i].Split(';');
+                    string errorMsg = "";
+                    int buildNum = 0;
+                    int grindNum = 0;
+                    int priorityNum = 0;
+                    bool buildNumValid = false;
+                    bool grindNumValid = false;
+                    bool priorityNumValid = false;
+                    bool bpBaseValid = false;
+                    MyBlueprintDefinitionBase bpBase = null;
+
+                    //error checking
+                    if (input.Length == 4)
+                    {
+                        bpBaseValid = BPLookupFriendly.TryGetValue(input[0], out bpBase);
+                        buildNumValid = int.TryParse(input[1], out buildNum);
+                        grindNumValid = int.TryParse(input[2], out grindNum);
+                        priorityNumValid = int.TryParse(input[3], out priorityNum) && priorityNum > 0 && priorityNum < 4;
+                    }
+                    else
+                        errorMsg += " missing data element(s)";
+
+
+                    if (buildNumValid && grindNumValid && priorityNumValid && bpBaseValid)
+                    {
+                        var name = input[0];
+                        if (aComp.buildList.ContainsKey(bpBase))
+                        {
+                            var existinglComp = aComp.buildList[bpBase];
+                            //Already in queue and no changes
+                            if (existinglComp.grindAmount == grindNum && existinglComp.priority == priorityNum && existinglComp.buildAmount == buildNum)
+                                continue;
+                            else //Already in queue but modified
+                            {
+                                existinglComp.grindAmount = grindNum;
+                                existinglComp.priority = priorityNum;
+                                existinglComp.buildAmount = buildNum;
+                                existinglComp.dirty = true;
+                                changesMade = true;
+                                MyAPIGateway.Utilities.ShowMessage("BDAM", $"Updated {existinglComp.label}");
+                                continue;
+                            }
+                        }
+                        //Else new to queue
+                        var importlComp = new ListCompItem() { buildAmount = buildNum, grindAmount = grindNum, priority = priorityNum, label = name, bpBase = bpBase.Id.SubtypeName, dirty = true };
+                        aComp.buildList.Add(bpBase, importlComp);
+                        changesMade = true;
+                        MyAPIGateway.Utilities.ShowMessage("BDAM", $"Added {name}");
+                    }
+                    else
+                    {
+                        if (errorMsg.Length == 0)
+                        {
+                            if (!bpBaseValid) errorMsg += " name does not match a BP";
+                            if (!buildNumValid) errorMsg += " build amount invalid";
+                            if (!grindNumValid) errorMsg += " grind amount invalid";
+                            if (!priorityNumValid) errorMsg += " priority invalid";
+                        }
+                        MyAPIGateway.Utilities.ShowMessage("BDAM", $"Line {i} error{errorMsg}");
+                    }
+                }
+
+                if (changesMade)
+                    aComp.Save();
             }
         }
     }
