@@ -36,10 +36,10 @@ namespace BDAM
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner,
                 DimAlignment = DimAlignments.Width,
-                Height = 60f,
+                Height = 60f * Session.resMult,
                 Color = new Color(41, 54, 62),
                 Padding = new Vector2(10,0),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.5f, RichHudFramework.UI.Rendering.FontStyles.Underline),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.5f * Session.resMult, RichHudFramework.UI.Rendering.FontStyles.Underline),
                 VertCenterText = false,
                 AutoResize = false,
                 ZOffset = 2,
@@ -48,10 +48,10 @@ namespace BDAM
             new TextBox(title)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Left,
-                Width = 300,
-                Height = 30f,
+                Width = 300 * Session.resMult,
+                Height = title.Height * 0.5f,
                 Offset = new Vector2(10, -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f * Session.resMult),
                 AutoResize = false,
                 Text = "Item Name",
                 InputEnabled = false,
@@ -59,10 +59,10 @@ namespace BDAM
             new TextBox(title)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Left,
-                Width = 300,
-                Height = 30f,
-                Offset = new Vector2(325, -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f),
+                Width = 300 * Session.resMult,
+                Height = title.Height * 0.5f,
+                Offset = new Vector2(325 * Session.resMult, -title.Height * 0.5f),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f * Session.resMult),
                 AutoResize = false,
                 Text = "Build to Qty",
                 InputEnabled = false,
@@ -70,10 +70,10 @@ namespace BDAM
             new TextBox(title)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Left,
-                Width = 300,
-                Height = 30f,
-                Offset = new Vector2(465, -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f),
+                Width = 300 * Session.resMult,
+                Height = title.Height * 0.5f,
+                Offset = new Vector2(465 * Session.resMult, -title.Height * 0.5f),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f * Session.resMult),
                 AutoResize = false,
                 Text = "Grind to Qty",
                 InputEnabled = false,
@@ -83,136 +83,130 @@ namespace BDAM
             close = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = 30,
+                Height = title.Height * 0.5f,
                 Offset = new Vector2(10, -10),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 2f),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 2f * Session.resMult),
                 AutoResize = false,
-                Width = 100,
+                Width = 100 * Session.resMult,
                 Text = "X",
                 ZOffset = 50,
-                TextPadding = new Vector2(8, 8),
+                TextPadding = new Vector2(8 * Session.resMult, 8 * Session.resMult),
                 UseFocusFormatting = false,
             };
             close.background.Width = close.Width;
 
             //Buttons: Top row
-            autoMode = new BorderedButton(this)
-            {
-                ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = 30,
-                Offset = new Vector2(-220, 0),// -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f),
-                AutoResize = false,
-                Width = 140,
-                Text = "Auto: ---",
-                ZOffset = 50,
-                UseFocusFormatting = false,
-                TextPadding = new Vector2(8, 0),
-                Padding = new Vector2(8, 0),
-
-            };
-            autoMode.background.Width = autoMode.Width;
-            autoMode.background.Padding = Vector2.Zero;
-
-            notify = new BorderedButton(this)
-            {
-                ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = 30,
-                Offset = new Vector2(autoMode.Offset.X + autoMode.Width, 0),// -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 0.9f),
-                AutoResize = false,
-                Width = 140,
-                Text = "Msg: ---",
-                ZOffset = 50,
-                UseFocusFormatting = false,
-                TextPadding = new Vector2(8, 0),
-                Padding = new Vector2(8, 0),
-
-            };
-            notify.background.Width = autoMode.Width;
-            notify.background.Padding = Vector2.Zero;
-
             summary = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = 30,
-                Offset = new Vector2(notify.Offset.X + autoMode.Width, 0),// -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f),
+                Height = title.Height * 0.5f,
+                Offset = new Vector2(close.Offset.X - close.Width - (20 * Session.resMult), 0),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
-                Width = 140,
+                Width = 140 * Session.resMult,
                 Text = "Summary",
                 ZOffset = 50,
                 UseFocusFormatting = false,
                 TextPadding = new Vector2(8, 0),
                 Padding = new Vector2(8, 0),
-
             };
             summary.background.Width = summary.Width;
             summary.background.Padding = Vector2.Zero;
 
-            //Buttons: Bottom row
-            add = new BorderedButton(this)
+            notify = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = 30,
-                Offset = new Vector2(-220, -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f),
+                Height = title.Height * 0.5f,
+                Offset = new Vector2(summary.Offset.X - summary.Width, 0),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 0.9f * Session.resMult),
                 AutoResize = false,
-                Width = 140,
-                Text = "Add",
+                Width = 140 * Session.resMult,
+                Text = "Msg: ---",
                 ZOffset = 50,
                 UseFocusFormatting = false,
                 TextPadding = new Vector2(8, 0),
                 Padding = new Vector2(8, 0),
-
             };
-            add.background.Width = add.Width;
-            add.background.Padding = Vector2.Zero;
+            notify.background.Width = notify.Width;
+            notify.background.Padding = Vector2.Zero;
+
+            autoMode = new BorderedButton(this)
+            {
+                ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
+                Height = title.Height * 0.5f,
+                Offset = new Vector2(notify.Offset.X - notify.Width, 0),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f * Session.resMult),
+                AutoResize = false,
+                Width = 140 * Session.resMult,
+                Text = "Auto: ---",
+                ZOffset = 50,
+                UseFocusFormatting = false,
+                TextPadding = new Vector2(8, 0),
+                Padding = new Vector2(8, 0),
+            };
+            autoMode.background.Width = autoMode.Width;
+            autoMode.background.Padding = Vector2.Zero;
+
+            //Buttons: Bottom row
+            clearAll = new BorderedButton(this)
+            {
+                ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
+                Height = title.Height * 0.5f,
+                Offset = new Vector2(close.Offset.X - close.Width - (20 * Session.resMult), -title.Height * 0.5f),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f * Session.resMult),
+                AutoResize = false,
+                Width = 140 * Session.resMult,
+                Text = "Clear All",
+                ZOffset = 50,
+                UseFocusFormatting = false,
+                TextPadding = new Vector2(8, 0),
+                Padding = new Vector2(8, 0),
+            };
+            clearAll.background.Width = clearAll.Width;
+            clearAll.background.Padding = Vector2.Zero;
 
             addAll = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = 30,
-                Offset = new Vector2(add.Offset.X + add.Width, -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f),
+                Height = title.Height * 0.5f,
+                Offset = new Vector2(clearAll.Offset.X - clearAll.Width, -title.Height * 0.5f),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
-                Width = 140,
+                Width = 140 * Session.resMult,
                 Text = "Add All",
                 ZOffset = 50,
                 UseFocusFormatting = false,
                 TextPadding = new Vector2(8, 0),
                 Padding = new Vector2(8, 0),
-
             };
             addAll.background.Width = addAll.Width;
             addAll.background.Padding = Vector2.Zero;
-           
-            clearAll = new BorderedButton(this)
+
+            add = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = 30,
-                Offset = new Vector2(addAll.Offset.X + addAll.Width, -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f),
+                Height = title.Height * 0.5f,
+                Offset = new Vector2(addAll.Offset.X - addAll.Width, -title.Height * 0.5f),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
-                Width = 140,
-                Text = "Clear All",
+                Width = 140 * Session.resMult,
+                Text = "Add",
                 ZOffset = 50,
                 UseFocusFormatting = false,
-                TextPadding = new Vector2(8,0),
+                TextPadding = new Vector2(8, 0),
                 Padding = new Vector2(8, 0),
-
             };
-            clearAll.background.Width = clearAll.Width;
-            clearAll.background.Padding = Vector2.Zero;
+            add.background.Width = add.Width;
+            add.background.Padding = Vector2.Zero;
 
             //Info panel
             infoPanel = new TextBox(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Width = 300,
-                Height = 640,
-                Offset = new Vector2(0, -60),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f),
+                Width = 300 * Session.resMult,
+                Height = (700 - title.Height) * Session.resMult,
+                Offset = new Vector2(0, -title.Height),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f * Session.resMult),
                 AutoResize = false,
                 VertCenterText = false,
                 InputEnabled = false,
@@ -223,15 +217,14 @@ namespace BDAM
             addMulti = new ScrollBox(true, this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Width = 300,
-                Height = 640,
-                Offset = new Vector2(0, -60),
+                Width = 300 * Session.resMult,
+                Height = (700 - title.Height) * Session.resMult,
+                Offset = new Vector2(0, -title.Height),
                 ZOffset = 1,
                 InputEnabled = false,
                 Visible = false,
             };
             addMulti.MinLength = 10;
-
 
             //Controls
             notify.MouseInput.LeftClicked += LeftClick;
@@ -414,7 +407,7 @@ namespace BDAM
             }
             
             //Starting offset to get scrollbox list items below header bar
-            float offset = -65;
+            float offset = (60 * Session.resMult + 5) * -1;
 
             //queuelist stacking to simulate a scroll list
             for(int i = 0; i < queueList.Count; i++) 

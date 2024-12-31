@@ -41,6 +41,7 @@ namespace BDAM
         internal AssemblerComp openAComp = null;
         internal static Dictionary<long, AssemblerComp> aCompMap = new Dictionary<long, AssemblerComp>();
         public static AssemblerWindow aWindow;
+        public static float resMult;
 
 
         //Future settings

@@ -17,14 +17,14 @@ namespace BDAM
             bp = BP;
 
             ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Left;
-            Size = new Vector2(300, 30);
+            Size = new Vector2(300 * Session.resMult, 30 * Session.resMult);
 
             addBox = new BorderedCheckBox(this)
             {
                 ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
                 Offset = new Vector2(5, 0),
-                Width = 20,
-                Height = 20,
+                Width = 20 * Session.resMult,
+                Height = 20 * Session.resMult,
                 UseFocusFormatting = false,
                 IsBoxChecked = false,
             };
@@ -34,9 +34,9 @@ namespace BDAM
             {
                 ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
                 DimAlignment = DimAlignments.Height,
-                Width = 280,
-                Offset = new Vector2(30, -5),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1f),
+                Width = Size.X - addBox.Width,
+                Offset = new Vector2(addBox.Width + 10, -5),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1f * Session.resMult),
                 AutoResize = false,
                 Text = bp.Results[0].Id.SubtypeName,
                 InputEnabled = false,

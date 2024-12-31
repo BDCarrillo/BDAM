@@ -1,11 +1,13 @@
 ﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using VRage;
 using VRage.Game.Entity;
+using VRage.Utils;
 
 namespace BDAM
 {
@@ -78,100 +80,110 @@ namespace BDAM
         }
         internal void UpdateGrid()
         {
-            //TODO look at dampening inv updates if they are unchanged repeatedly?
-            var timer = new Stopwatch();
-            timer.Start();
-            inventoryList.Clear();
-            MyInventoryBase inventory;
-            foreach (var b in Grid.Inventories.ToArray())
+            var errorMsg = "BDAM crash in update grid";
+            try
             {
-                if (!(b is IMyAssembler || b is IMyCargoContainer || b is IMyRefinery || b is IMyShipConnector))
-                    continue;
-
-                if(b is IMyAssembler || b is IMyRefinery)
+                //TODO look at dampening inv updates if they are unchanged repeatedly?
+                var timer = new Stopwatch();
+                timer.Start();
+                inventoryList.Clear();
+                MyInventoryBase inventory;
+                foreach (var b in Grid.Inventories.ToArray())
                 {
-                    var prodBlock = b as IMyProductionBlock;
-                    var input = (MyInventoryBase)prodBlock.InputInventory;
-                    var output = (MyInventoryBase)prodBlock.OutputInventory;
+                    if (!(b is IMyAssembler || b is IMyCargoContainer || b is IMyRefinery || b is IMyShipConnector))
+                        continue;
 
-                    foreach (MyPhysicalInventoryItem item in input.GetItems())
+                    if (b is IMyAssembler || b is IMyRefinery)
                     {
-                        if (inventoryList.ContainsKey(item.Content.SubtypeName))
-                            inventoryList[item.Content.SubtypeName] += item.Amount;
-                        else
-                            inventoryList.TryAdd(item.Content.SubtypeName, item.Amount);
-                    }
-                    foreach (MyPhysicalInventoryItem item in output.GetItems())
-                    {
-                        if (inventoryList.ContainsKey(item.Content.SubtypeName))
-                            inventoryList[item.Content.SubtypeName] += item.Amount;
-                        else
-                            inventoryList.TryAdd(item.Content.SubtypeName, item.Amount);
-                    }
-                    invCount += 2;
-                }
-                else if (b.TryGetInventory(out inventory))
-                {
-                    foreach (MyPhysicalInventoryItem item in inventory.GetItems())
-                    {
-                        if (inventoryList.ContainsKey(item.Content.SubtypeName))
-                            inventoryList[item.Content.SubtypeName] += item.Amount;
-                        else
-                            inventoryList.TryAdd(item.Content.SubtypeName, item.Amount);
-                    }
-                    invCount++;
-                }
-            }
-            lastInvUpdate = Session.Tick;
-            updateCargos++;
-            timer.Stop();
-            if (Session.logging) Log.WriteLine($"{Session.modName}{Grid.DisplayName} inventory update runtime: {timer.Elapsed.TotalMilliseconds}");           
+                        var prodBlock = b as IMyProductionBlock;
+                        var input = (MyInventoryBase)prodBlock.InputInventory;
+                        var output = (MyInventoryBase)prodBlock.OutputInventory;
 
-
-            //Assembler updates
-            if (Session.Server)
-            {
-                lock (assemblerList)
-                    foreach (var aComp in assemblerList.Values)
-                    {
-                        if (aComp.autoControl && !aComp.assembler.CooperativeMode && aComp.buildList.Count > 0)
-                            aComp.AssemblerUpdate();
-
-                        if (aComp.inputJammed)
+                        foreach (MyPhysicalInventoryItem item in input.GetItems())
                         {
-                            if (aComp.unJamAttempts < 5)
-                                aComp.UnJamAssembler(this, aComp);
-                            else if (aComp.unJamAttempts < 6)
+                            if (inventoryList.ContainsKey(item.Content.SubtypeName))
+                                inventoryList[item.Content.SubtypeName] += item.Amount;
+                            else
+                                inventoryList.TryAdd(item.Content.SubtypeName, item.Amount);
+                        }
+                        foreach (MyPhysicalInventoryItem item in output.GetItems())
+                        {
+                            if (inventoryList.ContainsKey(item.Content.SubtypeName))
+                                inventoryList[item.Content.SubtypeName] += item.Amount;
+                            else
+                                inventoryList.TryAdd(item.Content.SubtypeName, item.Amount);
+                        }
+                        invCount += 2;
+                    }
+                    else if (b.TryGetInventory(out inventory))
+                    {
+                        foreach (MyPhysicalInventoryItem item in inventory.GetItems())
+                        {
+                            if (inventoryList.ContainsKey(item.Content.SubtypeName))
+                                inventoryList[item.Content.SubtypeName] += item.Amount;
+                            else
+                                inventoryList.TryAdd(item.Content.SubtypeName, item.Amount);
+                        }
+                        invCount++;
+                    }
+                }
+                lastInvUpdate = Session.Tick;
+                updateCargos++;
+                timer.Stop();
+                if (Session.logging) Log.WriteLine($"{Session.modName}{Grid.DisplayName} inventory update runtime: {timer.Elapsed.TotalMilliseconds}");
+                errorMsg += "1";
+
+                //Assembler updates
+                if (Session.Server)
+                {
+                    lock (assemblerList)
+                        foreach (var aComp in assemblerList.Values)
+                        {
+                            if (aComp.autoControl && !aComp.assembler.CooperativeMode && aComp.buildList.Count > 0)
+                                aComp.AssemblerUpdate();
+
+                            if (aComp.inputJammed)
                             {
-                                aComp.unJamAttempts++;
-                                if (Session.logging) Log.WriteLine(Session.modName + aComp.gridComp.Grid.DisplayName + "Unable to unjam input for " + aComp.assembler.CustomName);
+                                if (aComp.unJamAttempts < 5)
+                                    aComp.UnJamAssembler(this, aComp);
+                                else if (aComp.unJamAttempts < 6)
+                                {
+                                    aComp.unJamAttempts++;
+                                    if (Session.logging) Log.WriteLine(Session.modName + aComp.gridComp.Grid.DisplayName + "Unable to unjam input for " + aComp.assembler.CustomName);
+                                    if (aComp.notification < 2)
+                                        aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Input inventory jammed");
+                                }
+                            }
+                            if (aComp.outputJammed)
+                            {
+                                if (Session.logging) Log.WriteLine(Session.modName + aComp.gridComp.Grid.DisplayName + $"Assembler {aComp.assembler.CustomName} stopped - output full");
                                 if (aComp.notification < 2)
-                                    aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Input inventory jammed");
+                                    aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Output inventory jammed");
+                                aComp.outputJammed = false;
                             }
                         }
-                        if (aComp.outputJammed)
+                    nextUpdate += Session.refreshTime;
+                }
+                errorMsg += "2";
+                if (fatblocksDirty)
+                {
+                    fatblocksDirty = false;
+                    foreach (var fat in Grid.GetFatBlocks().ToArray())
+                    {
+                        if (fat is IMyAssembler)
                         {
-                            if (Session.logging) Log.WriteLine(Session.modName + aComp.gridComp.Grid.DisplayName + $"Assembler {aComp.assembler.CustomName} stopped - output full");
-                            if (aComp.notification < 2)
-                                aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Output inventory jammed");
-                            aComp.outputJammed = false;
+                            if (assemblerList.ContainsKey(fat))
+                                continue;
+                            FatBlockAdded(fat);
                         }
                     }
-                nextUpdate += Session.refreshTime;
-            }
-
-            if(fatblocksDirty)
-            {
-                fatblocksDirty = false;
-                foreach (var fat in Grid.GetFatBlocks().ToHashSet())
-                {
-                    if (fat is IMyAssembler)
-                    {
-                        if (assemblerList.ContainsKey(fat))
-                            continue;
-                        FatBlockAdded(fat);
-                    }
                 }
+                errorMsg += "3";
+            }
+            catch (Exception e)
+            {
+                Log.WriteLine(errorMsg);
+                MyLog.Default.WriteLineAndConsole(errorMsg);
             }
         }
 

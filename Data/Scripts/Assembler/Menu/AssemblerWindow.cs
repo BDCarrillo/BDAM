@@ -8,11 +8,12 @@ namespace BDAM
     public class AssemblerWindow : HudElementBase
     {
         public WindowScrollContainer scrollContainer;
+        public bool initted;
         public AssemblerWindow(HudParentBase parent) : base(parent)
         {
-            Size = new Vector2(1300, 700);
+            //Size = new Vector2(1300, 700);
             Offset = new Vector2(0,0);
-            scrollContainer = new WindowScrollContainer(this);
+            //scrollContainer = new WindowScrollContainer(this);
 
             Visible = false;
             UseCursor = true;
@@ -24,12 +25,21 @@ namespace BDAM
             if (closeOnly && !Visible)
                 return;
 
-            if(!Visible && Session.MPActive)
+            //scaling
+            if (!initted)
+            {
+                var vpY = MyAPIGateway.Session.Camera.ViewportSize.Y;
+                Session.resMult = (vpY - 1080) / 1080 * 0.5f + 1;
+                Size = new Vector2(1300 * Session.resMult, 700 * Session.resMult);
+                scrollContainer = new WindowScrollContainer(this);
+                initted = true;
+            }
+
+            if (!Visible && Session.MPActive)
             {
                 MyAPIGateway.Utilities.ShowNotification("Updating inventory...",500);
                 AComp.gridComp.UpdateGrid();
             }
-
             scrollContainer.aComp = AComp;
             Visible = !Visible;
             HudMain.EnableCursor = Visible;
