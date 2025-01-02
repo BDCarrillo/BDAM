@@ -153,6 +153,7 @@ namespace BDAM
             action.Action = OpenAssemblerMenu;
             action.Writer = MenuActionWriter;
             action.Enabled = IsTrue;
+            action.ValidForGroups = false;
             return action;
         }
         internal IMyTerminalAction CreateAssemblerAutoAction<T>() where T : IMyAssembler
@@ -163,6 +164,7 @@ namespace BDAM
             action.Action = SetAutoMode;
             action.Writer = AutoActionWriter;
             action.Enabled = NotCoOp;
+            action.ValidForGroups = false;
             return action;
         }
         internal void MenuActionWriter(IMyTerminalBlock block, StringBuilder builder)

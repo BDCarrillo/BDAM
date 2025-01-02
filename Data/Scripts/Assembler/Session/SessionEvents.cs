@@ -3,7 +3,6 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;

@@ -4,6 +4,7 @@ using RichHudFramework.UI;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
 using Sandbox.Definitions;
+using VRage.Utils;
 
 namespace BDAM
 {
@@ -394,9 +395,18 @@ namespace BDAM
                 var refDict = new Dictionary<string, QueueItem>();
                 foreach (var item in aComp.buildList)
                 {
-                    var qItem = new QueueItem(item.Value, item.Key, this);
-                    sortedList.Add(item.Value.label);
-                    refDict[item.Value.label] = qItem;
+                    if (sortedList.Contains(item.Value.label))
+                    {
+                        var errorMsg = $"BDAM error, multiple BPs for {item.Value.label}";
+                        Log.WriteLine(errorMsg);
+                        MyLog.Default.WriteLineAndConsole(errorMsg);
+                        MyAPIGateway.Utilities.ShowNotification(errorMsg, 2000, "Red");
+                    }
+                    else
+                    {
+                        sortedList.Add(item.Value.label);
+                        refDict[item.Value.label] = new QueueItem(item.Value, item.Key, this);
+                    }
                 }
                 sortedList.Sort();
 
