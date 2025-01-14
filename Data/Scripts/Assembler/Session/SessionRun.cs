@@ -17,7 +17,7 @@ namespace BDAM
         {
             MPActive = MyAPIGateway.Multiplayer.MultiplayerActive;
             Server = (MPActive && MyAPIGateway.Multiplayer.IsServer) || !MPActive;
-            Client = (MPActive && !MyAPIGateway.Multiplayer.IsServer) || !MPActive;
+            Client = (MPActive && !MyAPIGateway.Utilities.IsDedicated) || !MPActive;
             MyEntities.OnEntityCreate += OnEntityCreate;
             Log.InitLogs();
         }
@@ -42,7 +42,7 @@ namespace BDAM
                     MyAPIGateway.Utilities.MessageEnteredSender += OnMessageEnteredSender;
                     MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ClientPacketId, ProcessPacket);
                 }
-                else if (Server)
+                if (Server)
                 {
                     MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ServerPacketId, ProcessPacket);
                     MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisco;
@@ -131,7 +131,7 @@ namespace BDAM
                 {
                     MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(ClientPacketId, ProcessPacket);
                 }
-                else if (Server)
+                if (Server)
                 {
                     MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(ServerPacketId, ProcessPacket);
                     MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisco;
