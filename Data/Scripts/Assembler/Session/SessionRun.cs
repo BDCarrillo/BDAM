@@ -17,7 +17,7 @@ namespace BDAM
         {
             MPActive = MyAPIGateway.Multiplayer.MultiplayerActive;
             Server = (MPActive && MyAPIGateway.Multiplayer.IsServer) || !MPActive;
-            Client = (MPActive && !MyAPIGateway.Utilities.IsDedicated) || !MPActive;
+            Client = !MyAPIGateway.Utilities.IsDedicated;
             MyEntities.OnEntityCreate += OnEntityCreate;
             Log.InitLogs();
         }
@@ -60,7 +60,6 @@ namespace BDAM
                     //Iterate BP classes an assembler can build
                     var aDef = def as MyAssemblerDefinition;
                     var bpClassSubtypeNames = new List<string>();
-
                     foreach(var bpClass in aDef.BlueprintClasses)
                     {
                         if (bpClass.Id.SubtypeName == "LargeBlocks" || bpClass.Id.SubtypeName == "SmallBlocks" || bpClass.Id.SubtypeName == "BuildPlanner")
