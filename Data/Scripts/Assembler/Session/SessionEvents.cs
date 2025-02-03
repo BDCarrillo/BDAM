@@ -269,7 +269,7 @@ namespace BDAM
                 string[] import = block.CustomData.Split('\n');
                 bool changesMade = false;
                 MyAPIGateway.Utilities.ShowMessage("BDAM", $"Importing {import.Length - 1} lines");
-                for (int i = 1; i < import.Length - 1; i++)
+                for (int i = 1; i <= import.Length - 1; i++)
                 {
                     string[] input = import[i].Split(';');
                     string errorMsg = "";
