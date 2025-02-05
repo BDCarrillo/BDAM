@@ -44,8 +44,7 @@ namespace BDAM
         public static float resMult;
 
 
-        //Future settings
-        public static MyFixedPoint maxQueueAmount = 200; //Max amount to queue per check
+        //TODO Future server settings
         public static int refreshTime = 600; //Ticks between inventory and assembler refreshes
 
         private void Clean()

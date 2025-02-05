@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using VRage;
-using static VRage.Game.ObjectBuilders.Definitions.MyObjectBuilder_GameDefinition;
 
 namespace BDAM
 {
@@ -24,13 +23,14 @@ namespace BDAM
         internal GridComp gridComp;
         internal Dictionary<string, int> missingMatAmount = new Dictionary<string, int>();
         internal Dictionary<string, int> inaccessibleItems = new Dictionary<string, int>();
-
         internal Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>> missingMatQueue = new Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>>();
         internal List<ulong> ReplicatedClients = new List<ulong>();
+        internal int maxQueueAmount = 200;
 
         //Temps for networking updates/removals
         internal List<ListCompItem> tempUpdateList = new List<ListCompItem>();
         internal List<string> tempRemovalList = new List<string>();
+        internal bool queueDirty = false;
 
         //Stats tracking
         internal int unJamAttempts = 0;
@@ -80,6 +80,7 @@ namespace BDAM
                                 }
                                 autoControl = load.auto;
                                 notification = load.notif;
+                                maxQueueAmount = load.queueAmt;
                             }
                         }
                         catch (Exception e)
@@ -328,7 +329,7 @@ namespace BDAM
                     var amountNeeded = lComp.buildAmount - amountAvail;
                     if (amountNeeded > 0)
                     {
-                        var queueAmount = amountNeeded > Session.maxQueueAmount ? Session.maxQueueAmount : amountNeeded;
+                        var queueAmount = amountNeeded > maxQueueAmount ? maxQueueAmount : amountNeeded;
                         if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly)
                             assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly;
                         assembler.AddQueueItem(listItem.Key, queueAmount);
@@ -356,7 +357,7 @@ namespace BDAM
                         var amountExcess = amountAvail - lComp.grindAmount;
                         if (amountExcess > 0)
                         {
-                            var queueAmount = amountExcess > Session.maxQueueAmount ? Session.maxQueueAmount : amountExcess;
+                            var queueAmount = amountExcess > maxQueueAmount ? maxQueueAmount : amountExcess;
                             if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
                                 assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly;
                             assembler.AddQueueItem(listItem.Key, queueAmount);
@@ -378,6 +379,7 @@ namespace BDAM
                     tempListComp.compItems.Add(item);
                 tempListComp.auto = autoControl;
                 tempListComp.notif = notification;
+                tempListComp.queueAmt = maxQueueAmount;
                 var binary = MyAPIGateway.Utilities.SerializeToBinary(tempListComp);
                 assembler.Storage[_session.storageGuid] = Convert.ToBase64String(binary);
                 if (Session.logging) Log.WriteLine($"{Session.modName} Saving storage for {assembler.DisplayNameText} {tempListComp.auto}");
@@ -402,6 +404,17 @@ namespace BDAM
 
                     if (Session.netlogging)
                         Log.WriteLine($"{Session.modName} Sent updates to server");
+                }
+
+                if (queueDirty)
+                {
+                    if (Session.MPActive)
+                    {
+                        if (Session.netlogging) Log.WriteLine(Session.modName + $"Sending updated max queue amount {maxQueueAmount} to server");
+                        var packet = new UpdateStatePacket { Var = UpdateType.maxQueueAmount, Value = maxQueueAmount, Type = PacketType.UpdateState, EntityId = assembler.EntityId };
+                        Session.SendPacketToServer(packet);
+                    }
+                    queueDirty = false;
                 }
             }
             tempRemovalList.Clear();

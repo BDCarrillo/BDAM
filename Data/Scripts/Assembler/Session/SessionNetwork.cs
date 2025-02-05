@@ -67,6 +67,9 @@ namespace BDAM
                             case UpdateType.notification:
                                 aComp.notification = uPacket.Value;
                                 break;
+                            case UpdateType.maxQueueAmount:
+                                aComp.maxQueueAmount = uPacket.Value;
+                                break;
                         }
                         if (Server)
                         {
@@ -93,6 +96,7 @@ namespace BDAM
                                     tempListComp.compItems.Add(item);
                                 tempListComp.auto = aComp.autoControl;
                                 tempListComp.notif = aComp.notification;
+                                tempListComp.queueAmt = aComp.maxQueueAmount;
                                 var data = Convert.ToBase64String(MyAPIGateway.Utilities.SerializeToBinary(tempListComp));
 
                                 if (netlogging)
@@ -185,6 +189,7 @@ namespace BDAM
                             }
                             aComp.autoControl = loadFD.auto;
                             aComp.notification = loadFD.notif;
+                            aComp.maxQueueAmount = loadFD.queueAmt;
                         }
                         break;
                     case PacketType.MissingMatData:

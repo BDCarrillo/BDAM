@@ -13,7 +13,7 @@ namespace BDAM
         public readonly ScrollBox addMulti;
         public readonly LabelBox title;
         public readonly TextBox infoPanel;
-        private readonly BorderedButton close, add, clearAll, addAll, autoMode, summary, notify;
+        private readonly BorderedButton close, add, clearAll, addAll, autoMode, summary, notify, maxQueue;
         public List<QueueItem> queueList = new List<QueueItem>();
         internal AssemblerComp aComp;
         internal int startPos = 0;
@@ -30,8 +30,6 @@ namespace BDAM
                 DimAlignment = DimAlignments.Both,
                 ParentAlignment = ParentAlignments.Center,              
             };       
-
-            //TODO add max queue qty option (temp hardcoded to 200)
 
             title = new LabelBox(this)
             {
@@ -200,6 +198,23 @@ namespace BDAM
             add.background.Width = add.Width;
             add.background.Padding = Vector2.Zero;
 
+            maxQueue = new BorderedButton(this)
+            {
+                ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
+                Height = title.Height * 0.5f,
+                Offset = new Vector2(add.Offset.X - add.Width, -title.Height * 0.5f),
+                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1f * Session.resMult),
+                AutoResize = false,
+                Width = 220 * Session.resMult,
+                Text = "Max Queue: ---",
+                ZOffset = 50,
+                UseFocusFormatting = false,
+                TextPadding = new Vector2(8, 0),
+                Padding = new Vector2(8, 0),
+            };
+            maxQueue.background.Width = maxQueue.Width;
+            maxQueue.background.Padding = Vector2.Zero;
+
             //Info panel
             infoPanel = new TextBox(this)
             {
@@ -235,6 +250,8 @@ namespace BDAM
             clearAll.MouseInput.LeftClicked += LeftClick;
             add.MouseInput.LeftClicked += LeftClick;
             close.MouseInput.LeftClicked += LeftClick;
+            maxQueue.MouseInput.LeftClicked += QueueLeftClicked;
+            maxQueue.MouseInput.RightClicked += QueueRightClicked;
         }
         private void UpdateAddMulti()
         {
@@ -359,6 +376,31 @@ namespace BDAM
             }
         }
 
+        private void QueueRightClicked(object sender, EventArgs e)
+        {
+            UpdateQty(false);
+        }
+        private void QueueLeftClicked(object sender, EventArgs e)
+        {
+            UpdateQty(true);
+        }
+        private void UpdateQty(bool increase)
+        {
+            var original = aComp.maxQueueAmount;
+            var shift = MyAPIGateway.Input.IsKeyPress(VRage.Input.MyKeys.Shift); //100
+            var control = MyAPIGateway.Input.IsKeyPress(VRage.Input.MyKeys.Control); //10
+            var both = shift && control;
+
+            var amount = both ? 1000 : shift ? 100 : control ? 10 : 1;
+            if (!increase)
+                amount *= -1;
+            aComp.maxQueueAmount += amount;
+            if (aComp.maxQueueAmount < 1)
+                aComp.maxQueueAmount = 1;
+            maxQueue.Text = "Max Queue: " + Session.NumberFormat(aComp.maxQueueAmount);
+            if (original != aComp.maxQueueAmount)
+                aComp.queueDirty = true;
+        }
         private void CycleInputMasking(bool enable)
         {
             foreach (var item in queueList)
@@ -388,6 +430,7 @@ namespace BDAM
                 startPos = 0;
                 notify.Text = "Msg: " + (aComp.notification == 0 ? "Own" : aComp.notification == 1 ? "Fac" : "Off");
                 autoMode.Text = "Auto: " + (aComp.autoControl ? "On" : "Off");
+                maxQueue.Text = "Max Queue: " + Session.NumberFormat(aComp.maxQueueAmount);
                 Clear();
 
                 //Buildlist alphabetical sorting
