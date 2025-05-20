@@ -16,7 +16,10 @@ namespace BDAM
         internal void CreateTerminalControls<T>() where T : IMyAssembler
         {
             _customControls.Add(Separator<T>());
-            _customControls.Add(AddOnOff<T>("queueOnOff", "Automatic Control", "", "On", "Off", GetActivated, SetActivated, CheckMode, VisibleTrue));
+            _customControls.Add(AddOnOff<T>("queueOnOff", "BDAM Auto Queue Control", "Enables BDAM automatic queue control, as set\nin the assembler window accessed via hotbar", "On", "Off", GetAutoOnOff, SetAutoOnOff, CheckModeAuto, VisibleTrue));
+            _customControls.Add(AddOnOff<T>("masterOnOff", "BDAM Master Mode", "Designates this assembler (max 1 per grid) as the Master\nwhich will balance large quantities or slow queued items\nout to available helpers", "On", "Off", GetMasterOnOff, SetMasterOnOff, CheckModeMaster, VisibleTrue));
+            _customControls.Add(AddOnOff<T>("helperOnOff", "BDAM Helper Mode", "Determines if assembler will help with designated\nMaster assembler with its build or grind queue", "On", "Off", GetHelperOnOff, SetHelperOnOff, CheckModeHelper, VisibleTrue));
+
             _customControls.Add(AddButton<T>("showInv", "Inventory Summary", "Inventory Summary", OpenSummary, VisibleTrue, VisibleTrue));
             _customControls.Add(AddButton<T>("sortInv", "Combine Item Stacks", "Combine items stacks on this grid (within each cargo container)", CombineItemStacks, VisibleTrue, VisibleTrue));
             _customControls.Add(AddButton<T>("exportQueue", "Export To Custom Data", "Export BDAM queue to custom data", ExportCustomData, VisibleTrue, VisibleTrue));
@@ -51,6 +54,7 @@ namespace BDAM
         {
             return true;
         }
+
         internal static IMyTerminalControlButton AddButton<T>(string name, string title, string tooltip, Action<IMyTerminalBlock> action, Func<IMyTerminalBlock, bool> enableGetter = null, Func<IMyTerminalBlock, bool> visibleGetter = null) where T : IMyTerminalBlock
         {
             var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlButton, T>(name);
@@ -78,78 +82,156 @@ namespace BDAM
         {
             return true;
         }
-        private static bool CheckMode(IMyTerminalBlock block)
+        private bool CheckModeAuto(IMyTerminalBlock block)
         {
             var assembler = block as IMyAssembler;
             if (!assembler.Enabled || assembler.CooperativeMode || !assembler.UseConveyorSystem)
                 return false;
             else
-                return true;
+            {
+                AssemblerComp aComp;
+                if (aCompMap.TryGetValue(block.EntityId, out aComp))
+                    return !aComp.helperMode;
+                return false;
+            }
         }
-        internal bool GetActivated(IMyTerminalBlock block)
+        private bool CheckModeMaster(IMyTerminalBlock block)
         {
             var assembler = block as IMyAssembler;
-            if (assembler.CooperativeMode)
+            if (!assembler.Enabled || assembler.CooperativeMode || !assembler.UseConveyorSystem)
                 return false;
-
-            GridComp gComp;
+            else
+            {
+                GridComp gComp;
+                AssemblerComp aComp;
+                if (GridMap.TryGetValue(block.CubeGrid, out gComp) && gComp.assemblerList.TryGetValue((MyCubeBlock)block, out aComp))
+                    if (gComp.masterAssembler == aComp.assembler.EntityId || gComp.masterAssembler == 0)
+                        return !aComp.helperMode;
+                return false;
+            }
+        }
+        private bool CheckModeHelper(IMyTerminalBlock block)
+        {
+            var assembler = block as IMyAssembler;
+            if (!assembler.Enabled || assembler.CooperativeMode || !assembler.UseConveyorSystem)
+                return false;
+            else
+            {
+                AssemblerComp aComp;
+                if (aCompMap.TryGetValue(block.EntityId, out aComp))
+                    return !(aComp.autoControl || aComp.masterMode);
+                return false;
+            }
+        }
+        internal bool GetAutoOnOff(IMyTerminalBlock block)
+        {
             AssemblerComp aComp;
-            if (GridMap.TryGetValue(block.CubeGrid, out gComp) && gComp.assemblerList.TryGetValue((MyCubeBlock)block, out aComp))
+            if (aCompMap.TryGetValue(block.EntityId, out aComp))
+            {
+                if(aComp.assembler.CooperativeMode || !aComp.assembler.UseConveyorSystem)
+                {
+                    aComp.helperMode = false;
+                    aComp.masterMode = false;
+                    aComp.autoControl = false;
+                    var packet = new UpdateStatePacket { Var = UpdateType.reset, Value = 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
+                    SendPacketToServer(packet);
+                }
                 return aComp.autoControl;
+            }
             return false;
         }
-        internal void SetActivated(IMyTerminalBlock block, bool activated)
+        internal bool GetMasterOnOff(IMyTerminalBlock block)
+        {
+            AssemblerComp aComp;
+            if (aCompMap.TryGetValue(block.EntityId, out aComp))
+                return aComp.masterMode;
+            return false;
+        }
+        internal bool GetHelperOnOff(IMyTerminalBlock block)
+        {
+            AssemblerComp aComp;
+            if (aCompMap.TryGetValue(block.EntityId, out aComp))
+                return aComp.helperMode;
+            return false;
+        }
+        internal void SetAutoOnOff(IMyTerminalBlock block, bool activated)
+        {
+            AssemblerComp aComp;
+            if (aCompMap.TryGetValue(block.EntityId, out aComp))
+            {
+                aComp.autoControl = !aComp.autoControl;
+                if (aComp.autoControl)
+                    aComp.helperMode = false;
+                aComp.assembler.ShowInInventory = !aComp.assembler.ShowInInventory;
+                aComp.assembler.ShowInInventory = !aComp.assembler.ShowInInventory;
+                if (netlogging) Log.WriteLine(modName + $"Sending updated auto control state to server for {aComp.assembler.CustomName} " + aComp.autoControl);
+                var packet = new UpdateStatePacket { Var = UpdateType.autoControl, Value = aComp.autoControl ? 1 : 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
+                SendPacketToServer(packet);
+            }
+            return;
+        }
+        internal void SetMasterOnOff(IMyTerminalBlock block, bool activated)
         {
             GridComp gComp;
             AssemblerComp aComp;
             if (GridMap.TryGetValue(block.CubeGrid, out gComp) && gComp.assemblerList.TryGetValue((MyCubeBlock)block, out aComp))
             {
-                aComp.autoControl = !aComp.autoControl;
-                if (MPActive)
+                aComp.masterMode = !aComp.masterMode;
+                if (aComp.masterMode)
+                    aComp.helperMode = false;
+                aComp.assembler.ShowInInventory = !aComp.assembler.ShowInInventory;
+                aComp.assembler.ShowInInventory = !aComp.assembler.ShowInInventory;
+                if (netlogging) Log.WriteLine(modName + $"Sending updated master control state to server for {aComp.assembler.CustomName} " + aComp.masterMode);
+                var packet = new UpdateStatePacket { Var = UpdateType.masterMode, Value = aComp.masterMode ? 1 : 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
+                SendPacketToServer(packet);
+            }
+            return;
+        }
+        internal void SetHelperOnOff(IMyTerminalBlock block, bool activated)
+        {
+            AssemblerComp aComp;            
+            if (aCompMap.TryGetValue(block.EntityId, out aComp))
+            {
+                aComp.helperMode = !aComp.helperMode;
+                if (aComp.helperMode)
                 {
-                    if (netlogging) Log.WriteLine(modName + $"Sending updated auto control state to server " + aComp.autoControl);
-                    var packet = new UpdateStatePacket { Var = UpdateType.autoControl, Value = aComp.autoControl ? 1 : 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
-                    SendPacketToServer(packet);
+                    aComp.masterMode = false;
+                    aComp.autoControl = false;
                 }
+                aComp.assembler.ShowInInventory = !aComp.assembler.ShowInInventory;
+                aComp.assembler.ShowInInventory = !aComp.assembler.ShowInInventory;
+                if (netlogging) Log.WriteLine(modName + $"Sending updated helper control state to server for {aComp.assembler.CustomName} " + aComp.helperMode);
+                var packet = new UpdateStatePacket { Var = UpdateType.helperMode, Value = aComp.helperMode ? 1 : 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
+                SendPacketToServer(packet);
             }
             return;
         }
         internal void OpenAssemblerMenu(IMyTerminalBlock block)
         {
-            GridComp gComp;
             AssemblerComp aComp;
-            if (GridMap.TryGetValue(block.CubeGrid, out gComp) && gComp.assemblerList.TryGetValue((MyCubeBlock)block, out aComp))
+            if (aCompMap.TryGetValue(block.EntityId, out aComp))
             {
                 aWindow.ToggleVisibility(aComp);
                 openAComp = aComp;
                 MyAPIGateway.Session.Player.Controller.ControlledEntityChanged += GridChange;
             }
         }
-        private void GridChange(VRage.Game.ModAPI.Interfaces.IMyControllableEntity entity1, VRage.Game.ModAPI.Interfaces.IMyControllableEntity entity2)
-        {
-            aWindow.ToggleVisibility(openAComp, true);
-            MyAPIGateway.Session.Player.Controller.ControlledEntityChanged -= GridChange;
-        }
         internal void SetAutoMode(IMyTerminalBlock block)
         {
-            GridComp gComp;
             AssemblerComp aComp;
-            if (GridMap.TryGetValue(block.CubeGrid, out gComp) && gComp.assemblerList.TryGetValue((MyCubeBlock)block, out aComp))
+            if (aCompMap.TryGetValue(block.EntityId, out aComp))
             {
                 aComp.autoControl = !aComp.autoControl;
-                if (MPActive)
-                {
-                    if (netlogging) Log.WriteLine(modName + $"Sending updated auto control state to server " + aComp.autoControl);
-                    var packet = new UpdateStatePacket { Var = UpdateType.autoControl, Value = aComp.autoControl ? 1 : 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
-                    SendPacketToServer(packet);
-                }
+                if (netlogging) Log.WriteLine(modName + $"Sending updated auto control state to server for {aComp.assembler.CustomName} " + aComp.autoControl);
+                var packet = new UpdateStatePacket { Var = UpdateType.autoControl, Value = aComp.autoControl ? 1 : 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
+                SendPacketToServer(packet);
             }
         }
         internal IMyTerminalAction CreateAssemblerMenuAction<T>() where T : IMyAssembler
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("AssemblerMenu");
             action.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
-            action.Name = new StringBuilder("Open Assembler Menu");
+            action.Name = new StringBuilder("BDAM Open Assembler Menu");
             action.Action = OpenAssemblerMenu;
             action.Writer = MenuActionWriter;
             action.Enabled = IsTrue;
@@ -160,7 +242,7 @@ namespace BDAM
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("AssemblerAutoMode");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder("Assembler Auto Mode On/Off");
+            action.Name = new StringBuilder("BDAM Assembler Auto Mode On/Off");
             action.Action = SetAutoMode;
             action.Writer = AutoActionWriter;
             action.Enabled = NotCoOp;
@@ -173,30 +255,15 @@ namespace BDAM
         }
         internal void AutoActionWriter(IMyTerminalBlock block, StringBuilder builder)
         {
-            bool auto = false;
             AssemblerComp aComp;            
             if (aCompMap.TryGetValue(block.EntityId, out aComp))
-            {
-                if (aComp.assembler.CooperativeMode)
-                    auto = false;
-                else
-                    auto = aComp.autoControl;
-            }
-            builder.Append("Auto: " + (auto ? "On" : "Off"));
+                builder.Append("Auto: " + (aComp.autoControl ? "On" : "Off"));
         }
         internal bool NotCoOp(IMyTerminalBlock block)
         {
             AssemblerComp aComp;
             if (aCompMap.TryGetValue(block.EntityId, out aComp))
-            {
-                if (aComp.assembler.CooperativeMode)
-                {
-                    aComp.autoControl = false;
-                    return false;
-                }
-                else
-                    return true;
-            }
+                return !(aComp.assembler.CooperativeMode || aComp.helperMode);
             return false;
         }
     }

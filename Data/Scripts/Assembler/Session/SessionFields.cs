@@ -4,7 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using VRage;
 using VRage.Collections;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
@@ -38,14 +37,17 @@ namespace BDAM
         internal static string modName = "[BDAM]";
         internal readonly Guid storageGuid = new Guid("95dd6473-8e17-4ac3-ba22-57d283755755");
         public static float assemblerEfficiency = 1;
+        public static float assemblerSpeed = 1;
         internal AssemblerComp openAComp = null;
         internal static Dictionary<long, AssemblerComp> aCompMap = new Dictionary<long, AssemblerComp>();
+        internal static Dictionary<string, float> speedMap = new Dictionary<string, float>();
         public static AssemblerWindow aWindow;
         public static float resMult;
 
 
         //TODO Future server settings
         public static int refreshTime = 600; //Ticks between inventory and assembler refreshes
+        public static float refreshTimeSeconds = 0; //Calculated on load
 
         private void Clean()
         {
@@ -60,6 +62,7 @@ namespace BDAM
             BPLookupFriendly.Clear();
             openAComp = null;
             aCompMap.Clear();
+            speedMap.Clear();
         }
     }
 }

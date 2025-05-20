@@ -28,7 +28,7 @@ namespace BDAM
         }
         private void HudInit()
         {
-            aWindow = new AssemblerWindow(HudMain.Root)
+            aWindow = new AssemblerWindow(HudMain.Root, this)
             {
                 Visible = false,
             };
@@ -50,7 +50,11 @@ namespace BDAM
             }
 
             if (Server)
+            {
+                refreshTimeSeconds = refreshTime * 0.016666666f;
                 assemblerEfficiency = 1 / Session.AssemblerEfficiencyMultiplier;
+                assemblerSpeed = Session.AssemblerSpeedMultiplier;
+            }
 
             //Find assemblers and BP classes they can make
             foreach (var def in MyDefinitionManager.Static.GetAllDefinitions())
@@ -60,6 +64,7 @@ namespace BDAM
                     //Iterate BP classes an assembler can build
                     var aDef = def as MyAssemblerDefinition;
                     var bpClassSubtypeNames = new List<string>();
+                    speedMap.Add(def.Id.SubtypeId.ToString(), aDef.AssemblySpeed);
                     foreach(var bpClass in aDef.BlueprintClasses)
                     {
                         if (bpClass.Id.SubtypeName == "LargeBlocks" || bpClass.Id.SubtypeName == "SmallBlocks" || bpClass.Id.SubtypeName == "BuildPlanner")

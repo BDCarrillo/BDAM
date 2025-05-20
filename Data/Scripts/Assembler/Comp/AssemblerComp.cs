@@ -17,6 +17,8 @@ namespace BDAM
         internal bool inputJammed;
         internal bool outputJammed;
         internal bool autoControl = false;
+        internal bool masterMode = false;
+        internal bool helperMode = false;
         internal int notification = 0; // 0 = Owner, 1 = faction, 2 = none
         internal MyProductionQueueItem lastQueue;
         internal Dictionary<MyBlueprintDefinitionBase, ListCompItem> buildList = new Dictionary<MyBlueprintDefinitionBase, ListCompItem>();
@@ -26,6 +28,7 @@ namespace BDAM
         internal Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>> missingMatQueue = new Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>>();
         internal List<ulong> ReplicatedClients = new List<ulong>();
         internal int maxQueueAmount = 200;
+        internal float baseSpeed = 0f;
 
         //Temps for networking updates/removals
         internal List<ListCompItem> tempUpdateList = new List<ListCompItem>();
@@ -37,10 +40,10 @@ namespace BDAM
         internal int countStart = 0;
         internal int countStop = 0;
 
-        internal void Init(IMyAssembler Assembler, GridComp comp, Session session)
+        internal void Init(IMyAssembler Assembler, GridComp gComp, Session session)
         {
             _session = session;
-            gridComp = comp;
+            gridComp = gComp;
             assembler = Assembler;
             Session.aCompMap[assembler.EntityId] = this;
             //TODO look at grid change events
@@ -52,7 +55,7 @@ namespace BDAM
                     var queue = assembler.GetQueue();
                     lastQueue = queue[0];
                 }
-
+                baseSpeed = Session.speedMap[assembler.BlockDefinition.SubtypeId];
                 assembler.StoppedProducing += Assembler_StoppedProducing;
                 assembler.StartedProducing += Assembler_StartedProducing;
                 //Check/init storage
@@ -64,46 +67,30 @@ namespace BDAM
                 {
                     //Serialize storage
                     string rawData;
-                    if (assembler.Storage.TryGetValue(_session.storageGuid, out rawData))
+                    if (assembler.Storage.TryGetValue(_session.storageGuid, out rawData) && rawData != null && rawData.Length > 0)
                     {
-                        try
-                        {
-                            if (rawData != null && rawData.Length > 0)
-                            {
-                                var load = MyAPIGateway.Utilities.SerializeFromBinary<ListComp>(Convert.FromBase64String(rawData));
+                        var load = MyAPIGateway.Utilities.SerializeFromBinary<ListComp>(Convert.FromBase64String(rawData));
 
-                                //Serialized string to BPs
-                                foreach (var saved in load.compItems)
-                                {
-                                    if (Session.BPLookup.ContainsKey(saved.bpBase))
-                                        buildList.Add(Session.BPLookup[saved.bpBase], new ListCompItem() { bpBase = saved.bpBase, buildAmount = saved.buildAmount, grindAmount = saved.grindAmount, priority = saved.priority, label = saved.label });
-                                }
-                                autoControl = load.auto;
-                                notification = load.notif;
-                                maxQueueAmount = load.queueAmt;
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            buildList.Clear();
-                            autoControl = false;
-                            Log.WriteLine($"{Session.modName} Error reading storage for {assembler.DisplayNameText} {e}");
-                        }
+                        //Serialized string to BPs
+                        foreach (var saved in load.compItems)
+                            if (Session.BPLookup.ContainsKey(saved.bpBase))
+                                buildList.Add(Session.BPLookup[saved.bpBase], new ListCompItem() { bpBase = saved.bpBase, buildAmount = saved.buildAmount, grindAmount = saved.grindAmount, priority = saved.priority, label = saved.label });
+                        autoControl = load.auto;
+                        notification = load.notif;
+                        maxQueueAmount = load.queueAmt;
+                        masterMode = load.master;
+                        helperMode = load.helper;
+                        if (masterMode)
+                            gComp.masterAssembler = assembler.EntityId;
                     }
                 }
             }
-            else if (Session.Client && Session.MPActive)
-                Session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, add = true, Type = PacketType.Replication });
+            else if (Session.Client)
+                session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, add = true, Type = PacketType.Replication });
         }
 
         public void AssemblerUpdate()
         {
-            if (assembler.CooperativeMode)
-            {
-                autoControl = false;
-                return;
-            }
-
             bool sendMatUpdates = false;
             bool sendInacUpdates = false;
 
@@ -169,6 +156,7 @@ namespace BDAM
                         }                        
                     }
                 }
+
                 if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + " quick check - items in queue");
                 //Send updates
                 if (Session.MPActive)
@@ -332,9 +320,15 @@ namespace BDAM
                         var queueAmount = amountNeeded > maxQueueAmount ? maxQueueAmount : amountNeeded;
                         if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly)
                             assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly;
-                        assembler.AddQueueItem(listItem.Key, queueAmount);
-                        lastQueue = new MyProductionQueueItem() { Blueprint = listItem.Key, Amount = queueAmount };
-                        if (Session.logging) Log.WriteLine($"{Session.modName}Queued build {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.buildAmount}");
+                        var processingTime = (float)(listItem.Key.BaseProductionTimeInSeconds / Session.assemblerSpeed * (baseSpeed + assembler.UpgradeValues["Productivity"]) * queueAmount);
+                        if (!masterMode || (masterMode && processingTime > Session.refreshTimeSeconds))
+                        {
+                            lastQueue = new MyProductionQueueItem() { Blueprint = listItem.Key, Amount = queueAmount };
+                            if (Session.logging) Log.WriteLine($"{Session.modName}Queued build {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.buildAmount}");
+                            assembler.AddQueueItem(listItem.Key, queueAmount);
+                        }
+                        else
+                            AssemblerMaster(listItem.Key, queueAmount, true);
                         return true;
                     }
                 }
@@ -360,14 +354,59 @@ namespace BDAM
                             var queueAmount = amountExcess > maxQueueAmount ? maxQueueAmount : amountExcess;
                             if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
                                 assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly;
-                            assembler.AddQueueItem(listItem.Key, queueAmount);
-                            if (Session.logging) Log.WriteLine($"{Session.modName}Queued grind {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.grindAmount}");
+                            var processingTime = (float)(listItem.Key.BaseProductionTimeInSeconds / Session.assemblerSpeed * (baseSpeed + assembler.UpgradeValues["Productivity"]) * queueAmount);
+                            if (!masterMode || (masterMode && processingTime > Session.refreshTimeSeconds))
+                            {
+                                assembler.AddQueueItem(listItem.Key, queueAmount);
+                                if (Session.logging) Log.WriteLine($"{Session.modName}Queued grind {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.grindAmount}");
+                            }
+                            else
+                                AssemblerMaster(listItem.Key, queueAmount, false);
                             return true;
                         }
                     }
                 }
             if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" no grindable items found");
             return false;
+        }
+
+        public void AssemblerMaster(MyBlueprintDefinitionBase item, MyFixedPoint queueAmount, bool build)
+        {
+            if (Session.logging) Log.WriteLine($"{Session.modName} Running work distribution for {queueAmount} of {item.Results[0].Id.SubtypeName}.");
+
+            // Kinda cludgy, gets list of available helpers
+            var availableList = new List<IMyAssembler>();
+            foreach (var aComp in gridComp.assemblerList.Values)
+            {
+                if (!aComp.helperMode || !aComp.assembler.Enabled || !aComp.assembler.UseConveyorSystem || !aComp.assembler.IsQueueEmpty || aComp.assembler == assembler || !aComp.assembler.CanUseBlueprint(item))
+                    continue;
+                availableList.Add(aComp.assembler);
+            }
+
+            // Calc workloads
+            var avail = availableList.Count;
+            if (avail == 0)
+            {
+                assembler.AddQueueItem(item, queueAmount);
+                if (Session.logging) Log.WriteLine($"{Session.modName} No available helpers found, queued {(build ? "build" : "grind")} {queueAmount} of {item.Results[0].Id.SubtypeName}");
+                return;
+            }
+            var remainder = (int)queueAmount % avail;
+            var workload = ((int)queueAmount - remainder) / avail;
+            
+            // Iterate and assign
+            foreach (var helper in availableList)
+            {
+                if (build && helper.Mode != Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
+                    helper.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly;
+                else if (!build && helper.Mode != Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly)
+                    helper.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly;
+
+                helper.AddQueueItem(item, workload);
+                if (Session.logging) Log.WriteLine($"{Session.modName} {helper.CustomName} assigned {workload} of {item.Results[0].Id.SubtypeName}");
+            }
+            assembler.AddQueueItem(item, workload + remainder);
+            if (Session.logging) Log.WriteLine($"{Session.modName} {assembler.CustomName} (master) assigned {workload + remainder} of {item.Results[0].Id.SubtypeName}");
         }
 
         public void Save()
@@ -380,6 +419,8 @@ namespace BDAM
                 tempListComp.auto = autoControl;
                 tempListComp.notif = notification;
                 tempListComp.queueAmt = maxQueueAmount;
+                tempListComp.master = masterMode;
+                tempListComp.helper = helperMode;
                 var binary = MyAPIGateway.Utilities.SerializeToBinary(tempListComp);
                 assembler.Storage[_session.storageGuid] = Convert.ToBase64String(binary);
                 if (Session.logging) Log.WriteLine($"{Session.modName} Saving storage for {assembler.DisplayNameText} {tempListComp.auto}");
@@ -400,7 +441,7 @@ namespace BDAM
                 {
                     var updates = new UpdateComp() { compItemsRemove = tempRemovalList, compItemsUpdate = tempUpdateList };
                     var data = Convert.ToBase64String(MyAPIGateway.Utilities.SerializeToBinary(updates));
-                    Session.SendPacketToServer(new UpdateDataPacket { EntityId = assembler.EntityId, Type = PacketType.UpdateData, rawData = data });
+                    _session.SendPacketToServer(new UpdateDataPacket { EntityId = assembler.EntityId, Type = PacketType.UpdateData, rawData = data });
 
                     if (Session.netlogging)
                         Log.WriteLine($"{Session.modName} Sent updates to server");
@@ -412,7 +453,7 @@ namespace BDAM
                     {
                         if (Session.netlogging) Log.WriteLine(Session.modName + $"Sending updated max queue amount {maxQueueAmount} to server");
                         var packet = new UpdateStatePacket { Var = UpdateType.maxQueueAmount, Value = maxQueueAmount, Type = PacketType.UpdateState, EntityId = assembler.EntityId };
-                        Session.SendPacketToServer(packet);
+                        _session.SendPacketToServer(packet);
                     }
                     queueDirty = false;
                 }
@@ -433,7 +474,7 @@ namespace BDAM
             {
                 if (Session.netlogging)
                     Log.WriteLine(Session.modName + $"Updating replication list on server - removal");
-                Session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, add = false, Type = PacketType.Replication });
+                _session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, add = false, Type = PacketType.Replication });
             }
             Session.aCompMap.Remove(assembler.EntityId);
 

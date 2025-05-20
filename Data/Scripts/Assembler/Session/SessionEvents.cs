@@ -14,11 +14,17 @@ namespace BDAM
 {
     public partial class Session : MySessionComponentBase
     {
+        private void GridChange(VRage.Game.ModAPI.Interfaces.IMyControllableEntity entity1, VRage.Game.ModAPI.Interfaces.IMyControllableEntity entity2)
+        {
+            aWindow.ToggleVisibility(openAComp, true);
+            MyAPIGateway.Session.Player.Controller.ControlledEntityChanged -= GridChange;
+        }
         private void OnMessageEnteredSender(ulong sender, string messageText, ref bool sendToOthers)
         {
             var msg = messageText.ToLower();
             if (msg.Contains("/bdam log"))
             {
+                logging = !logging;
                 MyAPIGateway.Utilities.ShowNotification($"BDAM Verbose logging {(logging ? "ON" : "OFF")}");
                 sendToOthers = false;
             }

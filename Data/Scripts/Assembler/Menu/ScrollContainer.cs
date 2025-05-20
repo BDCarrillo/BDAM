@@ -18,9 +18,11 @@ namespace BDAM
         internal AssemblerComp aComp;
         internal int startPos = 0;
         internal int listLen = 20;
+        internal Session _session;
 
-        public WindowScrollContainer(HudParentBase parent) : base(parent)
+        public WindowScrollContainer(HudParentBase parent, Session session) : base(parent)
         {
+            _session = session;
             DimAlignment = DimAlignments.Both;
             IsMasking = true;
             //Main BG
@@ -311,9 +313,9 @@ namespace BDAM
             }
             else if (sender == autoMode)
             {
-                if (aComp.assembler.CooperativeMode)
+                if (aComp.assembler.CooperativeMode || aComp.helperMode)
                 {
-                    MyAPIGateway.Utilities.ShowNotification("Disable co-operative mode to utilize automatic control", font: "Red");
+                    MyAPIGateway.Utilities.ShowNotification($"Disable {(aComp.helperMode ? "Helper" : "Cooperative")} Mode to utilize automatic control", font: "Red");
                     return;
                 }
                 aComp.autoControl = !aComp.autoControl;
@@ -323,7 +325,7 @@ namespace BDAM
                     if (Session.netlogging)
                         Log.WriteLine(Session.modName + $"Sending updated auto control state to server " + aComp.autoControl);
                     var packet = new UpdateStatePacket { Var = UpdateType.autoControl, Value = aComp.autoControl ? 1 : 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
-                    Session.SendPacketToServer(packet);
+                    _session.SendPacketToServer(packet);
                 }
             }
             else if (sender == notify)
@@ -337,7 +339,7 @@ namespace BDAM
                     if (Session.netlogging)
                         Log.WriteLine(Session.modName + $"Sending updated notification state to server " + aComp.notification);
                     var packet = new UpdateStatePacket { Var = UpdateType.notification, Value = aComp.notification, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
-                    Session.SendPacketToServer(packet);
+                    _session.SendPacketToServer(packet);
                 }
             }
             else if (sender == summary)

@@ -1,6 +1,5 @@
 ﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,6 +24,7 @@ namespace BDAM
         internal int lastInvUpdate = 0;
         internal int nextUpdate = 0;
         internal bool fatblocksDirty = false;
+        internal long masterAssembler = 0;
         internal void Init(MyCubeGrid grid, Session session)
         {
             _session = session;
@@ -180,7 +180,7 @@ namespace BDAM
                 }
                 errorMsg += "3";
             }
-            catch (Exception e)
+            catch
             {
                 Log.WriteLine(errorMsg);
                 MyLog.Default.WriteLineAndConsole(errorMsg);

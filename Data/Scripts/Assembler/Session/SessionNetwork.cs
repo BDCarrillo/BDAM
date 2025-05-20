@@ -2,8 +2,6 @@
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
-using VRage.Utils;
-using static BDAM.Session;
 
 namespace BDAM
 {
@@ -12,10 +10,13 @@ namespace BDAM
         internal const ushort ServerPacketId = 65349;
         internal const ushort ClientPacketId = 65350;
 
-        public static void SendPacketToServer(Packet packet)
+        public void SendPacketToServer(Packet packet)
         {
             var rawData = MyAPIGateway.Utilities.SerializeToBinary(packet);
-            MyModAPIHelper.MyMultiplayer.Static.SendMessageToServer(ServerPacketId, rawData, true);
+            if (MPActive)
+                MyModAPIHelper.MyMultiplayer.Static.SendMessageToServer(ServerPacketId, rawData, true);
+            else
+                ProcessPacket(ServerPacketId, rawData, Session.Player.SteamUserId, true);
         }
 
         public static void SendPacketToClient(Packet packet, ulong client)
@@ -61,8 +62,29 @@ namespace BDAM
                         var uPacket = packet as UpdateStatePacket;
                         switch (uPacket.Var)
                         {
+                            case UpdateType.reset:
+                                aComp.autoControl = false;
+                                aComp.helperMode = false;
+                                aComp.masterMode = false;
+                                break;
                             case UpdateType.autoControl:
                                 aComp.autoControl = uPacket.Value >= 1;
+                                if (aComp.autoControl)
+                                    aComp.helperMode = false;
+                                break;
+                            case UpdateType.masterMode:
+                                aComp.masterMode = uPacket.Value >= 1;
+                                if (aComp.masterMode)
+                                    aComp.helperMode = false;
+                                aComp.gridComp.masterAssembler = aComp.masterMode ? aComp.assembler.EntityId : 0;
+                                break;
+                            case UpdateType.helperMode:
+                                aComp.helperMode = uPacket.Value >= 1;
+                                if (aComp.helperMode)
+                                {
+                                    aComp.masterMode = false;
+                                    aComp.autoControl = false;
+                                }
                                 break;
                             case UpdateType.notification:
                                 aComp.notification = uPacket.Value;
@@ -76,6 +98,7 @@ namespace BDAM
                             var updateList = aComp.ReplicatedClients;
                             updateList.Remove(sender);
                             SendPacketToClients(uPacket, updateList);
+                            aComp.Save();
                         }
                         break;
                     case PacketType.Replication:
@@ -89,7 +112,7 @@ namespace BDAM
                             if (netlogging)
                                 Log.WriteLine(modName + $"Added client to replication data for aComp");
 
-                            if (aComp.buildList.Count > 0)
+                            if (aComp.buildList.Count > 0 || aComp.helperMode)
                             {
                                 var tempListComp = new ListComp();
                                 foreach (var item in aComp.buildList.Values)
@@ -97,6 +120,8 @@ namespace BDAM
                                 tempListComp.auto = aComp.autoControl;
                                 tempListComp.notif = aComp.notification;
                                 tempListComp.queueAmt = aComp.maxQueueAmount;
+                                tempListComp.master = aComp.masterMode;
+                                tempListComp.helper = aComp.helperMode;
                                 var data = Convert.ToBase64String(MyAPIGateway.Utilities.SerializeToBinary(tempListComp));
 
                                 if (netlogging)
@@ -190,6 +215,8 @@ namespace BDAM
                             aComp.autoControl = loadFD.auto;
                             aComp.notification = loadFD.notif;
                             aComp.maxQueueAmount = loadFD.queueAmt;
+                            aComp.helperMode = loadFD.helper;
+                            aComp.masterMode = loadFD.master;
                         }
                         break;
                     case PacketType.MissingMatData:
@@ -288,6 +315,9 @@ namespace BDAM
     {
         autoControl,
         notification,
-        maxQueueAmount
+        maxQueueAmount,
+        masterMode,
+        helperMode,
+        reset,
     }
 }

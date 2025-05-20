@@ -11,7 +11,8 @@ namespace BDAM
         [ProtoMember(101)] public bool auto = false;
         [ProtoMember(102)] public int notif = 0;
         [ProtoMember(103)] public int queueAmt = 200;
-
+        [ProtoMember(104)] public bool master = false;
+        [ProtoMember(105)] public bool helper = false;
     }
 
     [ProtoContract]
