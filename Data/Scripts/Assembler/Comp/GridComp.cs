@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.Entities;
+﻿using Sandbox.Definitions;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -160,6 +161,17 @@ namespace BDAM
                                 if (aComp.notification < 2)
                                     aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Output inventory jammed");
                                 aComp.outputJammed = false;
+                            }
+
+                            //Helper stuck due to missing mats
+                            if (aComp.helperMode && !(aComp.inputJammed || aComp.outputJammed) && !aComp.assembler.IsQueueEmpty)
+                            {
+                                var queue = aComp.assembler.GetQueue()[0];
+                                if (aComp.lastQueue.Blueprint == queue.Blueprint && aComp.lastQueue.Amount == queue.Amount && aComp.assembler.CurrentProgress == 0)
+                                {
+                                    aComp.assembler.RemoveQueueItem(0, queue.Amount);
+                                    if (Session.logging) Log.WriteLine(Session.modName + aComp.assembler.CustomName + $" in helper mode and stuck missing mats/components");
+                                }
                             }
                         }
                     nextUpdate += Session.refreshTime;

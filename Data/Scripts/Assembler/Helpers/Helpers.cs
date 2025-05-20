@@ -18,7 +18,7 @@ namespace BDAM
             _customControls.Add(Separator<T>());
             _customControls.Add(AddOnOff<T>("queueOnOff", "BDAM Auto Queue Control", "Enables BDAM automatic queue control, as set\nin the assembler window accessed via hotbar", "On", "Off", GetAutoOnOff, SetAutoOnOff, CheckModeAuto, VisibleTrue));
             _customControls.Add(AddOnOff<T>("masterOnOff", "BDAM Master Mode", "Designates this assembler (max 1 per grid) as the Master\nwhich will balance large quantities or slow queued items\nout to available helpers", "On", "Off", GetMasterOnOff, SetMasterOnOff, CheckModeMaster, VisibleTrue));
-            _customControls.Add(AddOnOff<T>("helperOnOff", "BDAM Helper Mode", "Determines if assembler will help with designated\nMaster assembler with its build or grind queue", "On", "Off", GetHelperOnOff, SetHelperOnOff, CheckModeHelper, VisibleTrue));
+            _customControls.Add(AddOnOff<T>("helperOnOff", "BDAM Helper Mode", "Determines if assembler will help with designated\nMaster assembler with its build or grind queue", "On", "Off", GetHelperOnOff, SetHelperOnOff, CheckModeHelper, VisibleTrue, true));
 
             _customControls.Add(AddButton<T>("showInv", "Inventory Summary", "Inventory Summary", OpenSummary, VisibleTrue, VisibleTrue));
             _customControls.Add(AddButton<T>("sortInv", "Combine Item Stacks", "Combine items stacks on this grid (within each cargo container)", CombineItemStacks, VisibleTrue, VisibleTrue));
@@ -65,7 +65,7 @@ namespace BDAM
             c.Action = action;
             return c;
         }
-        internal static IMyTerminalControlOnOffSwitch AddOnOff<T>(string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, bool> getter, Action<IMyTerminalBlock, bool> setter, Func<IMyTerminalBlock, bool> enabledGetter = null, Func<IMyTerminalBlock, bool> visibleGetter = null) where T : IMyTerminalBlock
+        internal static IMyTerminalControlOnOffSwitch AddOnOff<T>(string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, bool> getter, Action<IMyTerminalBlock, bool> setter, Func<IMyTerminalBlock, bool> enabledGetter = null, Func<IMyTerminalBlock, bool> visibleGetter = null, bool multi = false) where T : IMyTerminalBlock
         {
             var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlOnOffSwitch, T>(name);
             c.Title = MyStringId.GetOrCompute(title);
@@ -76,6 +76,7 @@ namespace BDAM
             c.Visible = visibleGetter;
             c.Getter = getter;
             c.Setter = setter;
+            c.SupportsMultipleBlocks = multi;
             return c;
         }
         public static bool VisibleTrue(IMyTerminalBlock block)
