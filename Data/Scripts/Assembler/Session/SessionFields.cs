@@ -46,7 +46,7 @@ namespace BDAM
 
 
         //TODO Future server settings
-        public static int refreshTime = 600; //Ticks between inventory and assembler refreshes
+        public static int refreshTime = 1800; //Ticks between inventory and assembler refreshes
         public static float refreshTimeSeconds = 0; //Calculated on load
 
         private void Clean()

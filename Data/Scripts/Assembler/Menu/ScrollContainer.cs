@@ -484,15 +484,15 @@ namespace BDAM
             {
                 infoString += "Missing/Insufficient materials:\n";
                 foreach (var missing in aComp.missingMatAmount)
-                    infoString += "  " + missing.Key + ": " + Session.NumberFormat(missing.Value) + "\n";
+                    infoString += "  " + (missing.Key == "Stone" ? "Gravel" : missing.Key) + ": " + Session.NumberFormat(missing.Value) + "\n";
             }
-            if (aComp.inaccessibleItems.Count > 0)
+            if (aComp.inaccessibleComps.Count > 0)
             {
                 if (infoString.Length > 0)
                     infoString += "\n";
-                infoString += "Inaccessible items:\n";
-                foreach (var inaccessible in aComp.inaccessibleItems)
-                    infoString += "  " + inaccessible.Key + ": " + Session.NumberFormat(inaccessible.Value) + "\n";
+                infoString += "Inaccessible items/comps:\n";
+                foreach (var inaccessible in aComp.inaccessibleComps)
+                    infoString += "  " + (inaccessible.Key == "Stone" ? "Gravel" : inaccessible.Key) + ": " + Session.NumberFormat(inaccessible.Value) + "\n";
             }
             infoPanel.Text = infoString;
         }
@@ -506,6 +506,9 @@ namespace BDAM
                     if (!aComp.tempRemovalList.Contains(item.Key.Id.SubtypeName))
                         aComp.tempRemovalList.Add(item.Key.Id.SubtypeName);
                 }
+                aComp.missingMatAmount.Clear();
+                aComp.missingMatQueue.Clear();
+                aComp.inaccessibleComps.Clear();
                 aComp.buildList.Clear();
                 infoPanel.Text = "";
                 UpdateAddMulti();

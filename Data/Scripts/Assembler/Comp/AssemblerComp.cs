@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using VRage;
+using VRage.Game.ModAPI;
+using VRage.Game.ModAPI.Ingame;
 
 namespace BDAM
 {
@@ -24,7 +26,7 @@ namespace BDAM
         internal Dictionary<MyBlueprintDefinitionBase, ListCompItem> buildList = new Dictionary<MyBlueprintDefinitionBase, ListCompItem>();
         internal GridComp gridComp;
         internal Dictionary<string, int> missingMatAmount = new Dictionary<string, int>();
-        internal Dictionary<string, int> inaccessibleItems = new Dictionary<string, int>();
+        internal Dictionary<string, int> inaccessibleComps = new Dictionary<string, int>();
         internal Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>> missingMatQueue = new Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>>();
         internal List<ulong> ReplicatedClients = new List<ulong>();
         internal int maxQueueAmount = 200;
@@ -110,9 +112,10 @@ namespace BDAM
                             var bp = (MyBlueprintDefinitionBase)queue[0].Blueprint;
                             foreach (var item in bp.Prerequisites)
                             {
+                                var adjustedAmount = item.Amount * Session.assemblerEfficiency;
+                                //Insufficient mats
                                 if ((!gridComp.inventoryList.ContainsKey(item.Id.SubtypeName) || gridComp.inventoryList[item.Id.SubtypeName] < item.Amount) && !missingMatAmount.ContainsKey(item.Id.SubtypeName))
                                 {
-                                    var adjustedAmount = item.Amount * Session.assemblerEfficiency;
                                     MyFixedPoint qty = 0;
                                     gridComp.inventoryList.TryGetValue(lComp.label, out qty);
                                     var subTotalNeeded = adjustedAmount * (lComp.buildAmount - qty);
@@ -127,16 +130,27 @@ namespace BDAM
                                     lComp.missingMats = true;
                                     if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Missing {item.Amount} ({adjustedAmount}) {item.Id.SubtypeName} for {lComp.label}");
                                 }
+                                else if (!assembler.InputInventory.ContainItems(adjustedAmount, item.Id)) //Inaccessible mats.  Looks at what the Keen pull has already done
+                                {
+                                    MyFixedPoint qty = 0;
+                                    gridComp.inventoryList.TryGetValue(item.Id.SubtypeName, out qty);
+                                    inaccessibleComps[item.Id.SubtypeName] = qty.ToIntSafe();
+                                    if (notification < 2)
+                                        SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" can't access {(item.Id.SubtypeName == "Stone" ? "Gravel" : item.Id.SubtypeName)} for {lComp.label}");
+                                    lComp.inaccessibleComps = true;
+                                    sendInacUpdates = true;
+                                }
                             }
                             //If it was indeed missing materials, remove item from queue
-                            if (lComp.missingMats)
+                            if (lComp.missingMats || lComp.inaccessibleComps)
                                 assembler.RemoveQueueItem(0, queue[0].Amount);
 
-                            if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats checked for {lComp.label}.  Progress: {assembler.CurrentProgress}  Actually missing: {lComp.missingMats}");
+                            if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats checked for {lComp.label}.  Progress: {assembler.CurrentProgress}  Actually missing: {lComp.missingMats} Inaccessible: {lComp.inaccessibleComps}");
                         }
                         else
                         {
-                            if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" manually added {queue[0].Blueprint.Id.SubtypeName} missing mats???"); //TODO wat do?
+                            assembler.RemoveQueueItem(0, queue[0].Amount);
+                            if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" manually added {queue[0].Blueprint.Id.SubtypeName} missing mats/stuck, removed from queue");
                         }
                     }
                     else //Disassembly stuck
@@ -149,7 +163,7 @@ namespace BDAM
                                 SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" cannot access items to be disassembled: {lComp.label}");
                             MyFixedPoint qty = 0;
                             gridComp.inventoryList.TryGetValue(lComp.label, out qty);
-                            inaccessibleItems[lComp.label] = qty.ToIntSafe();
+                            inaccessibleComps[lComp.label] = qty.ToIntSafe();
                             lComp.inaccessibleComps = true;
                             assembler.RemoveQueueItem(0, queue[0].Amount);
                             sendInacUpdates = true;
@@ -162,7 +176,7 @@ namespace BDAM
                 if (Session.MPActive)
                 {
                     if (sendInacUpdates)
-                        SendInaccessibleCompUpdates();
+                        SendInaccessibleUpdates();
                     if (sendMatUpdates)
                         SendMissingMatUpdates();
                 }
@@ -208,23 +222,23 @@ namespace BDAM
                     }
                 }
 
-            //Items that could be queued for disassembly but are inaccessible
-            if (inaccessibleItems.Count > 0)
-                foreach (var type in inaccessibleItems.Keys.ToArray())
+            //Comps that are inaccessible
+            if (inaccessibleComps.Count > 0)
+                foreach (var type in inaccessibleComps.Keys.ToArray())
                 {
                     //Check inv list for missing mat type
                     MyFixedPoint amountFound = 0;
                     if (gridComp.inventoryList.ContainsKey(type))
                          amountFound = gridComp.inventoryList[type];
-                    if (amountFound == inaccessibleItems[type])
+                    if (amountFound == inaccessibleComps[type])
                         continue;
                     else
                         foreach (var queue in buildList)
                             if (queue.Value.label == type)
                             {
                                 queue.Value.inaccessibleComps = false;
-                                if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" new items found that may fit disassembly criteria {type} oldqty:{inaccessibleItems[type]} newqty:{amountFound}");
-                                inaccessibleItems.Remove(type);
+                                if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" new items found that may be reachable by assembler {type} oldqty:{inaccessibleComps[type]} newqty:{amountFound}");
+                                inaccessibleComps.Remove(type);
                                 sendInacUpdates = true;
                             }
                 }
@@ -233,7 +247,7 @@ namespace BDAM
             if (Session.MPActive)
             {
                 if (sendInacUpdates)
-                    SendInaccessibleCompUpdates();
+                    SendInaccessibleUpdates();
                 if (sendMatUpdates)
                     SendMissingMatUpdates();
             }
@@ -290,12 +304,12 @@ namespace BDAM
                 EntityId = assembler.EntityId
             }, ReplicatedClients);
         }
-        internal void SendInaccessibleCompUpdates()
+        internal void SendInaccessibleUpdates()
         {
-            if (Session.netlogging) Log.WriteLine($"{Session.modName} Sending Inaccessible comp updates");
+            if (Session.netlogging) Log.WriteLine($"{Session.modName} Sending Inaccessible item updates");
             Session.SendPacketToClients(new InaccessibleCompPacket
             {
-                data = inaccessibleItems,
+                data = inaccessibleComps,
                 Type = PacketType.InaccessibleData,
                 EntityId = assembler.EntityId
             }, ReplicatedClients);
@@ -309,7 +323,7 @@ namespace BDAM
                     var lComp = listItem.Value;
                     if (lComp.missingMats && lComp.buildAmount == -1)
                         lComp.missingMats = false;
-                    if (lComp.priority != i || lComp.buildAmount == -1 || lComp.missingMats || (lComp.grindAmount > -1 && lComp.buildAmount > lComp.grindAmount))
+                    if (lComp.priority != i || lComp.buildAmount == -1 || lComp.missingMats || lComp.inaccessibleComps || (lComp.grindAmount > -1 && lComp.buildAmount > lComp.grindAmount))
                         continue;
                     var itemName = listItem.Key.Results[0].Id.SubtypeName;
                     MyFixedPoint amountAvail = 0;
@@ -320,11 +334,11 @@ namespace BDAM
                         var queueAmount = amountNeeded > maxQueueAmount ? maxQueueAmount : amountNeeded;
                         if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly)
                             assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly;
-                        var processingTime = (float)(listItem.Key.BaseProductionTimeInSeconds / Session.assemblerSpeed * (baseSpeed + assembler.UpgradeValues["Productivity"]) * queueAmount);
-                        if (!masterMode || (masterMode && processingTime > Session.refreshTimeSeconds))
+                        var processingTime = (float)(listItem.Key.BaseProductionTimeInSeconds / (Session.assemblerSpeed * (baseSpeed + assembler.UpgradeValues["Productivity"])) * queueAmount);
+                        if (!masterMode || (masterMode && processingTime < Session.refreshTimeSeconds))
                         {
                             lastQueue = new MyProductionQueueItem() { Blueprint = listItem.Key, Amount = queueAmount };
-                            if (Session.logging) Log.WriteLine($"{Session.modName}Queued build {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.buildAmount}");
+                            if (Session.logging) Log.WriteLine($"{Session.modName} {assembler.CustomName} Queued build {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.buildAmount}");
                             assembler.AddQueueItem(listItem.Key, queueAmount);
                         }
                         else
@@ -354,11 +368,11 @@ namespace BDAM
                             var queueAmount = amountExcess > maxQueueAmount ? maxQueueAmount : amountExcess;
                             if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
                                 assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly;
-                            var processingTime = (float)(listItem.Key.BaseProductionTimeInSeconds / Session.assemblerSpeed * (baseSpeed + assembler.UpgradeValues["Productivity"]) * queueAmount);
-                            if (!masterMode || (masterMode && processingTime > Session.refreshTimeSeconds))
+                            var processingTime = (float)(listItem.Key.BaseProductionTimeInSeconds / (Session.assemblerSpeed * (baseSpeed + assembler.UpgradeValues["Productivity"])) * queueAmount);
+                            if (!masterMode || (masterMode && processingTime < Session.refreshTimeSeconds))
                             {
                                 assembler.AddQueueItem(listItem.Key, queueAmount);
-                                if (Session.logging) Log.WriteLine($"{Session.modName}Queued grind {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.grindAmount}");
+                                if (Session.logging) Log.WriteLine($"{Session.modName} {assembler.CustomName} Queued grind {queueAmount} of {itemName}.  On-hand {amountAvail}  Target {listItem.Value.grindAmount}");
                             }
                             else
                                 AssemblerMaster(listItem.Key, queueAmount, false);
@@ -372,41 +386,50 @@ namespace BDAM
 
         public void AssemblerMaster(MyBlueprintDefinitionBase item, MyFixedPoint queueAmount, bool build)
         {
-            if (Session.logging) Log.WriteLine($"{Session.modName} Running work distribution for {queueAmount} of {item.Results[0].Id.SubtypeName}.");
+            if (Session.logging) Log.WriteLine($"{Session.modName} {assembler.CustomName} Running work distribution for {queueAmount} of {item.Results[0].Id.SubtypeName}.");
 
             // Kinda cludgy, gets list of available helpers
-            var availableList = new List<IMyAssembler>();
+            var availableList = new List<AssemblerComp>();
             foreach (var aComp in gridComp.assemblerList.Values)
             {
                 if (!aComp.helperMode || !aComp.assembler.Enabled || !aComp.assembler.UseConveyorSystem || !aComp.assembler.IsQueueEmpty || aComp.assembler == assembler || !aComp.assembler.CanUseBlueprint(item))
                     continue;
-                availableList.Add(aComp.assembler);
+                availableList.Add(aComp);
             }
+            var masterProcessingAmount = (int)(Session.refreshTimeSeconds / (item.BaseProductionTimeInSeconds / (Session.assemblerSpeed * (baseSpeed + assembler.UpgradeValues["Productivity"]))));
+            if (masterProcessingAmount > queueAmount)
+                masterProcessingAmount = (int)queueAmount;
+            queueAmount -= masterProcessingAmount;
 
-            // Calc workloads
-            var avail = availableList.Count;
-            if (avail == 0)
+            //Add to master
+            assembler.AddQueueItem(item, masterProcessingAmount);
+            if (Session.logging) Log.WriteLine($"{Session.modName} {assembler.CustomName} (master) assigned {masterProcessingAmount} of {item.Results[0].Id.SubtypeName}");
+
+            if (availableList.Count == 0)
             {
-                assembler.AddQueueItem(item, queueAmount);
-                if (Session.logging) Log.WriteLine($"{Session.modName} No available helpers found, queued {(build ? "build" : "grind")} {queueAmount} of {item.Results[0].Id.SubtypeName}");
+                if (Session.logging) Log.WriteLine($"{Session.modName} No available helpers found");
                 return;
             }
-            var remainder = (int)queueAmount % avail;
-            var workload = ((int)queueAmount - remainder) / avail;
-            
+
             // Iterate and assign
             foreach (var helper in availableList)
             {
-                if (build && helper.Mode != Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
-                    helper.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly;
-                else if (!build && helper.Mode != Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly)
-                    helper.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly;
+                if (build && helper.assembler.Mode != Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
+                    helper.assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly;
+                else if (!build && helper.assembler.Mode != Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly)
+                    helper.assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly;
 
-                helper.AddQueueItem(item, workload);
-                if (Session.logging) Log.WriteLine($"{Session.modName} {helper.CustomName} assigned {workload} of {item.Results[0].Id.SubtypeName}");
+                var helperProcessingAmount = (int)(Session.refreshTimeSeconds / (item.BaseProductionTimeInSeconds / (Session.assemblerSpeed * (helper.baseSpeed + helper.assembler.UpgradeValues["Productivity"]))));
+
+                if (helperProcessingAmount > queueAmount)
+                    helperProcessingAmount = (int)queueAmount;
+                queueAmount -= helperProcessingAmount;
+
+                helper.assembler.AddQueueItem(item, helperProcessingAmount);
+                if (Session.logging) Log.WriteLine($"{Session.modName} {helper.assembler.CustomName} assigned {helperProcessingAmount} of {item.Results[0].Id.SubtypeName}");
+                if (queueAmount == 0)
+                    return;
             }
-            assembler.AddQueueItem(item, workload + remainder);
-            if (Session.logging) Log.WriteLine($"{Session.modName} {assembler.CustomName} (master) assigned {workload + remainder} of {item.Results[0].Id.SubtypeName}");
         }
 
         public void Save()
@@ -481,7 +504,7 @@ namespace BDAM
             buildList.Clear();
             missingMatQueue.Clear();
             missingMatAmount.Clear();
-            inaccessibleItems.Clear();
+            inaccessibleComps.Clear();
         }
     }
 }

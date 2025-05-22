@@ -144,12 +144,13 @@ namespace BDAM
         {
             AssemblerComp aComp;
             var missing = "";
+            var inaccessible = "";
             if(aCompMap.TryGetValue(block.EntityId, out aComp))
             {
                 foreach(var missingMat in aComp.missingMatAmount)
-                {
                     missing += missingMat.Key + ": " + NumberFormat(missingMat.Value) + "\n";
-                }
+                foreach (var inaccessibleComp in aComp.inaccessibleComps)
+                    inaccessible += inaccessibleComp.Key + ": " + NumberFormat(inaccessibleComp.Value) + "\n";
             }
 
             timer.Restart();
@@ -220,6 +221,11 @@ namespace BDAM
                 d += "--Missing/Insufficient materials: \n";
                 d += missing + "\n";
             }
+            if (inaccessible.Length > 0)
+            {
+                d += "--Inaccessible components/materials: \n";
+                d += inaccessible + "\n";
+            }
 
 
             if (ammo.Count > 0)
@@ -241,7 +247,7 @@ namespace BDAM
 
             timer.Stop();
             d += $"\n\n Runtime: {timer.Elapsed.TotalMilliseconds} ms";
-            if (ore.Count + ingot.Count + component.Count + ammo.Count + missing.Length > 0)
+            if (ore.Count + ingot.Count + component.Count + ammo.Count + missing.Length + inaccessible.Length > 0)
                 MyAPIGateway.Utilities.ShowMissionScreen("Inventory Summary", "", "", d, null, "Close");
             else
                 MyAPIGateway.Utilities.ShowNotification("No ore, ingots, components, missing items, or ammo found");

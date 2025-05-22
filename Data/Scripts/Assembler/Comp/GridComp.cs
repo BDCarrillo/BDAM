@@ -60,6 +60,7 @@ namespace BDAM
                 var aComp = new AssemblerComp();
                 aComp.Init(assembler, this, _session);
                 assemblerList.Add(block, aComp);
+                aComp.gridComp.masterAssembler = aComp.masterMode ? aComp.assembler.EntityId : 0;
                 return;
             }
         }
@@ -97,9 +98,8 @@ namespace BDAM
                     if (b is IMyAssembler || b is IMyRefinery)
                     {
                         var prodBlock = b as IMyProductionBlock;
-                        var input = (MyInventoryBase)prodBlock.InputInventory;
-                        var output = (MyInventoryBase)prodBlock.OutputInventory;
 
+                        /*var input = (MyInventoryBase)prodBlock.InputInventory;
                         foreach (MyPhysicalInventoryItem item in input.GetItems())
                         {
                             if (inventoryList.ContainsKey(item.Content.SubtypeName))
@@ -107,6 +107,9 @@ namespace BDAM
                             else
                                 inventoryList.TryAdd(item.Content.SubtypeName, item.Amount);
                         }
+                        */
+
+                        var output = (MyInventoryBase)prodBlock.OutputInventory;
                         foreach (MyPhysicalInventoryItem item in output.GetItems())
                         {
                             if (inventoryList.ContainsKey(item.Content.SubtypeName))
@@ -114,7 +117,7 @@ namespace BDAM
                             else
                                 inventoryList.TryAdd(item.Content.SubtypeName, item.Amount);
                         }
-                        invCount += 2;
+                        invCount++;
                     }
                     else if (b.TryGetInventory(out inventory))
                     {
@@ -128,6 +131,7 @@ namespace BDAM
                         invCount++;
                     }
                 }
+
                 lastInvUpdate = Session.Tick;
                 updateCargos++;
                 timer.Stop();
