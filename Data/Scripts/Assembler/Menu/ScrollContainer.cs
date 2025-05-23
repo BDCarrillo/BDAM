@@ -40,7 +40,7 @@ namespace BDAM
                 Height = 60f * Session.resMult,
                 Color = new Color(41, 54, 62),
                 Padding = new Vector2(10,0),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.5f * Session.resMult, RichHudFramework.UI.Rendering.FontStyles.Underline),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1.5f * Session.resMult, RichHudFramework.UI.Rendering.FontStyles.Underline),
                 VertCenterText = false,
                 AutoResize = false,
                 ZOffset = 2,
@@ -52,7 +52,7 @@ namespace BDAM
                 Width = 300 * Session.resMult,
                 Height = title.Height * 0.5f,
                 Offset = new Vector2(10, -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1.25f * Session.resMult),
                 AutoResize = false,
                 Text = "Item Name",
                 InputEnabled = false,
@@ -63,7 +63,7 @@ namespace BDAM
                 Width = 300 * Session.resMult,
                 Height = title.Height * 0.5f,
                 Offset = new Vector2(325 * Session.resMult, -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1.25f * Session.resMult),
                 AutoResize = false,
                 Text = "Build to Qty",
                 InputEnabled = false,
@@ -74,7 +74,7 @@ namespace BDAM
                 Width = 300 * Session.resMult,
                 Height = title.Height * 0.5f,
                 Offset = new Vector2(465 * Session.resMult, -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1.25f * Session.resMult),
                 AutoResize = false,
                 Text = "Grind to Qty",
                 InputEnabled = false,
@@ -86,7 +86,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
                 Height = title.Height * 0.5f,
                 Offset = new Vector2(10, -10),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 2f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Center, 2f * Session.resMult),
                 AutoResize = false,
                 Width = 100 * Session.resMult,
                 Text = "X",
@@ -102,7 +102,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
                 Height = title.Height * 0.5f,
                 Offset = new Vector2(close.Offset.X - close.Width - (20 * Session.resMult), 0),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
                 Width = 140 * Session.resMult,
                 Text = "Summary",
@@ -119,7 +119,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
                 Height = title.Height * 0.5f,
                 Offset = new Vector2(summary.Offset.X - summary.Width, 0),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 0.9f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Center, 0.9f * Session.resMult),
                 AutoResize = false,
                 Width = 140 * Session.resMult,
                 Text = "Msg: ---",
@@ -136,7 +136,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
                 Height = title.Height * 0.5f,
                 Offset = new Vector2(notify.Offset.X - notify.Width, 0),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
                 Width = 140 * Session.resMult,
                 Text = "Auto: ---",
@@ -154,7 +154,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
                 Height = title.Height * 0.5f,
                 Offset = new Vector2(close.Offset.X - close.Width - (20 * Session.resMult), -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
                 Width = 140 * Session.resMult,
                 Text = "Clear All",
@@ -171,7 +171,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
                 Height = title.Height * 0.5f,
                 Offset = new Vector2(clearAll.Offset.X - clearAll.Width, -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
                 Width = 140 * Session.resMult,
                 Text = "Add All",
@@ -188,7 +188,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
                 Height = title.Height * 0.5f,
                 Offset = new Vector2(addAll.Offset.X - addAll.Width, -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
                 Width = 140 * Session.resMult,
                 Text = "Add",
@@ -205,7 +205,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
                 Height = title.Height * 0.5f,
                 Offset = new Vector2(add.Offset.X - add.Width, -title.Height * 0.5f),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1f * Session.resMult),
                 AutoResize = false,
                 Width = 220 * Session.resMult,
                 Text = "Max Queue: ---",
@@ -224,7 +224,7 @@ namespace BDAM
                 Width = 300 * Session.resMult,
                 Height = (700 - title.Height) * Session.resMult,
                 Offset = new Vector2(0, -title.Height),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1.25f * Session.resMult),
                 AutoResize = false,
                 VertCenterText = false,
                 InputEnabled = false,
@@ -482,7 +482,7 @@ namespace BDAM
             string infoString = "";
             if (aComp.missingMatAmount.Count > 0)
             {
-                infoString += "Missing/Insufficient materials:\n";
+                infoString += "Missing/Insufficient Materials:\n";
                 foreach (var missing in aComp.missingMatAmount)
                     infoString += "  " + (missing.Key == "Stone" ? "Gravel" : missing.Key) + ": " + Session.NumberFormat(missing.Value) + "\n";
             }
@@ -490,7 +490,7 @@ namespace BDAM
             {
                 if (infoString.Length > 0)
                     infoString += "\n";
-                infoString += "Inaccessible items/comps:\n";
+                infoString += "Inaccessible Items/Comps:\n";
                 foreach (var inaccessible in aComp.inaccessibleComps)
                     infoString += "  " + (inaccessible.Key == "Stone" ? "Gravel" : inaccessible.Key) + ": " + Session.NumberFormat(inaccessible.Value) + "\n";
             }

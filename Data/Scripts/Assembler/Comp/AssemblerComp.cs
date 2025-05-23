@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using VRage;
-using VRage.Game.ModAPI;
-using VRage.Game.ModAPI.Ingame;
 
 namespace BDAM
 {
@@ -216,9 +214,7 @@ namespace BDAM
                             }
                         }
                         if (remove)
-                        {
                             sendMatUpdates = true;
-                        }
                     }
                 }
 

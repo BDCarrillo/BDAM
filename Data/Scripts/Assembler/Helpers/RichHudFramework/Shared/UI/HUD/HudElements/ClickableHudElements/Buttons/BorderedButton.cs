@@ -92,8 +92,8 @@ namespace RichHudFramework.UI
                     lastColor = Color;
                     lastTextColor = TextBoard.Format.Color;
                 }
-
-                TextBoard.SetFormatting(TextBoard.Format.WithColor(lastTextColor));
+                if (UseFocusFormatting)
+                    TextBoard.SetFormatting(TextBoard.Format.WithColor(lastTextColor));
                 Color = HighlightColor;
             }
         }
@@ -110,7 +110,8 @@ namespace RichHudFramework.UI
                 else
                 {
                     Color = lastColor;
-                    TextBoard.SetFormatting(TextBoard.Format.WithColor(lastTextColor));
+                    if (UseFocusFormatting)
+                        TextBoard.SetFormatting(TextBoard.Format.WithColor(lastTextColor));
                 }
             }
         }

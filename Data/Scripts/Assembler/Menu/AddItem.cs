@@ -36,7 +36,7 @@ namespace BDAM
                 DimAlignment = DimAlignments.Height,
                 Width = Size.X - addBox.Width,
                 Offset = new Vector2(addBox.Width + 10, -5),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1f * Session.resMult),
                 AutoResize = false,
                 Text = bp.Results[0].Id.SubtypeName,
                 InputEnabled = false,

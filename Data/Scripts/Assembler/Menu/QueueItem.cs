@@ -13,6 +13,7 @@ namespace BDAM
         private readonly MyBlueprintDefinitionBase bp;
         private readonly TextBox labelBox, onHand;
         private readonly BorderedButton dBuild, dGrind, remove, buildAmount, grindAmount, priority;
+        private int qtyInt;
 
         public QueueItem(ListCompItem LComp, MyBlueprintDefinitionBase BP, HudElementBase parent) : base(parent)
         {
@@ -22,13 +23,19 @@ namespace BDAM
             ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Left;
             Size = new Vector2(600, 25 * Session.resMult);
 
+            //Onhand qty
+            var itemName = lComp.label;
+            MyFixedPoint qty;
+            if (Session.aWindow.scrollContainer.aComp.gridComp.inventoryList.TryGetValue(itemName, out qty))
+                qtyInt = qty.ToIntSafe();
+
             labelBox = new TextBox(this)
             {
                 ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
                 DimAlignment = DimAlignments.Height,
                 Width = 300 * Session.resMult,
                 Offset = new Vector2(20, 0),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1.25f * Session.resMult),
                 AutoResize = false,
                 Text = lComp.label,
                 InputEnabled = false,
@@ -39,7 +46,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
                 DimAlignment = DimAlignments.Height,
                 Offset = new Vector2(labelBox.Offset.X + labelBox.Width + 10, 0),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Right, 1.25f * Session.resMult),
+                Format = new GlyphFormat(lComp.buildAmount <= -1 ? Session.grey : qtyInt >= lComp.buildAmount ? new Color(150, 255, 170) : new Color(255, 170, 170), TextAlignment.Right, 1.25f * Session.resMult),
                 AutoResize = false,
                 Width = 140 * Session.resMult,
                 Text = lComp.buildAmount <= -1 ? "---" : Session.NumberFormat(lComp.buildAmount),
@@ -55,7 +62,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
                 DimAlignment = DimAlignments.Height,
                 Offset = new Vector2(buildAmount.Offset.X + buildAmount.Width + 5, 0),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
                 Width = 20 * Session.resMult,
                 Text = "X",
@@ -71,7 +78,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
                 DimAlignment = DimAlignments.Height,
                 Offset = new Vector2(dBuild.Offset.X + dBuild.Width + 15, 0),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Right, 1.25f * Session.resMult),
+                Format = new GlyphFormat(lComp.grindAmount <= -1 ? Session.grey : lComp.grindAmount >= qtyInt ? new Color(150, 255, 170) : new Color(255, 170, 170), TextAlignment.Right, 1.25f * Session.resMult),
                 AutoResize = false,
                 Width = 140 * Session.resMult,
                 Text = lComp.grindAmount <= -1 ? "---" : Session.NumberFormat(lComp.grindAmount),
@@ -87,7 +94,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
                 DimAlignment = DimAlignments.Height,
                 Offset = new Vector2(grindAmount.Offset.X + grindAmount.Width + 5, 0),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
                 Width = 20 * Session.resMult,
                 Text = "X",
@@ -103,27 +110,19 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
                 DimAlignment = DimAlignments.Height,
                 Offset = new Vector2(dGrind.Offset.X + dGrind.Width + 15, 0),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Left, 1.25f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1.25f * Session.resMult),
                 AutoResize = false,
                 Width = 140 * Session.resMult,
-                Text = "Inv: 0",
+                Text = "Inv: " + qtyInt,
                 InputEnabled = false,
             };
-
-            //Onhand qty
-            var itemName = lComp.label;
-            MyFixedPoint qty;
-            if (Session.aWindow.scrollContainer.aComp.gridComp.inventoryList.TryGetValue(itemName, out qty))
-            {
-                onHand.Text = "Inv: " + Session.NumberFormat(qty.ToIntSafe());
-            }
 
             priority = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
                 DimAlignment = DimAlignments.Height,
                 Offset = new Vector2(onHand.Offset.X + onHand.Width + 15, 0),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
                 Width = 120 * Session.resMult,
                 Text = "Pri: " + LComp.priority,
@@ -140,7 +139,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
                 DimAlignment = DimAlignments.Height,
                 Offset = new Vector2(priority.Offset.X + priority.Width + 15, 0),
-                Format = new GlyphFormat(new Color(220, 235, 242), TextAlignment.Center, 1f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
                 Width = 120 * Session.resMult,
                 Text = "Del",
@@ -214,7 +213,7 @@ namespace BDAM
         {
             var shift = MyAPIGateway.Input.IsKeyPress(VRage.Input.MyKeys.Shift); //100
             var control = MyAPIGateway.Input.IsKeyPress(VRage.Input.MyKeys.Control); //10
-            var both = shift && control;
+            var both = shift && control; //1000
 
             var amount = both ? 1000 : shift ? 100 : control ? 10 : 1;
             if (!increase)
@@ -224,12 +223,13 @@ namespace BDAM
             {
                 if(lComp.buildAmount == -1 && increase)
                     amount += 1;
-                if (lComp.buildAmount + amount < 0)
+                if (lComp.buildAmount + amount <= 0)
                     lComp.buildAmount = -1;
                 else if (lComp.buildAmount + amount >= int.MaxValue)
                     lComp.buildAmount = int.MaxValue;
                 else
                     lComp.buildAmount += amount;
+                buildAmount.Format = new GlyphFormat(lComp.buildAmount <= -1 ? Session.grey : qtyInt >= lComp.buildAmount ? Session.green : Session.red, TextAlignment.Right, 1.25f * Session.resMult);
                 buildAmount.Text = lComp.buildAmount <= -1 ? "---" : Session.NumberFormat(lComp.buildAmount);
             }
             else
@@ -242,6 +242,7 @@ namespace BDAM
                     lComp.grindAmount = int.MaxValue;
                 else
                     lComp.grindAmount += amount;
+                grindAmount.Format = new GlyphFormat(lComp.grindAmount <= -1 ? Session.grey : lComp.grindAmount >= qtyInt ? Session.green : Session.red, TextAlignment.Right, 1.25f * Session.resMult);
                 grindAmount.Text = lComp.grindAmount <= -1 ? "---" : Session.NumberFormat(lComp.grindAmount);
             }
             lComp.dirty = true;

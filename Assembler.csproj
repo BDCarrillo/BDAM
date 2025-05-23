@@ -182,6 +182,7 @@
     <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\Pages\TextPage.cs" />
     <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\RichHudTerminal.cs" />
     <Compile Include="Data\Scripts\Assembler\Helpers\RichHudFramework\Client\UI\SettingsMenu\TerminalPageCategory.cs" />
+    <Compile Include="Data\Scripts\Assembler\Helpers\TSS.cs" />
     <Compile Include="Data\Scripts\Assembler\Menu\AssemblerWindow.cs" />
     <Compile Include="Data\Scripts\Assembler\Menu\AddItem.cs" />
     <Compile Include="Data\Scripts\Assembler\Menu\ScrollContainer.cs" />

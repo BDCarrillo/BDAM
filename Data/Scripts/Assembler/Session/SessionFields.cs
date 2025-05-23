@@ -7,6 +7,7 @@ using System.Diagnostics;
 using VRage.Collections;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
+using VRageMath;
 
 
 namespace BDAM
@@ -43,6 +44,9 @@ namespace BDAM
         internal static Dictionary<string, float> speedMap = new Dictionary<string, float>();
         public static AssemblerWindow aWindow;
         public static float resMult;
+        public static Color red = new Color(255, 170, 170);
+        public static Color grey = new Color(220, 235, 242);
+        public static Color green = new Color(150, 255, 170);
 
 
         //TODO Future server settings

@@ -209,9 +209,8 @@ namespace BDAM
                             aComp.buildList.Clear();
 
                             foreach (var saved in loadFD.compItems)
-                            {
                                 aComp.buildList.Add(BPLookup[saved.bpBase], new ListCompItem() { bpBase = saved.bpBase, buildAmount = saved.buildAmount, grindAmount = saved.grindAmount, priority = saved.priority, label = saved.label });
-                            }
+
                             aComp.autoControl = loadFD.auto;
                             aComp.notification = loadFD.notif;
                             aComp.maxQueueAmount = loadFD.queueAmt;
