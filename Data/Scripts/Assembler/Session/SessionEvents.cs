@@ -56,10 +56,8 @@ namespace BDAM
                 IMyPlayer plyr;
                 PlayerMap.TryRemove(steamID, out plyr);
                 foreach(var grid in GridMap.Values)
-                {
                     foreach (var aComp in grid.assemblerList.Values)
                         aComp.ReplicatedClients.Remove(steamID);
-                }
             }
         }
         private void CombineItemStacks(IMyTerminalBlock block)

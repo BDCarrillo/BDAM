@@ -38,7 +38,7 @@ namespace BDAM
 
             if (!Visible && Session.MPActive)
             {
-                MyAPIGateway.Utilities.ShowNotification("Updating inventory...",500);
+                MyAPIGateway.Utilities.ShowNotification("Updating inventory...", 500);
                 aComp.gridComp.UpdateGrid();
             }
             scrollContainer.aComp = aComp;

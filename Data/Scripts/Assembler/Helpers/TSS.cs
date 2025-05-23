@@ -29,11 +29,8 @@ namespace BDAMTSS
         public BDAMTSS(IMyTextSurface surface, IMyCubeBlock block, Vector2 size) : base(surface, block, size)
         {
             mySurface = surface;
-            TerminalBlock = (IMyTerminalBlock)block; // internal stored m_block is the ingame interface which has no events, so can't unhook later on, therefore this field is required.
-            TerminalBlock.OnMarkForClose += BlockMarkedForClose; // required if you're gonna make use of Dispose() as it won't get called when block is removed or grid is cut/unloaded.
-
-            // Called when script is created.
-            // This class is instanced per LCD that uses it, which means the same block can have multiple instances of this script aswell (e.g. a cockpit with all its screens set to use this script).
+            TerminalBlock = (IMyTerminalBlock)block;
+            TerminalBlock.OnMarkForClose += BlockMarkedForClose;
         }
 
         public override void Dispose()
@@ -47,8 +44,6 @@ namespace BDAMTSS
             Dispose();
         }
 
-        // gets called at the rate specified by NeedsUpdate
-        // it can't run every tick because the LCD is capped at 6fps anyway.
         public override void Run()
         {
             try
@@ -220,7 +215,6 @@ namespace BDAMTSS
         void DrawError(Exception e)
         {
             MyLog.Default.WriteLineAndConsole($"{e.Message}\n{e.StackTrace}");
-
             try 
             {
                 Vector2 screenSize = Surface.SurfaceSize;

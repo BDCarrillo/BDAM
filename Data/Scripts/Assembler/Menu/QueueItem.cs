@@ -113,7 +113,7 @@ namespace BDAM
                 Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1.25f * Session.resMult),
                 AutoResize = false,
                 Width = 140 * Session.resMult,
-                Text = "Inv: " + qtyInt,
+                Text = "Inv: " + Session.NumberFormat(qtyInt),
                 InputEnabled = false,
             };
 
