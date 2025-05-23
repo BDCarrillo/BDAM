@@ -25,21 +25,15 @@ namespace BDAM
             _session = session;
             DimAlignment = DimAlignments.Both;
             IsMasking = true;
-            //Main BG
-            new TexturedBox(this)
-            {
-                Color = new Color(41, 54, 62, 220),
-                DimAlignment = DimAlignments.Both,
-                ParentAlignment = ParentAlignments.Center,              
-            };       
-
+            
             title = new LabelBox(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner,
                 DimAlignment = DimAlignments.Width,
-                Height = 60f * Session.resMult,
+                Height = 70f * Session.resMult,
                 Color = new Color(41, 54, 62),
-                Padding = new Vector2(10,0),
+                Padding = new Vector2(0,0),
+                TextPadding = new Vector2(20, 10),
                 Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1.5f * Session.resMult, RichHudFramework.UI.Rendering.FontStyles.Underline),
                 VertCenterText = false,
                 AutoResize = false,
@@ -84,32 +78,34 @@ namespace BDAM
             close = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = title.Height * 0.5f,
-                Offset = new Vector2(10, -10),
-                Format = new GlyphFormat(Session.grey, TextAlignment.Center, 2f * Session.resMult),
+                Height = title.Height - 20,
+                Offset = new Vector2(-10, 0),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1.5f * Session.resMult),
                 AutoResize = false,
                 Width = 100 * Session.resMult,
                 Text = "X",
                 ZOffset = 50,
                 TextPadding = new Vector2(8 * Session.resMult, 8 * Session.resMult),
+                Padding = new Vector2(2, 10),
                 UseFocusFormatting = false,
             };
             close.background.Width = close.Width;
+            close.background.Padding = Vector2.Zero;
 
             //Buttons: Top row
             summary = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = title.Height * 0.5f,
+                Height = title.Height * 0.5f - 10,
                 Offset = new Vector2(close.Offset.X - close.Width - (20 * Session.resMult), 0),
                 Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
-                Width = 140 * Session.resMult,
+                Width = 150 * Session.resMult,
                 Text = "Summary",
                 ZOffset = 50,
-                UseFocusFormatting = false,
                 TextPadding = new Vector2(8, 0),
-                Padding = new Vector2(8, 0),
+                Padding = new Vector2(10, 10),
+                UseFocusFormatting = false,
             };
             summary.background.Width = summary.Width;
             summary.background.Padding = Vector2.Zero;
@@ -117,16 +113,16 @@ namespace BDAM
             notify = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = title.Height * 0.5f,
+                Height = title.Height * 0.5f - 10,
                 Offset = new Vector2(summary.Offset.X - summary.Width, 0),
                 Format = new GlyphFormat(Session.grey, TextAlignment.Center, 0.9f * Session.resMult),
                 AutoResize = false,
-                Width = 140 * Session.resMult,
+                Width = 150 * Session.resMult,
                 Text = "Msg: ---",
                 ZOffset = 50,
-                UseFocusFormatting = false,
                 TextPadding = new Vector2(8, 0),
-                Padding = new Vector2(8, 0),
+                Padding = new Vector2(10, 10),
+                UseFocusFormatting = false,
             };
             notify.background.Width = notify.Width;
             notify.background.Padding = Vector2.Zero;
@@ -134,16 +130,16 @@ namespace BDAM
             autoMode = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = title.Height * 0.5f,
+                Height = title.Height * 0.5f - 10,
                 Offset = new Vector2(notify.Offset.X - notify.Width, 0),
                 Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
-                Width = 140 * Session.resMult,
+                Width = 150 * Session.resMult,
                 Text = "Auto: ---",
                 ZOffset = 50,
-                UseFocusFormatting = false,
                 TextPadding = new Vector2(8, 0),
-                Padding = new Vector2(8, 0),
+                Padding = new Vector2(10, 10),
+                UseFocusFormatting = false,
             };
             autoMode.background.Width = autoMode.Width;
             autoMode.background.Padding = Vector2.Zero;
@@ -152,16 +148,16 @@ namespace BDAM
             clearAll = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = title.Height * 0.5f,
+                Height = title.Height * 0.5f - 10,
                 Offset = new Vector2(close.Offset.X - close.Width - (20 * Session.resMult), -title.Height * 0.5f),
                 Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
-                Width = 140 * Session.resMult,
+                Width = 150 * Session.resMult,
                 Text = "Clear All",
                 ZOffset = 50,
-                UseFocusFormatting = false,
                 TextPadding = new Vector2(8, 0),
-                Padding = new Vector2(8, 0),
+                Padding = new Vector2(10, 10),
+                UseFocusFormatting = false,
             };
             clearAll.background.Width = clearAll.Width;
             clearAll.background.Padding = Vector2.Zero;
@@ -169,16 +165,16 @@ namespace BDAM
             addAll = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = title.Height * 0.5f,
+                Height = title.Height * 0.5f - 10,
                 Offset = new Vector2(clearAll.Offset.X - clearAll.Width, -title.Height * 0.5f),
                 Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
-                Width = 140 * Session.resMult,
+                Width = 150 * Session.resMult,
                 Text = "Add All",
                 ZOffset = 50,
-                UseFocusFormatting = false,
                 TextPadding = new Vector2(8, 0),
-                Padding = new Vector2(8, 0),
+                Padding = new Vector2(10, 10),
+                UseFocusFormatting = false,
             };
             addAll.background.Width = addAll.Width;
             addAll.background.Padding = Vector2.Zero;
@@ -186,16 +182,16 @@ namespace BDAM
             add = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = title.Height * 0.5f,
+                Height = title.Height * 0.5f - 10,
                 Offset = new Vector2(addAll.Offset.X - addAll.Width, -title.Height * 0.5f),
                 Format = new GlyphFormat(Session.grey, TextAlignment.Center, 1f * Session.resMult),
                 AutoResize = false,
-                Width = 140 * Session.resMult,
+                Width = 150 * Session.resMult,
                 Text = "Add",
                 ZOffset = 50,
-                UseFocusFormatting = false,
                 TextPadding = new Vector2(8, 0),
-                Padding = new Vector2(8, 0),
+                Padding = new Vector2(10, 10),
+                UseFocusFormatting = false,
             };
             add.background.Width = add.Width;
             add.background.Padding = Vector2.Zero;
@@ -203,16 +199,16 @@ namespace BDAM
             maxQueue = new BorderedButton(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Height = title.Height * 0.5f,
+                Height = title.Height * 0.5f - 10,
                 Offset = new Vector2(add.Offset.X - add.Width, -title.Height * 0.5f),
                 Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1f * Session.resMult),
                 AutoResize = false,
-                Width = 220 * Session.resMult,
+                Width = 240 * Session.resMult,
                 Text = "Max Queue: ---",
                 ZOffset = 50,
-                UseFocusFormatting = false,
                 TextPadding = new Vector2(8, 0),
-                Padding = new Vector2(8, 0),
+                Padding = new Vector2(10, 10),
+                UseFocusFormatting = false,
             };
             maxQueue.background.Width = maxQueue.Width;
             maxQueue.background.Padding = Vector2.Zero;
@@ -221,10 +217,10 @@ namespace BDAM
             infoPanel = new TextBox(this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Width = 300 * Session.resMult,
-                Height = (700 - title.Height) * Session.resMult,
+                Width = 320 * Session.resMult,
+                Height = 700 * Session.resMult - title.Height,
                 Offset = new Vector2(0, -title.Height),
-                Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1.25f * Session.resMult),
+                Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1f * Session.resMult),
                 AutoResize = false,
                 VertCenterText = false,
                 InputEnabled = false,
@@ -235,8 +231,8 @@ namespace BDAM
             addMulti = new ScrollBox(true, this)
             {
                 ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Right,
-                Width = 300 * Session.resMult,
-                Height = (700 - title.Height) * Session.resMult,
+                Width = 320 * Session.resMult,
+                Height = 700 * Session.resMult - title.Height,
                 Offset = new Vector2(0, -title.Height),
                 ZOffset = 1,
                 InputEnabled = false,
@@ -258,11 +254,7 @@ namespace BDAM
         private void UpdateAddMulti()
         {
             while (addMulti.Count > 0)
-            {
-                //addMulti.RemoveChild(addMulti[0].Element);
-                //addMulti[0].Element.Unregister();
                 addMulti.RemoveAt(0);
-            }
 
             var tempDict = new Dictionary<string, MyBlueprintDefinitionBase>();
             var sortList = new List<string>();
@@ -277,9 +269,7 @@ namespace BDAM
             sortList.Sort();
 
             foreach (var bp in sortList)
-            {
                 addMulti.Add(new AddItem(tempDict[bp], null));
-            }
         }
 
         private void LeftClick(object sender, EventArgs e)
@@ -309,7 +299,10 @@ namespace BDAM
             }
             else if (sender == clearAll)
             {
-                Clear(true);
+                if (addMulti.Visible)
+                    UpdateAddMulti();
+                else
+                    Clear(true);
             }
             else if (sender == autoMode)
             {
@@ -407,10 +400,11 @@ namespace BDAM
         {
             foreach (var item in queueList)
                 item.InputEnabled = enable;
-            autoMode.InputEnabled = enable;
-            addAll.InputEnabled = enable;
-            clearAll.InputEnabled = enable;
-            summary.InputEnabled = enable;
+            autoMode.Visible = enable;
+            addAll.Visible = enable;
+            summary.Visible = enable;
+            notify.Visible = enable;
+            maxQueue.Visible = enable;
 
             addMulti.Visible = !enable;
             addMulti.InputEnabled = !enable;
@@ -462,7 +456,7 @@ namespace BDAM
             }
             
             //Starting offset to get scrollbox list items below header bar
-            float offset = (60 * Session.resMult + 5) * -1;
+            float offset = (title.Height * Session.resMult + 6) * -1;
 
             //queuelist stacking to simulate a scroll list
             for(int i = 0; i < queueList.Count; i++) 
@@ -475,7 +469,7 @@ namespace BDAM
                 }
                 qItem.Visible = true;
                 qItem.Offset = new Vector2(-8, offset);
-                offset -= qItem.Size.Y + 5; //+5 for add'l spacing between rows
+                offset -= qItem.Size.Y + 6; //for add'l spacing between rows
             }
             UpdateAddMulti();
 

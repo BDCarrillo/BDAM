@@ -5,20 +5,21 @@ using Sandbox.ModAPI;
 
 namespace BDAM
 {
-    public class AssemblerWindow : HudElementBase
+    public class AssemblerWindow : WindowBase
     {
         public WindowScrollContainer scrollContainer;
         public bool initted;
         public Session _session;
         public AssemblerWindow(HudParentBase parent, Session session) : base(parent)
         {
-            //Size = new Vector2(1300, 700);
             Offset = new Vector2(0,0);
-            //scrollContainer = new WindowScrollContainer(this);
             _session = session;
             Visible = false;
             UseCursor = true;
             ShareCursor = true;
+            BodyColor = new Color(41, 54, 62, 220);
+            BorderColor = new Color(41, 54, 62);
+            border.Thickness = 3;
         }
         public void ToggleVisibility(AssemblerComp aComp = null, bool closeOnly = false)
         {
