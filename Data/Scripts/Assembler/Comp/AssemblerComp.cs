@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using VRage;
+using static VRage.Game.ObjectBuilders.Definitions.MyObjectBuilder_GameDefinition;
 
 namespace BDAM
 {
@@ -112,7 +113,7 @@ namespace BDAM
                             {
                                 var adjustedAmount = item.Amount * Session.assemblerEfficiency;
                                 //Insufficient mats
-                                if ((!gridComp.inventoryList.ContainsKey(item.Id.SubtypeName) || gridComp.inventoryList[item.Id.SubtypeName] < item.Amount) && !missingMatAmount.ContainsKey(item.Id.SubtypeName))
+                                if ((!gridComp.inventoryList.ContainsKey(item.Id.SubtypeName) || gridComp.inventoryList[item.Id.SubtypeName] < item.Amount) && !missingMatAmount.ContainsKey(item.Id.SubtypeName)) //TODO rework missing mat/queue to be a sum total, including updates to decrement value
                                 {
                                     MyFixedPoint qty = 0;
                                     gridComp.inventoryList.TryGetValue(lComp.label, out qty);
@@ -235,6 +236,11 @@ namespace BDAM
                                 queue.Value.inaccessibleComps = false;
                                 if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" new items found that may be reachable by assembler {type} oldqty:{inaccessibleComps[type]} newqty:{amountFound}");
                                 inaccessibleComps.Remove(type);
+                                ListCompItem lComp;
+                                if (buildList.TryGetValue(queue.Key, out lComp))
+                                {
+                                    lComp.inaccessibleComps = false;
+                                }
                                 sendInacUpdates = true;
                             }
                 }
@@ -392,7 +398,16 @@ namespace BDAM
                     continue;
                 availableList.Add(aComp);
             }
-            var masterProcessingAmount = (int)(Session.refreshTimeSeconds / (item.BaseProductionTimeInSeconds / (Session.assemblerSpeed * (baseSpeed + assembler.UpgradeValues["Productivity"]))));
+            if (availableList.Count == 0)
+            {
+                assembler.AddQueueItem(item, queueAmount);
+                if (Session.logging) Log.WriteLine($"{Session.modName} No available helpers found {assembler.CustomName} (master) assigned {queueAmount} of {item.Results[0].Id.SubtypeName}");
+                return;
+            }
+
+            var masterProcessingAmount = (int)(Session.refreshTimeSeconds * 2 / (item.BaseProductionTimeInSeconds / (Session.assemblerSpeed * (baseSpeed + assembler.UpgradeValues["Productivity"]))));
+            if (masterProcessingAmount == 0)
+                masterProcessingAmount = 1;            
             if (masterProcessingAmount > queueAmount)
                 masterProcessingAmount = (int)queueAmount;
             queueAmount -= masterProcessingAmount;
@@ -400,12 +415,6 @@ namespace BDAM
             //Add to master
             assembler.AddQueueItem(item, masterProcessingAmount);
             if (Session.logging) Log.WriteLine($"{Session.modName} {assembler.CustomName} (master) assigned {masterProcessingAmount} of {item.Results[0].Id.SubtypeName}");
-
-            if (availableList.Count == 0)
-            {
-                if (Session.logging) Log.WriteLine($"{Session.modName} No available helpers found");
-                return;
-            }
 
             // Iterate and assign
             foreach (var helper in availableList)
@@ -415,8 +424,9 @@ namespace BDAM
                 else if (!build && helper.assembler.Mode != Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly)
                     helper.assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly;
 
-                var helperProcessingAmount = (int)(Session.refreshTimeSeconds / (item.BaseProductionTimeInSeconds / (Session.assemblerSpeed * (helper.baseSpeed + helper.assembler.UpgradeValues["Productivity"]))));
-
+                var helperProcessingAmount = (int)(Session.refreshTimeSeconds * 2 / (item.BaseProductionTimeInSeconds / (Session.assemblerSpeed * (helper.baseSpeed + helper.assembler.UpgradeValues["Productivity"]))));
+                if (helperProcessingAmount == 0)
+                    helperProcessingAmount = 1;
                 if (helperProcessingAmount > queueAmount)
                     helperProcessingAmount = (int)queueAmount;
                 queueAmount -= helperProcessingAmount;
