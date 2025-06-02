@@ -37,7 +37,7 @@ namespace BDAM
                 initted = true;
             }
 
-            if (!Visible && Session.MPActive)
+            if (!Visible)
             {
                 MyAPIGateway.Utilities.ShowNotification("Updating inventory...", 500);
                 aComp.gridComp.UpdateGrid();
@@ -49,7 +49,7 @@ namespace BDAM
             if(Visible)
                 scrollContainer.title.Text = aComp.assembler.DisplayNameText + " on " + aComp.assembler.CubeGrid.DisplayName;
             if (!Visible && aComp != null)
-                aComp.Save();
+                aComp.SaveClient();
         }
     }
 }

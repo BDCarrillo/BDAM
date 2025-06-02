@@ -1,6 +1,7 @@
 ﻿using Sandbox.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -196,9 +197,9 @@ namespace BDAM
                 }
                 errorMsg += "3";
             }
-            catch
+            catch (Exception e)
             {
-                Log.WriteLine(errorMsg);
+                Log.WriteLine(errorMsg + "\n" + e);
                 MyLog.Default.WriteLineAndConsole(errorMsg);
             }
         }

@@ -118,11 +118,11 @@ namespace BDAMTSS
                 }
             }
 
-            if (aComp.inaccessibleComps.Count > 0)
+            if (aComp.inaccessibleMats.Count > 0)
             {
                 WriteTextSprite(ref frame, "Inaccessible Items/Comps:", myPosition, TextAlignment.LEFT);
                 myPosition += newLine;
-                foreach (var inaccessible in aComp.inaccessibleComps)
+                foreach (var inaccessible in aComp.inaccessibleMats)
                 {
                     var label = inaccessible.Key == "Stone" ? "Gravel" : inaccessible.Key;
                     WriteTextSprite(ref frame, "  " + label + ": " + Session.NumberFormat(inaccessible.Value), myPosition, TextAlignment.LEFT);

@@ -21,7 +21,7 @@ namespace BDAM
         public static bool MPActive;
 
         internal bool controlInit;
-        internal static bool logging = false;
+        internal static bool logging = true;
         internal static bool netlogging = false;
 
         private readonly Stack<GridComp> _gridCompPool = new Stack<GridComp>(128);

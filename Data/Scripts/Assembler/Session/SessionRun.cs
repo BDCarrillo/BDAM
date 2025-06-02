@@ -35,18 +35,15 @@ namespace BDAM
         }
         public override void BeforeStart()
         {
-            if (MPActive)
+            if (Client)
             {
-                if (Client)
-                {
-                    MyAPIGateway.Utilities.MessageEnteredSender += OnMessageEnteredSender;
-                    MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ClientPacketId, ProcessPacket);
-                }
-                if (Server)
-                {
-                    MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ServerPacketId, ProcessPacket);
-                    MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisco;
-                }
+                MyAPIGateway.Utilities.MessageEnteredSender += OnMessageEnteredSender;
+                MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ClientPacketId, ProcessPacket);
+            }
+            if (Server)
+            {
+                MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ServerPacketId, ProcessPacket);
+                MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisco;
             }
 
             if (Server)
@@ -124,22 +121,16 @@ namespace BDAM
 
             if (Client)
             {
+                MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(ClientPacketId, ProcessPacket);
                 MyAPIGateway.Utilities.MessageEnteredSender -= OnMessageEnteredSender;
                 if (aWindow != null)
                     aWindow.Unregister();
             }
 
-            if (MPActive)
+            if (Server)
             {
-                if (Client)
-                {
-                    MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(ClientPacketId, ProcessPacket);
-                }
-                if (Server)
-                {
-                    MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(ServerPacketId, ProcessPacket);
-                    MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisco;
-                }
+                MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(ServerPacketId, ProcessPacket);
+                MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisco;
             }
             Log.Close();
         }

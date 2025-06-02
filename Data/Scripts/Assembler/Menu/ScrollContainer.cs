@@ -313,13 +313,9 @@ namespace BDAM
                 }
                 aComp.autoControl = !aComp.autoControl;
                 autoMode.Text = "Auto: " + (aComp.autoControl ? "On" : "Off");
-                if (Session.MPActive)
-                {
-                    if (Session.netlogging)
-                        Log.WriteLine(Session.modName + $"Sending updated auto control state to server " + aComp.autoControl);
-                    var packet = new UpdateStatePacket { Var = UpdateType.autoControl, Value = aComp.autoControl ? 1 : 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
-                    _session.SendPacketToServer(packet);
-                }
+                if (Session.netlogging) Log.WriteLine(Session.modName + $"Sending updated auto control state to server " + aComp.autoControl);
+                var packet = new UpdateStatePacket { Var = UpdateType.autoControl, Value = aComp.autoControl ? 1 : 0, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
+                _session.SendPacketToServer(packet);
             }
             else if (sender == notify)
             {
@@ -327,13 +323,9 @@ namespace BDAM
                 if (aComp.notification > 2)
                     aComp.notification = 0;
                 notify.Text = "Msg: " + (aComp.notification == 0 ? "Own" : aComp.notification == 1 ? "Fac" :"Off");
-                if (Session.MPActive)
-                {
-                    if (Session.netlogging)
-                        Log.WriteLine(Session.modName + $"Sending updated notification state to server " + aComp.notification);
-                    var packet = new UpdateStatePacket { Var = UpdateType.notification, Value = aComp.notification, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
-                    _session.SendPacketToServer(packet);
-                }
+                if (Session.netlogging) Log.WriteLine(Session.modName + $"Sending updated notification state to server " + aComp.notification);
+                var packet = new UpdateStatePacket { Var = UpdateType.notification, Value = aComp.notification, Type = PacketType.UpdateState, EntityId = aComp.assembler.EntityId };
+                _session.SendPacketToServer(packet);
             }
             else if (sender == summary)
             {
@@ -480,12 +472,12 @@ namespace BDAM
                 foreach (var missing in aComp.missingMatAmount)
                     infoString += "  " + (missing.Key == "Stone" ? "Gravel" : missing.Key) + ": " + Session.NumberFormat(missing.Value) + "\n";
             }
-            if (aComp.inaccessibleComps.Count > 0)
+            if (aComp.inaccessibleMats.Count > 0)
             {
                 if (infoString.Length > 0)
                     infoString += "\n";
                 infoString += "Inaccessible Items/Comps:\n";
-                foreach (var inaccessible in aComp.inaccessibleComps)
+                foreach (var inaccessible in aComp.inaccessibleMats)
                     infoString += "  " + (inaccessible.Key == "Stone" ? "Gravel" : inaccessible.Key) + ": " + Session.NumberFormat(inaccessible.Value) + "\n";
             }
             infoPanel.Text = infoString;
@@ -502,7 +494,7 @@ namespace BDAM
                 }
                 aComp.missingMatAmount.Clear();
                 aComp.missingMatQueue.Clear();
-                aComp.inaccessibleComps.Clear();
+                aComp.inaccessibleMats.Clear();
                 aComp.buildList.Clear();
                 infoPanel.Text = "";
                 UpdateAddMulti();

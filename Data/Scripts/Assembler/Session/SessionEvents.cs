@@ -32,8 +32,7 @@ namespace BDAM
         }
         private void PlayerConnected(ulong playerId)
         {
-            if (netlogging)
-                Log.WriteLine(modName + $"Player connected - {playerId}");
+            if (netlogging) Log.WriteLine(modName + $"Player connected - {playerId}");
             MyAPIGateway.Multiplayer.Players.GetPlayers(null, myPlayer => FindPlayer(myPlayer, playerId));
         }
         private bool FindPlayer(IMyPlayer player, ulong id)
@@ -41,15 +40,13 @@ namespace BDAM
             if (player.SteamUserId == id)
             {
                 PlayerMap.TryAdd(id, player);
-                if (netlogging)
-                    Log.WriteLine(modName + $"Player added to map - {player.DisplayName} {id}");
+                if (netlogging) Log.WriteLine(modName + $"Player added to map - {player.DisplayName} {id}");
             }
             return false;
         }
         private void PlayerDisco(long playerId)
         {
-            if (netlogging)
-                Log.WriteLine(modName + $"Player disconnected - {playerId}");
+            if (netlogging) Log.WriteLine(modName + $"Player disconnected - {playerId}");
             var steamID = MyAPIGateway.Multiplayer.Players.TryGetSteamId(playerId);
             if(steamID > 0)
             {
@@ -147,7 +144,7 @@ namespace BDAM
             {
                 foreach(var missingMat in aComp.missingMatAmount)
                     missing += missingMat.Key + ": " + NumberFormat(missingMat.Value) + "\n";
-                foreach (var inaccessibleComp in aComp.inaccessibleComps)
+                foreach (var inaccessibleComp in aComp.inaccessibleMats)
                     inaccessible += inaccessibleComp.Key + ": " + NumberFormat(inaccessibleComp.Value) + "\n";
             }
 
@@ -344,7 +341,7 @@ namespace BDAM
                 }
 
                 if (changesMade)
-                    aComp.Save();
+                    aComp.SaveClient();
             }
         }
     }
