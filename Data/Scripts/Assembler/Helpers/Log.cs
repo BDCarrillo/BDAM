@@ -28,14 +28,11 @@ namespace BDAM
                     RenameFileInLocalStorage(oldName, newName, typeof(Log));
                 }
             }
-
             string fileName = LOG_PREFIX + 0 + LOG_SUFFIX;
             TextWriter = MyAPIGateway.Utilities.WriteFileInLocalStorage(fileName, typeof(Log));
-
             var message = $"{DateTime.Now:dd-MM-yy HH-mm-ss} - Logging Started";
             TextWriter.WriteLine(message);
             TextWriter.Flush();
-
         }
 
         internal static void RenameFileInLocalStorage(string oldName, string newName, Type anyObjectInYourMod)
@@ -88,6 +85,5 @@ namespace BDAM
             if (hasInner)
                 LogException(ex.InnerException);
         }
-
     }
 }

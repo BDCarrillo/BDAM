@@ -1,20 +1,16 @@
 ﻿using System.Collections.Generic;
 using System;
-using System.Threading;
-using Sandbox.ModAPI;
 using VRage.Game;
 using VRage;
 using VRage.Utils;
 using VRageMath;
 using VRageRender;
-using RichHudFramework.Internal;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 
 namespace RichHudFramework
 {
     namespace UI
     {
-        using ApiMemberAccessor = System.Func<object, int, object>;
         using TriangleBillboardData = MyTuple<
             BlendTypeEnum, // blendType
             Vector2I, // bbID + matrixID

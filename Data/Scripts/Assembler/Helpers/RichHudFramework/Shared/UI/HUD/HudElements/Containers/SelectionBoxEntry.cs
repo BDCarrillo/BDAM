@@ -1,11 +1,4 @@
-﻿using System;
-using System.Text;
-using VRage;
-using System.Collections.Generic;
-using GlyphFormatMembers = VRage.MyTuple<byte, float, VRageMath.Vector2I, VRageMath.Color>;
-using ApiMemberAccessor = System.Func<object, int, object>;
-
-namespace RichHudFramework.UI
+﻿namespace RichHudFramework.UI
 {
     public class SelectionBoxEntry<TElement> : HudElementContainer<TElement>, ISelectionBoxEntry<TElement>
         where TElement : HudElementBase

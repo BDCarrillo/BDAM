@@ -1,5 +1,4 @@
-﻿using Sandbox.Definitions;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Concurrent;
@@ -83,7 +82,6 @@ namespace BDAM
         }
         internal void UpdateGrid()
         {
-            var errorMsg = "BDAM crash in update grid";
             try
             {
                 //TODO look at dampening inv updates if they are unchanged repeatedly?
@@ -93,42 +91,18 @@ namespace BDAM
                 MyInventoryBase inventory;
                 foreach (var b in Grid.Inventories.ToArray())
                 {
-                    if (!(b is IMyAssembler || b is IMyCargoContainer || b is IMyRefinery || b is IMyShipConnector))
-                        continue;
-
                     if (b is IMyAssembler || b is IMyRefinery)
                     {
                         var prodBlock = b as IMyProductionBlock;
-
-                        /*var input = (MyInventoryBase)prodBlock.InputInventory;
-                        foreach (MyPhysicalInventoryItem item in input.GetItems())
-                        {
-                            if (inventoryList.ContainsKey(item.Content.SubtypeName))
-                                inventoryList[item.Content.SubtypeName] += item.Amount;
-                            else
-                                inventoryList.TryAdd(item.Content.SubtypeName, item.Amount);
-                        }
-                        */
-
                         var output = (MyInventoryBase)prodBlock.OutputInventory;
                         foreach (MyPhysicalInventoryItem item in output.GetItems())
-                        {
-                            if (inventoryList.ContainsKey(item.Content.SubtypeName))
-                                inventoryList[item.Content.SubtypeName] += item.Amount;
-                            else
-                                inventoryList.TryAdd(item.Content.SubtypeName, item.Amount);
-                        }
+                            inventoryList.AddOrUpdate(item.Content.SubtypeName, item.Amount, (key, current) => current += item.Amount);
                         invCount++;
                     }
-                    else if (b.TryGetInventory(out inventory))
+                    else if ((b is IMyCargoContainer || b is IMyShipConnector) && b.TryGetInventory(out inventory))
                     {
                         foreach (MyPhysicalInventoryItem item in inventory.GetItems())
-                        {
-                            if (inventoryList.ContainsKey(item.Content.SubtypeName))
-                                inventoryList[item.Content.SubtypeName] += item.Amount;
-                            else
-                                inventoryList.TryAdd(item.Content.SubtypeName, item.Amount);
-                        }
+                            inventoryList.AddOrUpdate(item.Content.SubtypeName, item.Amount, (key, current) => current += item.Amount);
                         invCount++;
                     }
                 }
@@ -137,7 +111,6 @@ namespace BDAM
                 updateCargos++;
                 timer.Stop();
                 if (Session.logging) Log.WriteLine($"{Session.modName}{Grid.DisplayName} inventory update runtime: {timer.Elapsed.TotalMilliseconds}");
-                errorMsg += "1";
 
                 //Assembler updates
                 if (Session.Server)
@@ -181,7 +154,6 @@ namespace BDAM
                         }
                     nextUpdate += Session.refreshTime;
                 }
-                errorMsg += "2";
                 if (fatblocksDirty)
                 {
                     fatblocksDirty = false;
@@ -195,12 +167,11 @@ namespace BDAM
                         }
                     }
                 }
-                errorMsg += "3";
             }
             catch (Exception e)
             {
-                Log.WriteLine(errorMsg + "\n" + e);
-                MyLog.Default.WriteLineAndConsole(errorMsg);
+                Log.WriteLine("BDAM crash in update grid" + "\n" + e);
+                MyLog.Default.WriteLineAndConsole("BDAM crash in update grid" + "\n" + e);
             }
         }
 

@@ -150,13 +150,13 @@ namespace BDAM
                                         data = aComp.missingMatAmount
                                     }, sender);
                                 }
-                                if (aComp.inaccessibleMats.Count > 0)
+                                if (aComp.inaccessibleMatAmount.Count > 0)
                                 {
                                     SendPacketToClient(new InaccessibleCompPacket
                                     {
                                         EntityId = aComp.assembler.EntityId,
                                         Type = PacketType.InaccessibleData,
-                                        data = aComp.inaccessibleMats
+                                        data = aComp.inaccessibleMatAmount
                                     }, sender);
                                 }
                             }
@@ -252,7 +252,7 @@ namespace BDAM
                         break;
                     case PacketType.InaccessibleData:
                         var inPacket = packet as InaccessibleCompPacket;
-                        aComp.inaccessibleMats = inPacket.data;
+                        aComp.inaccessibleMatAmount = inPacket.data;
                         if (netlogging) Log.WriteLine(modName + $"Received inaccessible item data from server");
                         break;
                     default:

@@ -2,11 +2,9 @@
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using VRage;
-using static VRage.Game.ObjectBuilders.Definitions.MyObjectBuilder_GameDefinition;
 
 namespace BDAM
 {
@@ -26,12 +24,12 @@ namespace BDAM
         internal Dictionary<MyBlueprintDefinitionBase, ListCompItem> buildList = new Dictionary<MyBlueprintDefinitionBase, ListCompItem>();
         internal GridComp gridComp;
         internal Dictionary<string, int> missingMatAmount = new Dictionary<string, int>();
-        internal Dictionary<string, int> inaccessibleMats = new Dictionary<string, int>();
+        internal Dictionary<string, int> inaccessibleMatAmount = new Dictionary<string, int>();
         internal Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>> missingMatQueue = new Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>>();
         internal Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>> inaccessibleMatQueue = new Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>>();
 
         internal List<ulong> ReplicatedClients = new List<ulong>();
-        internal int maxQueueAmount = 200;
+        internal int maxQueueAmount = 500;
         internal float baseSpeed = 0f;
 
         //Temps for networking updates/removals
@@ -137,7 +135,7 @@ namespace BDAM
                                 {
                                     MyFixedPoint qty = 0;
                                     gridComp.inventoryList.TryGetValue(item.Id.SubtypeName, out qty);
-                                    inaccessibleMats[item.Id.SubtypeName] = qty.ToIntSafe();
+                                    inaccessibleMatAmount[item.Id.SubtypeName] = qty.ToIntSafe();
                                     if (notification < 2)
                                         SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" can't access {(item.Id.SubtypeName == "Stone" ? "Gravel" : item.Id.SubtypeName)} for {lComp.label}");
                                     lComp.inaccessibleComps = true;
@@ -166,7 +164,7 @@ namespace BDAM
                                 SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" cannot access items to be disassembled: {lComp.label}");
                             MyFixedPoint qty = 0;
                             gridComp.inventoryList.TryGetValue(lComp.label, out qty);
-                            inaccessibleMats[lComp.label] = qty.ToIntSafe();
+                            inaccessibleMatAmount[lComp.label] = qty.ToIntSafe();
                             lComp.inaccessibleComps = true;
                             assembler.RemoveQueueItem(0, queue[0].Amount);
                             sendInacUpdates = true;
@@ -203,22 +201,22 @@ namespace BDAM
 
                 //Comps that are inaccessible
                 //TODO redo this like Missing Mats above
-                if (inaccessibleMats.Count > 0)
-                    foreach (var type in inaccessibleMats.Keys.ToArray())
+                if (inaccessibleMatAmount.Count > 0)
+                    foreach (var type in inaccessibleMatAmount.Keys.ToArray())
                     {
                         //Check inv list for missing mat type
                         MyFixedPoint amountFound = 0;
                         if (gridComp.inventoryList.ContainsKey(type))
                             amountFound = gridComp.inventoryList[type];
-                        if (amountFound == inaccessibleMats[type])
+                        if (amountFound == inaccessibleMatAmount[type])
                             continue;
                         else
                             foreach (var queue in buildList)
                                 if (queue.Value.label == type)
                                 {
                                     queue.Value.inaccessibleComps = false;
-                                    if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" new items found that may be reachable by assembler {type} oldqty:{inaccessibleMats[type]} newqty:{amountFound}");
-                                    inaccessibleMats.Remove(type);
+                                    if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" new items found that may be reachable by assembler {type} oldqty:{inaccessibleMatAmount[type]} newqty:{amountFound}");
+                                    inaccessibleMatAmount.Remove(type);
                                     ListCompItem lComp;
                                     if (buildList.TryGetValue(queue.Key, out lComp))
                                     {
@@ -297,7 +295,7 @@ namespace BDAM
             if (Session.netlogging) Log.WriteLine($"{Session.modName} Sending Inaccessible item updates");
             _session.SendPacketToClients(new InaccessibleCompPacket
             {
-                data = inaccessibleMats,
+                data = inaccessibleMatAmount,
                 Type = PacketType.InaccessibleData,
                 EntityId = assembler.EntityId
             }, ReplicatedClients);
@@ -487,7 +485,7 @@ namespace BDAM
             buildList.Clear();
             missingMatQueue.Clear();
             missingMatAmount.Clear();
-            inaccessibleMats.Clear();
+            inaccessibleMatAmount.Clear();
             inaccessibleMatQueue.Clear();
         }
     }

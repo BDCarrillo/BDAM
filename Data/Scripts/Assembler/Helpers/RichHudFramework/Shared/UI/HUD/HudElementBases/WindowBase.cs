@@ -1,12 +1,10 @@
 ﻿using System;
 using VRageMath;
 using RichHudFramework.UI.Rendering;
-using RichHudFramework.Internal;
 
 namespace RichHudFramework.UI
 {
     using Client;
-    using Server;
 
     /// <summary>
     /// Base type for HUD windows. Supports dragging/resizing like pretty much every other window ever.

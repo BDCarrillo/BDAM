@@ -1,13 +1,9 @@
 ﻿using System.Collections.Generic;
 using System;
-using System.Threading;
-using Sandbox.ModAPI;
-using VRage.Game;
 using VRage;
 using VRage.Utils;
 using VRageMath;
 using VRageRender;
-using RichHudFramework.UI.Rendering;
 using RichHudFramework.Client;
 using RichHudFramework.Internal;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;

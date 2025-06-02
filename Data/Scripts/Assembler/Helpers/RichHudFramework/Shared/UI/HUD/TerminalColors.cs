@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using VRageMath;
+﻿using VRageMath;
 
 namespace RichHudFramework.UI
 {

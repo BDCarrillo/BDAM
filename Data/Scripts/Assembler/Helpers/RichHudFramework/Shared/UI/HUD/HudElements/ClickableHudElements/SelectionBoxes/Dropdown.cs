@@ -6,7 +6,6 @@ using VRage;
 namespace RichHudFramework.UI
 {
     using Rendering;
-    using Server;
     using System.Collections;
 
     /// <summary>

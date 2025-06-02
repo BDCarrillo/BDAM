@@ -1,7 +1,6 @@
 ﻿using Sandbox.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using System;
 using System.Collections.Generic;
 using VRage.Game;
 using VRage.Game.Components;
@@ -100,40 +99,24 @@ namespace BDAM
         }
         internal void StartComps()
         {
-            try
+            _startGrids.ApplyAdditions();
+            for (int i = 0; i < _startGrids.Count; i++)
             {
-                _startGrids.ApplyAdditions();
-                for (int i = 0; i < _startGrids.Count; i++)
-                {
-                    var grid = _startGrids[i];
-                    if (grid.IsPreview)
-                        continue;
-
-                    var gridComp = _gridCompPool.Count > 0 ? _gridCompPool.Pop() : new GridComp();
-                    gridComp.Init(grid, this);
-
-                    GridMap[grid] = gridComp;
-                    grid.OnClose += OnGridClose;
-                }
-                _startGrids.ClearImmediate();
+                var grid = _startGrids[i];
+                var gridComp = _gridCompPool.Count > 0 ? _gridCompPool.Pop() : new GridComp();
+                gridComp.Init(grid, this);
+                GridMap[grid] = gridComp;
+                grid.OnClose += OnGridClose;
             }
-            catch (Exception ex)
-            {
-                Log.WriteLine($"{modName} Error with StartComps {ex}");
-            }
+            _startGrids.ClearImmediate();
         }
         private void OnEntityCreate(MyEntity entity)
         {
             var grid = entity as MyCubeGrid;
-            if (grid != null)
-            {
+            if (grid != null && !grid.IsPreview)
                 _startGrids.Add(grid);
-            }
             if (Client && !controlInit && entity is IMyAssembler)
-            {
-                controlInit = true;
                 CreateTerminalControls<IMyAssembler>();
-            }
         }
         public static void OpenSummary(IMyTerminalBlock block)
         {
@@ -144,7 +127,7 @@ namespace BDAM
             {
                 foreach(var missingMat in aComp.missingMatAmount)
                     missing += missingMat.Key + ": " + NumberFormat(missingMat.Value) + "\n";
-                foreach (var inaccessibleComp in aComp.inaccessibleMats)
+                foreach (var inaccessibleComp in aComp.inaccessibleMatAmount)
                     inaccessible += inaccessibleComp.Key + ": " + NumberFormat(inaccessibleComp.Value) + "\n";
             }
 
@@ -171,43 +154,30 @@ namespace BDAM
                         switch (itemType)
                         {
                             case "MyObjectBuilder_Ore":
-                                {
-                                    if (!ore.ContainsKey(itemName))
-                                        ore.Add(itemName, 0);
-                                    ore[itemName] += (float)item.Amount;
-                                }
+                                if (!ore.ContainsKey(itemName))
+                                    ore.Add(itemName, 0);
+                                ore[itemName] += (float)item.Amount;
                                 break;
                             case "MyObjectBuilder_Ingot":
-                                {
-                                    if (itemName == "Stone") itemName = "Gravel"; //Thx Keen
-
-                                    if (!ingot.ContainsKey(itemName))
-                                        ingot.Add(itemName, 0);
-                                    ingot[itemName] += (float)item.Amount;
-                                }
+                                if (itemName == "Stone") itemName = "Gravel"; //Thx Keen
+                                if (!ingot.ContainsKey(itemName))
+                                    ingot.Add(itemName, 0);
+                                ingot[itemName] += (float)item.Amount;
                                 break;
                             case "MyObjectBuilder_Component":
-                                {
-                                    if (!component.ContainsKey(itemName))
-                                        component.Add(itemName, 0);
-                                    component[itemName] += (float)item.Amount;
-                                }
+                                if (!component.ContainsKey(itemName))
+                                    component.Add(itemName, 0);
+                                component[itemName] += (float)item.Amount;
                                 break;
                             case "MyObjectBuilder_AmmoMagazine":
-                                {
-                                    var ammoID = new MyDefinitionId(item.Content.TypeId, item.Content.SubtypeId);
-                                    var MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(ammoID);
-                                    itemName = MagazineDef.DisplayNameText;
-                                    if (!ammo.ContainsKey(itemName))
-                                        ammo.Add(itemName, 0);
-                                    ammo[itemName] += (float)item.Amount;
-                                }
+                                itemName = MyDefinitionManager.Static.GetAmmoMagazineDefinition(new MyDefinitionId(item.Content.TypeId, item.Content.SubtypeId)).DisplayNameText;
+                                if (!ammo.ContainsKey(itemName))
+                                    ammo.Add(itemName, 0);
+                                ammo[itemName] += (float)item.Amount;
                                 break;
                         }
                         if (itemName.Length > padLen)
-                        {
                             padLen = itemName.Length + 4;
-                        }
                     }
                 }
             }
@@ -221,7 +191,6 @@ namespace BDAM
                 d += "--Inaccessible components/materials: \n";
                 d += inaccessible + "\n";
             }
-
 
             if (ammo.Count > 0)
                 d += "--Ammo: \n";
@@ -341,7 +310,7 @@ namespace BDAM
                 }
 
                 if (changesMade)
-                    aComp.SaveClient();
+                    aComp.SaveClient(); //TODO verify this for MP
             }
         }
     }

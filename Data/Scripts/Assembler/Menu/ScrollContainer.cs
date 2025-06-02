@@ -472,12 +472,12 @@ namespace BDAM
                 foreach (var missing in aComp.missingMatAmount)
                     infoString += "  " + (missing.Key == "Stone" ? "Gravel" : missing.Key) + ": " + Session.NumberFormat(missing.Value) + "\n";
             }
-            if (aComp.inaccessibleMats.Count > 0)
+            if (aComp.inaccessibleMatAmount.Count > 0)
             {
                 if (infoString.Length > 0)
                     infoString += "\n";
                 infoString += "Inaccessible Items/Comps:\n";
-                foreach (var inaccessible in aComp.inaccessibleMats)
+                foreach (var inaccessible in aComp.inaccessibleMatAmount)
                     infoString += "  " + (inaccessible.Key == "Stone" ? "Gravel" : inaccessible.Key) + ": " + Session.NumberFormat(inaccessible.Value) + "\n";
             }
             infoPanel.Text = infoString;
@@ -494,7 +494,7 @@ namespace BDAM
                 }
                 aComp.missingMatAmount.Clear();
                 aComp.missingMatQueue.Clear();
-                aComp.inaccessibleMats.Clear();
+                aComp.inaccessibleMatAmount.Clear();
                 aComp.buildList.Clear();
                 infoPanel.Text = "";
                 UpdateAddMulti();

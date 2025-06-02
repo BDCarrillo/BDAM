@@ -1,6 +1,4 @@
-﻿using System;
-using VRage;
-using VRageMath;
+﻿using VRageMath;
 
 namespace RichHudFramework
 {

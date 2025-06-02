@@ -1,5 +1,4 @@
 ﻿using VRageMath;
-using System;
 
 namespace RichHudFramework.UI
 {

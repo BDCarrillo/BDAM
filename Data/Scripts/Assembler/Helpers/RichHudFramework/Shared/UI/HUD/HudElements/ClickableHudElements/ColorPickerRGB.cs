@@ -5,8 +5,6 @@ using VRageMath;
 
 namespace RichHudFramework.UI
 {
-    using UI;
-
     /// <summary>
     /// Named color picker using sliders designed to mimic the appearance of the color picker in the SE terminal.
     /// RGB only. Alpha not supported.

@@ -1,13 +1,8 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using VRageMath;
 using VRage;
 
 namespace RichHudFramework.UI
 {
-    using Rendering;
-
     /// <summary>
     /// Indented, collapsable list. Designed to fit in with SE UI elements.
     /// </summary>

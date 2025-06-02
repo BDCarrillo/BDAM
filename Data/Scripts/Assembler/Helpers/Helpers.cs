@@ -15,6 +15,7 @@ namespace BDAM
         internal readonly HashSet<IMyTerminalAction> _customActions = new HashSet<IMyTerminalAction>();
         internal void CreateTerminalControls<T>() where T : IMyAssembler
         {
+            controlInit = true;
             _customControls.Add(Separator<T>());
             _customControls.Add(AddOnOff<T>("queueOnOff", "BDAM Auto Queue Control", "Enables BDAM automatic queue control, as set\nin the assembler window accessed via hotbar", "On", "Off", GetAutoOnOff, SetAutoOnOff, CheckModeAuto, VisibleTrue));
             _customControls.Add(AddOnOff<T>("masterOnOff", "BDAM Master Mode", "Designates this assembler (max 1 per grid) as the Master\nwhich will balance large quantities or slow queued items\nout to available helpers", "On", "Off", GetMasterOnOff, SetMasterOnOff, CheckModeMaster, VisibleTrue));

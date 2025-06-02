@@ -1,13 +1,10 @@
 ﻿using System;
-using VRage;
 using VRageMath;
-using HudSpaceDelegate = System.Func<VRage.MyTuple<bool, float, VRageMath.MatrixD>>;
 
 namespace RichHudFramework
 {
     namespace UI
     {
-        using Server;
         using Client;
         using Internal;
 

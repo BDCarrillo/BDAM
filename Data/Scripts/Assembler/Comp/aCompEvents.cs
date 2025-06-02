@@ -94,9 +94,7 @@ namespace BDAM
                     return;
                 }
                 else
-                {
                     if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" failed to move {transferAmount} of {largestStack.Value.Type} out of input inventory");
-                }
             }
             else
             {

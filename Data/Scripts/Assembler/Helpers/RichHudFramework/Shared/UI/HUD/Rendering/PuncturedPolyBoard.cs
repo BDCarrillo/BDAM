@@ -4,9 +4,6 @@ using VRageMath;
 
 namespace RichHudFramework.UI.Rendering
 {
-    using Client;
-    using Server;
-
     /// <summary>
     /// Renders a 2D polygon using billboards with the center punched out.
     /// </summary>

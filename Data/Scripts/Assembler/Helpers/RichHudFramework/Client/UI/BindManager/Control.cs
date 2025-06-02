@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using VRage;
-using VRageMath;
-using ApiMemberAccessor = System.Func<object, int, object>;
-
-namespace RichHudFramework
+﻿namespace RichHudFramework
 {
     namespace UI.Client
     {

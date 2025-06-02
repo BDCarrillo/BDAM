@@ -1,7 +1,6 @@
 ﻿using Sandbox.ModAPI;
 using System;
 using VRage;
-using VRage.ModAPI;
 using VRageMath;
 using ApiMemberAccessor = System.Func<object, int, object>;
 using HudSpaceDelegate = System.Func<VRage.MyTuple<bool, float, VRageMath.MatrixD>>;
@@ -11,7 +10,6 @@ namespace RichHudFramework
     namespace UI
     {
         using Client;
-        using Server;
         using System.Collections.Generic;
         using HudUpdateAccessors = MyTuple<
             ApiMemberAccessor,

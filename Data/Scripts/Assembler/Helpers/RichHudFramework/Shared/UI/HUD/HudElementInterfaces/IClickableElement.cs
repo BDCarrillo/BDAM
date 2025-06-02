@@ -1,7 +1,4 @@
-﻿using System;
-using VRage;
-
-namespace RichHudFramework
+﻿namespace RichHudFramework
 {
     namespace UI
     {

@@ -1,27 +1,14 @@
-﻿using RichHudFramework.UI.Rendering;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using VRage;
 using GlyphFormatMembers = VRage.MyTuple<byte, float, VRageMath.Vector2I, VRageMath.Color>;
 using ApiMemberAccessor = System.Func<object, int, object>;
-using EventAccessor = VRage.MyTuple<bool, System.Action>;
 using BindDefinitionData = VRage.MyTuple<string, string[]>;
 
 namespace RichHudFramework
 {
-    using RichStringMembers = MyTuple<StringBuilder, GlyphFormatMembers>;
-    using ControlMembers = MyTuple<
-        ApiMemberAccessor, // GetOrSetMember
-        object // ID
-    >;
-    using ControlContainerMembers = MyTuple<
-        ApiMemberAccessor, // GetOrSetMember,
-        MyTuple<object, Func<int>>, // Member List
-        object // ID
-    >;
-
     namespace UI.Client
     {
         /// <summary>

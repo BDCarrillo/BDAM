@@ -2,7 +2,6 @@
 using System.Text;
 using System;
 using VRageMath;
-using VRage.Game;
 
 namespace RichHudFramework.UI
 {

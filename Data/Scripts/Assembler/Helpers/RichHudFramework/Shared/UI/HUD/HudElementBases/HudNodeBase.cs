@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using VRage;
 using VRageMath;
 using ApiMemberAccessor = System.Func<object, int, object>;
-using HudSpaceDelegate = System.Func<VRage.MyTuple<bool, float, VRageMath.MatrixD>>;
 
 namespace RichHudFramework
 {
     namespace UI
     {
-        using Client;
-        using Server;
         using Internal;
         using HudUpdateAccessors = MyTuple<
             ApiMemberAccessor,

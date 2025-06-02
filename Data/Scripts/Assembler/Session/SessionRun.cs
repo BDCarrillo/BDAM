@@ -44,10 +44,6 @@ namespace BDAM
             {
                 MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ServerPacketId, ProcessPacket);
                 MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisco;
-            }
-
-            if (Server)
-            {
                 refreshTimeSeconds = refreshTime * 0.016666666f;
                 assemblerEfficiency = 1 / Session.AssemblerEfficiencyMultiplier;
                 assemblerSpeed = Session.AssemblerSpeedMultiplier;
@@ -90,12 +86,10 @@ namespace BDAM
             }
             foreach(var a in assemblerBPs)
             {
-                var assemblerName = a.Key;
-                var assemblerBPList = a.Value;
-                assemblerBP2.Add(assemblerName, new List<MyBlueprintDefinitionBase>());
-                foreach (var bpClass in assemblerBPList)
+                assemblerBP2.Add(a.Key, new List<MyBlueprintDefinitionBase>());
+                foreach (var bpClass in a.Value)
                     foreach (var bp in BPClasses[bpClass])
-                        assemblerBP2[assemblerName].Add(bp);
+                        assemblerBP2[a.Key].Add(bp);
             }
         }
 
@@ -126,7 +120,6 @@ namespace BDAM
                 if (aWindow != null)
                     aWindow.Unregister();
             }
-
             if (Server)
             {
                 MyAPIGateway.Multiplayer.UnregisterSecureMessageHandler(ServerPacketId, ProcessPacket);

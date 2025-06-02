@@ -1,11 +1,9 @@
-﻿using RichHudFramework.UI.Rendering;
-using VRageMath;
+﻿using VRageMath;
 
 namespace RichHudFramework.UI
 {
     using Rendering;
     using Rendering.Client;
-    using Rendering.Server;
 
     /// <summary>
     /// HUD element used to render text.

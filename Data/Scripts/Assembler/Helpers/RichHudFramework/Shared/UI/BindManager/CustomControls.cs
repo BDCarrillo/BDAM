@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using VRage;
-
-namespace RichHudFramework
+﻿namespace RichHudFramework
 {
     namespace UI
     {

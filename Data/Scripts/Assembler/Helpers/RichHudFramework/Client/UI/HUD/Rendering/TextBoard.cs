@@ -7,7 +7,6 @@ using GlyphFormatMembers = VRage.MyTuple<byte, float, VRageMath.Vector2I, VRageM
 
 namespace RichHudFramework
 {
-    using BoolProp = MyTuple<Func<bool>, Action<bool>>;
     using FloatProp = MyTuple<Func<float>, Action<float>>;
     using RichStringMembers = MyTuple<StringBuilder, GlyphFormatMembers>;
     using Vec2Prop = MyTuple<Func<Vector2>, Action<Vector2>>;
@@ -15,7 +14,6 @@ namespace RichHudFramework
     namespace UI
     {
         using UI.Client;
-        using UI.Server;
         using TextBuilderMembers = MyTuple<
             MyTuple<Func<int, int, object>, Func<int>>, // GetLineMember, GetLineCount
             Func<Vector2I, int, object>, // GetCharMember

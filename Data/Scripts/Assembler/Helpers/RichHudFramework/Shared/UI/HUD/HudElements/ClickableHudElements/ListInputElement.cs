@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Text;
-using VRage;
 using VRageMath;
-using System.Collections.Generic;
-using RichHudFramework.UI.Rendering;
-using System.Collections;
-using System.Reflection;
 
 namespace RichHudFramework.UI
 {

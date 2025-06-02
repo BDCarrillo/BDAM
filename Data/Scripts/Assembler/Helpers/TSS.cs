@@ -10,8 +10,6 @@ using VRage.Utils;
 using VRageMath;
 using BDAM;
 using Sandbox.Game.Entities;
-using System.Reflection;
-using Sandbox.Game.Replication.StateGroups;
 
 namespace BDAMTSS
 {
@@ -118,11 +116,11 @@ namespace BDAMTSS
                 }
             }
 
-            if (aComp.inaccessibleMats.Count > 0)
+            if (aComp.inaccessibleMatAmount.Count > 0)
             {
                 WriteTextSprite(ref frame, "Inaccessible Items/Comps:", myPosition, TextAlignment.LEFT);
                 myPosition += newLine;
-                foreach (var inaccessible in aComp.inaccessibleMats)
+                foreach (var inaccessible in aComp.inaccessibleMatAmount)
                 {
                     var label = inaccessible.Key == "Stone" ? "Gravel" : inaccessible.Key;
                     WriteTextSprite(ref frame, "  " + label + ": " + Session.NumberFormat(inaccessible.Value), myPosition, TextAlignment.LEFT);

@@ -1,11 +1,9 @@
 ﻿using RichHudFramework.Internal;
-using Sandbox.ModAPI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using VRage;
-using VRage.Game;
 using VRage.Game.Components;
 
 namespace RichHudFramework.UI

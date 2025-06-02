@@ -197,9 +197,7 @@ namespace BDAM
                 lComp.dirty = true;
             }
             else
-            {
                 Session.aWindow.scrollContainer.RemoveQueueItem(bp);
-            }
         }
         private void RightClicked(object sender, EventArgs e) 
         {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using VRage;
 using VRage.Input;
 
@@ -7,7 +6,6 @@ namespace RichHudFramework
 {
     namespace UI
     {
-        using Server;
         using Client;
         using System.Collections;
 

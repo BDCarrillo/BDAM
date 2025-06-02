@@ -46,7 +46,7 @@ namespace BDAM
             Visible = !Visible;
             HudMain.EnableCursor = Visible;
             scrollContainer.Update(true);
-            if(Visible)
+            if (Visible)
                 scrollContainer.title.Text = aComp.assembler.DisplayNameText + " on " + aComp.assembler.CubeGrid.DisplayName;
             if (!Visible && aComp != null)
                 aComp.SaveClient();

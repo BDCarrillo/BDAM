@@ -1,15 +1,12 @@
 ﻿using RichHudFramework.UI.Rendering;
-using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using VRageMath;
 
 namespace RichHudFramework.UI
 {
     using Client;
-    using Server;
 
     /// <summary>
     /// Clickable text box. Supports text highlighting and has its own text caret. Text only, no background.

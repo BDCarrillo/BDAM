@@ -3,9 +3,6 @@ using System;
 
 namespace RichHudFramework.UI
 {
-    using Client;
-    using Server;
-
     /// <summary>
     /// Generic clickable slider bar. Can be oriented vertically or horizontally. Current value
     /// automatically clamped between min and max.

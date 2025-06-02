@@ -2,9 +2,7 @@
 using RichHudFramework.UI.Rendering;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using VRageMath;
-using EventHandler = RichHudFramework.EventHandler;
 
 namespace RichHudFramework.UI
 {

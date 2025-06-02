@@ -1,9 +1,7 @@
-﻿using RichHudFramework.UI.Rendering;
-using System;
+﻿using System;
 using System.Text;
 using VRage;
 using ApiMemberAccessor = System.Func<object, int, object>;
-using EventAccessor = VRage.MyTuple<bool, System.Action>;
 using GlyphFormatMembers = VRage.MyTuple<byte, float, VRageMath.Vector2I, VRageMath.Color>;
 
 namespace RichHudFramework
@@ -18,7 +16,6 @@ namespace RichHudFramework
         ApiMemberAccessor, // GetOrSetMember
         object // ID
     >;
-    using RichStringMembers = MyTuple<StringBuilder, GlyphFormatMembers>;
 
     namespace UI.Client
     {

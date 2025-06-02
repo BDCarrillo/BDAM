@@ -1,13 +1,9 @@
 ﻿using System;
-using VRage;
 using VRageMath;
-using HudSpaceDelegate = System.Func<VRage.MyTuple<bool, float, VRageMath.MatrixD>>;
 
 namespace RichHudFramework.UI
 {
     using Client;
-    using Server;
-    using Internal;
 
     /// <summary>
     /// A clickable box. Doesn't render any textures or text. Must be used in conjunction with other elements.

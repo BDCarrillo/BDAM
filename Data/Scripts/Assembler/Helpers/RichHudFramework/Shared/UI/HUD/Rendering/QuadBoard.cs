@@ -1,11 +1,5 @@
-﻿using Sandbox.ModAPI;
-using System;
-using System.Collections.Generic;
-using VRage.Game;
-using VRage.Utils;
+﻿using VRage.Utils;
 using VRageMath;
-using VRageRender;
-using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 
 namespace RichHudFramework
 {
@@ -13,9 +7,6 @@ namespace RichHudFramework
     {
         namespace Rendering
         {
-            using Client;
-            using Server;
-
             /// <summary>
             /// Bounding box paired with another as a mask for clipping billboards
             /// </summary>

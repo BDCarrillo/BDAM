@@ -4,7 +4,6 @@ using VRage.Input;
 namespace RichHudFramework.UI
 {
     using Client;
-    using Server;
 
     /// <summary>
     /// Wrapper used to provide easy access to library key binds.

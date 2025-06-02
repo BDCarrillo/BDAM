@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Text;
-using VRage;
 using VRageMath;
-using GlyphFormatMembers = VRage.MyTuple<byte, float, VRageMath.Vector2I, VRageMath.Color>;
 
 namespace RichHudFramework.UI
 {

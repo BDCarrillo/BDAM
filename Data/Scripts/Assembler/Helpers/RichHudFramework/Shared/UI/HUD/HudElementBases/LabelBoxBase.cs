@@ -1,14 +1,9 @@
-﻿using System;
-using VRage;
-using VRageMath;
+﻿using VRageMath;
 
 namespace RichHudFramework
 {
     namespace UI
     {
-        using Client;
-        using Server;
-
         /// <summary>
         /// Base type for hud elements that have text elements and a <see cref="TexturedBox"/> background.
         /// </summary>

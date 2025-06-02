@@ -1,10 +1,6 @@
-﻿
-using RichHudFramework.UI.Rendering;
-using Sandbox.ModAPI;
-using System.Text;
+﻿using Sandbox.ModAPI;
 using VRage.Collections;
 using System;
-using VRageMath;
 
 namespace RichHudFramework.UI
 {
