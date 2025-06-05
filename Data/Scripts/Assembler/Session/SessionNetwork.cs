@@ -191,12 +191,11 @@ namespace BDAM
                             }
                             foreach (var removed in load.compItemsRemove)
                             {
-                                //TODO add inaccessible check
-                                if (aComp.missingMatQueue.ContainsKey(BPLookup[removed]))
-                                {
-                                    aComp.missingMatQueue.Remove(BPLookup[removed]);
+                                if (aComp.inaccessibleMatQueue.Remove(BPLookup[removed]))
+                                    sendInaccessibleMatUpdates = true;
+                                aComp.buildList.Remove(BPLookup[removed]);
+                                if (aComp.missingMatQueue.Remove(BPLookup[removed]))
                                     sendMissingMatUpdates = true;
-                                }
                                 aComp.buildList.Remove(BPLookup[removed]);
                             }
 
@@ -315,12 +314,12 @@ namespace BDAM
     }
 
     [ProtoContract]
-    public class MissingMatPacket : Packet //TODO rework to a status packet of just info panel text?  JIT on open?
+    public class MissingMatPacket : Packet
     {
         [ProtoMember(4)] internal Dictionary<string, int> data;
     }
     [ProtoContract]
-    public class InaccessibleCompPacket : Packet //TODO rework to a status packet of just info panel text?  JIT on open?
+    public class InaccessibleCompPacket : Packet
     {
         [ProtoMember(4)] internal Dictionary<string, int> data;
     }

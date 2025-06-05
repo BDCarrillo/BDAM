@@ -11,6 +11,14 @@ namespace BDAM
 {
     public partial class Session : MySessionComponentBase
     {
+        public static string FriendlyNameLookup(string name)
+        {
+            if (NameLookupFriendly.ContainsKey(name))
+                return NameLookupFriendly[name];
+            return name;
+        }
+
+
         private List<IMyTerminalControl> _customControls = new List<IMyTerminalControl>();
         internal readonly HashSet<IMyTerminalAction> _customActions = new HashSet<IMyTerminalAction>();
         internal void CreateTerminalControls<T>() where T : IMyAssembler

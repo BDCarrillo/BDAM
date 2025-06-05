@@ -37,7 +37,7 @@ namespace BDAM
                 Offset = new Vector2(20, 0),
                 Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1.25f * Session.resMult),
                 AutoResize = false,
-                Text = lComp.label,
+                Text = Session.FriendlyNameLookup(lComp.label),
                 InputEnabled = false,
             };
 

@@ -1,8 +1,4 @@
-﻿using System.Text;
-using VRage;
-using GlyphFormatMembers = VRage.MyTuple<byte, float, VRageMath.Vector2I, VRageMath.Color>;
-
-namespace RichHudFramework.UI.Client
+﻿namespace RichHudFramework.UI.Client
 {
     /// <summary>
     /// Labeled checkbox designed to mimic the appearance of checkboxes in the SE terminal.

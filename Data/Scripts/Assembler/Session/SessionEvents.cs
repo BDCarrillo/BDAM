@@ -135,10 +135,10 @@ namespace BDAM
             var controlledGrid = (MyCubeGrid)block.CubeGrid;
             string d = "";
             int padLen = 0;
-            Dictionary<string, float> ore = new Dictionary<string, float>();
-            Dictionary<string, float> ingot = new Dictionary<string, float>();
-            Dictionary<string, float> component = new Dictionary<string, float>();
-            Dictionary<string, float> ammo = new Dictionary<string, float>();
+            SortedDictionary<string, float> ore = new SortedDictionary<string, float>();
+            SortedDictionary<string, float> ingot = new SortedDictionary<string, float>();
+            SortedDictionary<string, float> component = new SortedDictionary<string, float>();
+            SortedDictionary<string, float> ammo = new SortedDictionary<string, float>();
 
             MyInventoryBase inventory;
             foreach (var b in controlledGrid.Inventories)
@@ -149,7 +149,7 @@ namespace BDAM
                     foreach (MyPhysicalInventoryItem item in invList)
                     {
                         var itemType = item.Content.TypeId.ToString();
-                        var itemName = item.Content.SubtypeName;
+                        var itemName = MyDefinitionManager.Static.GetDefinition(new MyDefinitionId(item.Content.TypeId, item.Content.SubtypeId)).DisplayNameText;
 
                         switch (itemType)
                         {

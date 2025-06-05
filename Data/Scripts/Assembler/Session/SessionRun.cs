@@ -52,7 +52,7 @@ namespace BDAM
             //Find assemblers and BP classes they can make
             foreach (var def in MyDefinitionManager.Static.GetAllDefinitions())
             {
-                if(def is MyAssemblerDefinition)
+                if (def is MyAssemblerDefinition)
                 {
                     //Iterate BP classes an assembler can build
                     var aDef = def as MyAssemblerDefinition;
@@ -74,14 +74,20 @@ namespace BDAM
                             if (bp.Public == false)
                                 continue;
                             bpList.Add(bp);
-                            if (!BPLookup.ContainsKey(bp.Id.SubtypeName))
-                                BPLookup.Add(bp.Id.SubtypeName, bp);
-                            if (!BPLookupFriendly.ContainsKey(bp.Results[0].Id.SubtypeName))
-                                BPLookupFriendly.Add(bp.Results[0].Id.SubtypeName, bp);
+
+                            BPLookup[bp.Id.SubtypeName] = bp;
+                            BPLookupFriendly[bp.Results[0].Id.SubtypeName] = bp;
+                            NameLookupFriendly[bp.Results[0].Id.SubtypeName] = bp.DisplayNameText;
                         }
                         BPClasses.Add(bpClass.Id.SubtypeName, bpList);                           
                     }
                     assemblerBPs.Add(def.Id.SubtypeId.ToString(), bpClassSubtypeNames);//Pop assembler specific list
+                }
+                if (def is MyPhysicalItemDefinition)
+                {
+                    var physDef = def as MyPhysicalItemDefinition;
+                    if (physDef.IsIngot || physDef.IsOre)
+                        NameLookupFriendly[physDef.Id.SubtypeName] = physDef.DisplayNameText;
                 }
             }
             foreach(var a in assemblerBPs)

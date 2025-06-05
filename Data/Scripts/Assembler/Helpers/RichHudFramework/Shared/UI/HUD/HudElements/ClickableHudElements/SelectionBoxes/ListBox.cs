@@ -1,9 +1,4 @@
-using System;
-using System.Text;
-using VRage;
 using VRageMath;
-using GlyphFormatMembers = VRage.MyTuple<byte, float, VRageMath.Vector2I, VRageMath.Color>;
-using ApiMemberAccessor = System.Func<object, int, object>;
 
 namespace RichHudFramework.UI
 {

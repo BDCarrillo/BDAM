@@ -1,6 +1,4 @@
-﻿using System;
-using VRage;
-using ApiMemberAccessor = System.Func<object, int, object>;
+﻿using ApiMemberAccessor = System.Func<object, int, object>;
 
 namespace RichHudFramework.UI.Client
 {

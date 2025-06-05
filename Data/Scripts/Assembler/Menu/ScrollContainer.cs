@@ -260,16 +260,17 @@ namespace BDAM
             var sortList = new List<string>();
             foreach (var bp in Session.assemblerBP2[aComp.assembler.BlockDefinition.SubtypeId])
             {
-                if (!aComp.buildList.ContainsKey(bp) && !sortList.Contains(bp.Results[0].Id.SubtypeName))
+                var friendly = Session.FriendlyNameLookup(bp.Results[0].Id.SubtypeName);
+                if (!aComp.buildList.ContainsKey(bp) && !sortList.Contains(friendly))
                 {
-                    tempDict[bp.Results[0].Id.SubtypeName] = bp;
-                    sortList.Add(bp.Results[0].Id.SubtypeName);
+                    tempDict[friendly] = bp;
+                    sortList.Add(friendly);
                 }
             }
             sortList.Sort();
 
-            foreach (var bp in sortList)
-                addMulti.Add(new AddItem(tempDict[bp], null));
+            foreach (var friendlyName in sortList)
+                addMulti.Add(new AddItem(tempDict[friendlyName], friendlyName, null));
         }
 
         private void LeftClick(object sender, EventArgs e)
@@ -300,7 +301,11 @@ namespace BDAM
             else if (sender == clearAll)
             {
                 if (addMulti.Visible)
-                    UpdateAddMulti();
+                    foreach (var addItem in addMulti)
+                    {
+                        var details = addItem.Element as AddItem;
+                        details.addBox.IsBoxChecked = false;
+                    }
                 else
                     Clear(true);
             }
@@ -339,7 +344,7 @@ namespace BDAM
                     foreach (var addItem in addMulti)
                     {
                         var details = addItem.Element as AddItem;
-                        if (details.boxChecked)
+                        if (details.addBox.IsBoxChecked)
                         {
                             var bp = details.bp;
                             var tempListCompItem = new ListCompItem() { bpBase = bp.Id.SubtypeName, label = bp.Results[0].Id.SubtypeName, dirty = true };
@@ -408,50 +413,43 @@ namespace BDAM
             aComp.buildList.Remove(key);
             if(!aComp.tempRemovalList.Contains(key.Id.SubtypeName))
                 aComp.tempRemovalList.Add(key.Id.SubtypeName);
-            Update(true);
+            Update(true, startPos);
         }
 
-        public void Update(bool rebuild = false)
+        public void Update(bool rebuild = false, int lastPos = 0)
         {
             if (rebuild)
             {
-                startPos = 0;
+                startPos = lastPos;
                 notify.Text = "Msg: " + (aComp.notification == 0 ? "Own" : aComp.notification == 1 ? "Fac" : "Off");
                 autoMode.Text = "Auto: " + (aComp.autoControl ? "On" : "Off");
                 maxQueue.Text = "Max Queue: " + Session.NumberFormat(aComp.maxQueueAmount);
                 Clear();
 
                 //Buildlist alphabetical sorting
-                var sortedList = new List<string>();
-                var refDict = new Dictionary<string, QueueItem>();
+                var refDict = new SortedDictionary<string, QueueItem>();
                 foreach (var item in aComp.buildList)
                 {
-                    if (sortedList.Contains(item.Value.label))
+                    var friendly = Session.FriendlyNameLookup(item.Value.label);
+
+                    if (refDict.ContainsKey(friendly))
                     {
-                        var errorMsg = $"BDAM error, multiple BPs for {item.Value.label}";
+                        var errorMsg = $"BDAM error, multiple BPs for {friendly}";
                         Log.WriteLine(errorMsg);
                         MyLog.Default.WriteLineAndConsole(errorMsg);
                         MyAPIGateway.Utilities.ShowNotification(errorMsg, 2000, "Red");
                     }
                     else
-                    {
-                        sortedList.Add(item.Value.label);
-                        refDict[item.Value.label] = new QueueItem(item.Value, item.Key, this);
-                    }
+                        refDict[friendly] = new QueueItem(item.Value, item.Key, this);
                 }
-                sortedList.Sort();
-
-                foreach (var item in sortedList)
-                {
-                    queueList.Add(refDict[item]);
-                }
+                queueList.AddRange(refDict.Values);
             }
             
             //Starting offset to get scrollbox list items below header bar
             float offset = (title.Height * Session.resMult + 6) * -1;
 
             //queuelist stacking to simulate a scroll list
-            for(int i = 0; i < queueList.Count; i++) 
+            for (int i = 0; i < queueList.Count; i++) 
             {
                 var qItem = queueList[i];
                 if (i < startPos)
@@ -488,10 +486,8 @@ namespace BDAM
             if(delete)
             {
                 foreach (var item in aComp.buildList)
-                {
                     if (!aComp.tempRemovalList.Contains(item.Key.Id.SubtypeName))
                         aComp.tempRemovalList.Add(item.Key.Id.SubtypeName);
-                }
                 aComp.missingMatAmount.Clear();
                 aComp.missingMatQueue.Clear();
                 aComp.inaccessibleMatAmount.Clear();

@@ -25,6 +25,7 @@ namespace BDAM
         internal GridComp gridComp;
         internal Dictionary<string, int> missingMatAmount = new Dictionary<string, int>();
         internal Dictionary<string, int> inaccessibleMatAmount = new Dictionary<string, int>();
+        internal Dictionary<string, int> inaccessibleCompAmount = new Dictionary<string, int>();
         internal Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>> missingMatQueue = new Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>>();
         internal Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>> inaccessibleMatQueue = new Dictionary<MyBlueprintDefinitionBase, Dictionary<string, MyFixedPoint>>();
 
@@ -126,24 +127,26 @@ namespace BDAM
                                     missingMatQueue[bp][item.Id.SubtypeName] = subTotalNeeded;
 
                                     if (notification < 2)
-                                        SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" missing {item.Id.SubtypeName} for {lComp.label}");
+                                        SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" missing {Session.FriendlyNameLookup(item.Id.SubtypeName)} for {lComp.label}");
                                     sendMatUpdates = true;
                                     lComp.missingMats = true;
                                     if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Missing {item.Amount} ({adjustedAmount}) {item.Id.SubtypeName} for {lComp.label}");
                                 }
-                                else if (!assembler.InputInventory.ContainItems(adjustedAmount, item.Id) && !missingMatAmount.ContainsKey(item.Id.SubtypeName)) //Inaccessible mats.  Looks at what the Keen pull has already done
+                                else if (!assembler.InputInventory.ContainItems(adjustedAmount, item.Id) && !missingMatQueue.ContainsKey(bp) && !inaccessibleMatQueue.ContainsKey(bp)) //Inaccessible mats.  Looks at what the Keen pull has already done
                                 {
                                     MyFixedPoint qty = 0;
                                     gridComp.inventoryList.TryGetValue(item.Id.SubtypeName, out qty);
-                                    inaccessibleMatAmount[item.Id.SubtypeName] = qty.ToIntSafe();
+                                    if (!inaccessibleMatQueue.ContainsKey(bp))
+                                        inaccessibleMatQueue.Add(bp, new Dictionary<string, MyFixedPoint>());
+                                    inaccessibleMatQueue[bp][item.Id.SubtypeName] = qty;
                                     if (notification < 2)
-                                        SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" can't access {(item.Id.SubtypeName == "Stone" ? "Gravel" : item.Id.SubtypeName)} for {lComp.label}");
-                                    lComp.inaccessibleComps = true;
+                                        SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" can't access {(item.Id.SubtypeName == "Stone" ? "Gravel" : Session.FriendlyNameLookup(item.Id.SubtypeName))} for {lComp.label}");
+                                    lComp.inaccessibleMats = true;
                                     sendInacUpdates = true;
                                 }
                             }
                             //If it was indeed missing materials, remove item from queue
-                            if (lComp.missingMats || lComp.inaccessibleComps)
+                            if (lComp.missingMats || lComp.inaccessibleMats)
                                 assembler.RemoveQueueItem(0, queue[0].Amount);
 
                             if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats checked for {lComp.label}.  Progress: {assembler.CurrentProgress}  Actually missing: {lComp.missingMats} Inaccessible: {lComp.inaccessibleComps}");
@@ -159,12 +162,16 @@ namespace BDAM
                         ListCompItem lComp;
                         if (buildList.TryGetValue((MyBlueprintDefinitionBase)queue[0].Blueprint, out lComp))
                         {
+                            var bp = (MyBlueprintDefinitionBase)queue[0].Blueprint;
                             if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" same item/qty found in disassembly queue, removing. Progress: {assembler.CurrentProgress}");
                             if (notification < 2)
-                                SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" cannot access items to be disassembled: {lComp.label}");
+                                SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" cannot access items to be disassembled: {Session.FriendlyNameLookup(lComp.label)}");
+
                             MyFixedPoint qty = 0;
                             gridComp.inventoryList.TryGetValue(lComp.label, out qty);
-                            inaccessibleMatAmount[lComp.label] = qty.ToIntSafe();
+                            if (!inaccessibleMatQueue.ContainsKey(bp))
+                                inaccessibleMatQueue.Add(bp, new Dictionary<string, MyFixedPoint>());
+                            inaccessibleMatQueue[bp][lComp.label] = qty.ToIntSafe();
                             lComp.inaccessibleComps = true;
                             assembler.RemoveQueueItem(0, queue[0].Amount);
                             sendInacUpdates = true;
@@ -176,56 +183,6 @@ namespace BDAM
 
             if (assembler.IsQueueEmpty) //Second check, since it might have been cleared
             {
-                //Missing mat list checks
-                if (missingMatQueue.Count > 0)
-                    foreach (var matQueue in missingMatQueue.Keys.ToArray())
-                    {
-                        foreach (var item in matQueue.Prerequisites)
-                        {
-                            if (gridComp.inventoryList.ContainsKey(item.Id.SubtypeName) && gridComp.inventoryList[item.Id.SubtypeName] >= item.Amount * Session.assemblerEfficiency)
-                            {
-                                missingMatQueue[matQueue].Remove(item.Id.SubtypeName);
-                                sendMatUpdates = true;
-                            }
-                        }
-                        if (missingMatQueue[matQueue].Count == 0)
-                        {
-                            ListCompItem lComp;
-                            if (buildList.TryGetValue(matQueue, out lComp))
-                            {
-                                lComp.missingMats = false;
-                                if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" removed {lComp.label} from missing mat list");
-                            }
-                        }
-                    }
-
-                //Comps that are inaccessible
-                //TODO redo this like Missing Mats above
-                if (inaccessibleMatAmount.Count > 0)
-                    foreach (var type in inaccessibleMatAmount.Keys.ToArray())
-                    {
-                        //Check inv list for missing mat type
-                        MyFixedPoint amountFound = 0;
-                        if (gridComp.inventoryList.ContainsKey(type))
-                            amountFound = gridComp.inventoryList[type];
-                        if (amountFound == inaccessibleMatAmount[type])
-                            continue;
-                        else
-                            foreach (var queue in buildList)
-                                if (queue.Value.label == type)
-                                {
-                                    queue.Value.inaccessibleComps = false;
-                                    if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" new items found that may be reachable by assembler {type} oldqty:{inaccessibleMatAmount[type]} newqty:{amountFound}");
-                                    inaccessibleMatAmount.Remove(type);
-                                    ListCompItem lComp;
-                                    if (buildList.TryGetValue(queue.Key, out lComp))
-                                    {
-                                        lComp.inaccessibleComps = false;
-                                    }
-                                    sendInacUpdates = true;
-                                }
-                    }
-
                 //Assemble/disassemble mode and iterations to see if something can be queued
                 if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
                 {
@@ -238,6 +195,54 @@ namespace BDAM
                         AssemblerTryBuild();
                 }
             }
+
+            //Missing mat list checks
+            if (missingMatQueue.Count > 0)
+                foreach (var matQueue in missingMatQueue.Keys.ToArray())
+                {
+                    foreach (var item in matQueue.Prerequisites)
+                    {
+                        if (gridComp.inventoryList.ContainsKey(item.Id.SubtypeName) && gridComp.inventoryList[item.Id.SubtypeName] >= item.Amount * Session.assemblerEfficiency)
+                        {
+                            missingMatQueue[matQueue].Remove(item.Id.SubtypeName);
+                            sendMatUpdates = true;
+                        }
+                    }
+                    if (missingMatQueue[matQueue].Count == 0)
+                    {
+                        ListCompItem lComp;
+                        if (buildList.TryGetValue(matQueue, out lComp))
+                        {
+                            lComp.missingMats = false;
+                            if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" removed {lComp.label} from missing mat list");
+                        }
+                        missingMatQueue.Remove(matQueue);
+                    }
+                }
+
+            //Mats/Comps that are inaccessible
+            if (inaccessibleMatQueue.Count > 0)
+                foreach (var matQueue in inaccessibleMatQueue.ToArray())
+                {
+                    foreach (var item in matQueue.Value.ToArray())
+                    {
+                        if (gridComp.inventoryList.ContainsKey(item.Key) && gridComp.inventoryList[item.Key] != item.Value)
+                        {
+                            inaccessibleMatQueue[matQueue.Key].Remove(item.Key);
+                            sendInacUpdates = true;
+                        }
+                    }
+                    if (inaccessibleMatQueue[matQueue.Key].Count == 0)
+                    {
+                        ListCompItem lComp;
+                        if (buildList.TryGetValue(matQueue.Key, out lComp))
+                        {
+                            lComp.inaccessibleMats = false;
+                            if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" removed {lComp.label} from inaccessible mat list");
+                        }
+                        inaccessibleMatQueue.Remove(matQueue.Key);
+                    }
+                }
 
             //Send updates
             if (sendInacUpdates)
@@ -276,10 +281,13 @@ namespace BDAM
             if (missingMatQueue.Count > 0)
                 foreach (var matDict in missingMatQueue.Values)
                     foreach (var missingMat in matDict)
-                        if (missingMatAmount.ContainsKey(missingMat.Key))
-                            missingMatAmount[missingMat.Key] += (int)missingMat.Value;
+                    {
+                        var name = Session.FriendlyNameLookup(missingMat.Key);
+                        if (missingMatAmount.ContainsKey(name))
+                            missingMatAmount[name] += (int)missingMat.Value;
                         else
-                            missingMatAmount.Add(missingMat.Key, (int)missingMat.Value);
+                            missingMatAmount.Add(name, (int)missingMat.Value);
+                    }
 
             if (Session.netlogging) Log.WriteLine($"{Session.modName} Sending missing mat updates");
             _session.SendPacketToClients(new MissingMatPacket
@@ -291,7 +299,18 @@ namespace BDAM
         }
         internal void SendInaccessibleUpdates()
         {
-            //TODO regenerate inaccesibleMats list from inaccesibleMatQueue
+            //Regenerate inaccessible mat list
+            inaccessibleMatAmount.Clear();
+            if (inaccessibleMatQueue.Count > 0)
+                foreach (var matDict in inaccessibleMatQueue.Values)
+                    foreach (var missingMat in matDict)
+                    {
+                        var name = Session.FriendlyNameLookup(missingMat.Key);
+                        if (inaccessibleMatAmount.ContainsKey(name))
+                            inaccessibleMatAmount[name] += (int)missingMat.Value;
+                        else
+                            inaccessibleMatAmount.Add(name, (int)missingMat.Value);
+                    }
             if (Session.netlogging) Log.WriteLine($"{Session.modName} Sending Inaccessible item updates");
             _session.SendPacketToClients(new InaccessibleCompPacket
             {
@@ -309,7 +328,7 @@ namespace BDAM
                     var lComp = listItem.Value;
                     if (lComp.missingMats && lComp.buildAmount == -1)
                         lComp.missingMats = false;
-                    if (lComp.priority != i || lComp.buildAmount == -1 || lComp.missingMats || lComp.inaccessibleComps || (lComp.grindAmount > -1 && lComp.buildAmount > lComp.grindAmount))
+                    if (lComp.priority != i || lComp.buildAmount == -1 || lComp.missingMats || lComp.inaccessibleMats || (lComp.grindAmount > -1 && lComp.buildAmount > lComp.grindAmount))
                         continue;
                     var itemName = listItem.Key.Results[0].Id.SubtypeName;
                     MyFixedPoint amountAvail = 0;
@@ -487,6 +506,7 @@ namespace BDAM
             missingMatAmount.Clear();
             inaccessibleMatAmount.Clear();
             inaccessibleMatQueue.Clear();
+            inaccessibleCompAmount.Clear();
         }
     }
 }

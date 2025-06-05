@@ -33,6 +33,7 @@ namespace BDAM
 
         public bool missingMats;
         public bool inaccessibleComps;
+        public bool inaccessibleMats;
         public bool dirty;
     }
 }

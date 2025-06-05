@@ -10,10 +10,11 @@ namespace BDAM
         public readonly MyBlueprintDefinitionBase bp;
         private readonly TextBox labelBox;
         public readonly BorderedCheckBox addBox;
-        public bool boxChecked = false;
+        private string labelStr;
 
-        public AddItem(MyBlueprintDefinitionBase BP, HudElementBase parent) : base(parent)
+        public AddItem(MyBlueprintDefinitionBase BP, String LabelStr, HudElementBase parent) : base(parent)
         {
+            labelStr = LabelStr;
             bp = BP;
 
             ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Left;
@@ -28,7 +29,6 @@ namespace BDAM
                 UseFocusFormatting = false,
                 IsBoxChecked = false,
             };
-            addBox.MouseInput.LeftClicked += MouseInput_LeftClicked;
 
             labelBox = new TextBox(this)
             {
@@ -38,14 +38,9 @@ namespace BDAM
                 Offset = new Vector2(addBox.Width + 10, -5),
                 Format = new GlyphFormat(Session.grey, TextAlignment.Left, 1f * Session.resMult),
                 AutoResize = false,
-                Text = bp.Results[0].Id.SubtypeName,
+                Text = labelStr,
                 InputEnabled = false,
             };
-        }
-
-        private void MouseInput_LeftClicked(object sender, EventArgs e)
-        {
-            boxChecked = addBox.IsBoxChecked;
         }
     }
 }
