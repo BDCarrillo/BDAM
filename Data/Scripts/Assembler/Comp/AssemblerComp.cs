@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using VRage;
+using VRage.Utils;
 
 namespace BDAM
 {
@@ -124,10 +125,19 @@ namespace BDAM
                                     if (!missingMatQueue.ContainsKey(bp))
                                         missingMatQueue.Add(bp, new Dictionary<string, MyFixedPoint>());
 
+                                    if (notification < 2)
+                                    {
+                                        var sendNotif = true;
+                                        foreach (var blueprint in missingMatQueue)
+                                            foreach (var matType in blueprint.Value)
+                                                if (matType.Key == item.Id.SubtypeName)
+                                                    sendNotif = false;
+
+                                        if (sendNotif)
+                                            SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" missing {Session.FriendlyNameLookup(item.Id.SubtypeName)}");
+                                    }
                                     missingMatQueue[bp][item.Id.SubtypeName] = subTotalNeeded;
 
-                                    if (notification < 2)
-                                        SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" missing {Session.FriendlyNameLookup(item.Id.SubtypeName)} for {lComp.label}");
                                     sendMatUpdates = true;
                                     lComp.missingMats = true;
                                     if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Missing {item.Amount} ({adjustedAmount}) {item.Id.SubtypeName} for {lComp.label}");
@@ -138,9 +148,20 @@ namespace BDAM
                                     gridComp.inventoryList.TryGetValue(item.Id.SubtypeName, out qty);
                                     if (!inaccessibleMatQueue.ContainsKey(bp))
                                         inaccessibleMatQueue.Add(bp, new Dictionary<string, MyFixedPoint>());
-                                    inaccessibleMatQueue[bp][item.Id.SubtypeName] = qty;
+
                                     if (notification < 2)
-                                        SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" can't access {(item.Id.SubtypeName == "Stone" ? "Gravel" : Session.FriendlyNameLookup(item.Id.SubtypeName))} for {lComp.label}");
+                                    {
+                                        var sendNotif = true;
+                                        foreach (var blueprint in inaccessibleMatQueue)
+                                            foreach (var matType in blueprint.Value)
+                                                if (matType.Key == item.Id.SubtypeName)
+                                                    sendNotif = false;
+
+                                        if (sendNotif)
+                                            SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" can't access {(item.Id.SubtypeName == "Stone" ? "Gravel" : Session.FriendlyNameLookup(item.Id.SubtypeName))}");
+                                    }
+
+                                    inaccessibleMatQueue[bp][item.Id.SubtypeName] = qty;
                                     lComp.inaccessibleMats = true;
                                     sendInacUpdates = true;
                                 }
@@ -487,26 +508,36 @@ namespace BDAM
         }
         public void Clean(bool sendUpdate)
         {
-            if (Session.Server)
-            {
-                gridComp.countAStart += countStart;
-                gridComp.countAStop += countStop;
-                assembler.StoppedProducing -= Assembler_StoppedProducing;
-                assembler.StartedProducing -= Assembler_StartedProducing;
-            }
-            else if (sendUpdate && Session.Client)
-            {
-                if (Session.netlogging) Log.WriteLine(Session.modName + $"Updating replication list on server - removal");
-                _session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, add = false, Type = PacketType.Replication });
-            }
-            Session.aCompMap.Remove(assembler.EntityId);
+            try
+            { 
+                if (Session.Server)
+                {
+                    gridComp.countAStart += countStart;
+                    gridComp.countAStop += countStop;
+                    assembler.StoppedProducing -= Assembler_StoppedProducing;
+                    assembler.StartedProducing -= Assembler_StartedProducing;
+                }
+                else if (sendUpdate && Session.Client)
+                {
+                    if (Session.netlogging) Log.WriteLine(Session.modName + $"Updating replication list on server - removal");
+                    _session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, add = false, Type = PacketType.Replication });
+                }
+                Session.aCompMap.Remove(assembler.EntityId);
 
-            buildList.Clear();
-            missingMatQueue.Clear();
-            missingMatAmount.Clear();
-            inaccessibleMatAmount.Clear();
-            inaccessibleMatQueue.Clear();
-            inaccessibleCompAmount.Clear();
+                buildList.Clear();
+                missingMatQueue.Clear();
+                missingMatAmount.Clear();
+                inaccessibleMatAmount.Clear();
+                inaccessibleMatQueue.Clear();
+                inaccessibleCompAmount.Clear();
+            }
+            catch (Exception e)
+            {
+                var msg = $"BDAM exception in Clean _session null: {_session == null} assembler null: {assembler == null} acompmap null: {Session.aCompMap == null} gridcomp null: {gridComp == null} sendUpdate: {sendUpdate} assemblerEntID: {assembler?.EntityId}  \n\n {e}";
+                Log.WriteLine(msg);
+                MyLog.Default.WriteLine(msg);
+                MyAPIGateway.Utilities.ShowNotification("BDAM error, send logs to BD", 2000, "Red");
+            }
         }
     }
 }

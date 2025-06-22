@@ -123,7 +123,7 @@ namespace BDAM
             AssemblerComp aComp;
             var missing = "";
             var inaccessible = "";
-            if(aCompMap.TryGetValue(block.EntityId, out aComp))
+            if (aCompMap.TryGetValue(block.EntityId, out aComp))
             {
                 foreach(var missingMat in aComp.missingMatAmount)
                     missing += missingMat.Key + ": " + NumberFormat(missingMat.Value) + "\n";
@@ -149,7 +149,8 @@ namespace BDAM
                     foreach (MyPhysicalInventoryItem item in invList)
                     {
                         var itemType = item.Content.TypeId.ToString();
-                        var itemName = MyDefinitionManager.Static.GetDefinition(new MyDefinitionId(item.Content.TypeId, item.Content.SubtypeId)).DisplayNameText;
+                        var itemDef = MyDefinitionManager.Static.GetDefinition(new MyDefinitionId(item.Content.TypeId, item.Content.SubtypeId));
+                        var itemName = itemDef != null ? itemDef.DisplayNameText : item.Content.SubtypeName;
 
                         switch (itemType)
                         {
@@ -170,7 +171,8 @@ namespace BDAM
                                 component[itemName] += (float)item.Amount;
                                 break;
                             case "MyObjectBuilder_AmmoMagazine":
-                                itemName = MyDefinitionManager.Static.GetAmmoMagazineDefinition(new MyDefinitionId(item.Content.TypeId, item.Content.SubtypeId)).DisplayNameText;
+                                var magDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(new MyDefinitionId(item.Content.TypeId, item.Content.SubtypeId));
+                                itemName = magDef != null ? magDef.DisplayNameText : item.Content.SubtypeName;
                                 if (!ammo.ContainsKey(itemName))
                                     ammo.Add(itemName, 0);
                                 ammo[itemName] += (float)item.Amount;
