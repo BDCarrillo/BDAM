@@ -116,7 +116,10 @@ namespace BDAM
             if (grid != null && !grid.IsPreview)
                 _startGrids.Add(grid);
             if (Client && !controlInit && entity is IMyAssembler)
-                CreateTerminalControls<IMyAssembler>();
+            {
+                controlInit = true;
+                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalControls<IMyAssembler>());
+            }
         }
         public static void OpenSummary(IMyTerminalBlock block)
         {

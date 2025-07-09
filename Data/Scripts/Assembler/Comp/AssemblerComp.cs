@@ -295,7 +295,7 @@ namespace BDAM
                     _session.SendPacketToClient(new NotificationPacket { Message = message, Type = PacketType.Notification }, steamID);
             }
         }
-        internal void SendMissingMatUpdates()
+        public void SendMissingMatUpdates()
         {
             //Regenerate missing mat list
             missingMatAmount.Clear();
@@ -318,7 +318,7 @@ namespace BDAM
                 EntityId = assembler.EntityId
             }, ReplicatedClients);
         }
-        internal void SendInaccessibleUpdates()
+        public void SendInaccessibleUpdates()
         {
             //Regenerate inaccessible mat list
             inaccessibleMatAmount.Clear();
@@ -508,35 +508,54 @@ namespace BDAM
         }
         public void Clean(bool sendUpdate)
         {
+            var crumb = 0;
             try
             { 
                 if (Session.Server)
                 {
+                    crumb = 1;
                     gridComp.countAStart += countStart;
+                    crumb = 2;
                     gridComp.countAStop += countStop;
+                    crumb = 3;
                     assembler.StoppedProducing -= Assembler_StoppedProducing;
+                    crumb = 4;
                     assembler.StartedProducing -= Assembler_StartedProducing;
+                    crumb = 5;
                 }
                 else if (sendUpdate && Session.Client)
                 {
+                    crumb = 6;
                     if (Session.netlogging) Log.WriteLine(Session.modName + $"Updating replication list on server - removal");
+                    crumb = 7;
                     _session.SendPacketToServer(new ReplicationPacket { EntityId = assembler.EntityId, add = false, Type = PacketType.Replication });
                 }
+                crumb = 8;
                 Session.aCompMap.Remove(assembler.EntityId);
-
+                crumb = 9;
                 buildList.Clear();
+                crumb = 10;
                 missingMatQueue.Clear();
+                crumb = 11;
                 missingMatAmount.Clear();
-                inaccessibleMatAmount.Clear();
+                crumb = 12;
+                if (inaccessibleMatAmount == null)
+                    Log.WriteLine($"inaccessibleMatAmount was null in aComp clean");
+                else
+                    inaccessibleMatAmount.Clear();
+
+                crumb = 13;
                 inaccessibleMatQueue.Clear();
+                crumb = 14;
                 inaccessibleCompAmount.Clear();
+                crumb = 15;
             }
             catch (Exception e)
             {
-                var msg = $"BDAM exception in Clean _session null: {_session == null} assembler null: {assembler == null} acompmap null: {Session.aCompMap == null} gridcomp null: {gridComp == null} sendUpdate: {sendUpdate} assemblerEntID: {assembler?.EntityId}  \n\n {e}";
+                var msg = $"BDAM exception in Clean {crumb}  \n\n {e}";
                 Log.WriteLine(msg);
                 MyLog.Default.WriteLine(msg);
-                MyAPIGateway.Utilities.ShowNotification("BDAM error, send logs to BD", 2000, "Red");
+                MyAPIGateway.Utilities.ShowNotification("BDAM error, send BDAM log to BD", 2000, "Red");
             }
         }
     }

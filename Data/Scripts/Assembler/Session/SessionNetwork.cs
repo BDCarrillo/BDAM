@@ -141,7 +141,7 @@ namespace BDAM
                                     Type = PacketType.FullData,
                                     rawData = data
                                 }, sender);
-                                if (aComp.missingMatAmount.Count > 0)
+                                if (aComp.missingMatQueue.Count > 0)
                                 {
                                     SendPacketToClient(new MissingMatPacket
                                     {
@@ -150,7 +150,7 @@ namespace BDAM
                                         data = aComp.missingMatAmount
                                     }, sender);
                                 }
-                                if (aComp.inaccessibleMatAmount.Count > 0)
+                                if (aComp.inaccessibleMatQueue.Count > 0)
                                 {
                                     SendPacketToClient(new InaccessibleCompPacket
                                     {
@@ -251,7 +251,10 @@ namespace BDAM
                         break;
                     case PacketType.InaccessibleData:
                         var inPacket = packet as InaccessibleCompPacket;
-                        aComp.inaccessibleMatAmount = inPacket.data;
+                        if (inPacket.data != null)
+                            aComp.inaccessibleMatAmount = inPacket.data;
+                        else
+                            Log.WriteLine($"inaccessibleMatAmount was null in packet received");
                         if (netlogging) Log.WriteLine(modName + $"Received inaccessible item data from server");
                         break;
                     default:

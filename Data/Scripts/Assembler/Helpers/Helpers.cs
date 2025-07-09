@@ -17,30 +17,20 @@ namespace BDAM
                 return NameLookupFriendly[name];
             return name;
         }
-
-
-        private List<IMyTerminalControl> _customControls = new List<IMyTerminalControl>();
-        internal readonly HashSet<IMyTerminalAction> _customActions = new HashSet<IMyTerminalAction>();
         internal void CreateTerminalControls<T>() where T : IMyAssembler
         {
-            controlInit = true;
-            _customControls.Add(Separator<T>());
-            _customControls.Add(AddOnOff<T>("queueOnOff", "BDAM Auto Queue Control", "Enables BDAM automatic queue control, as set\nin the assembler window accessed via hotbar", "On", "Off", GetAutoOnOff, SetAutoOnOff, CheckModeAuto, VisibleTrue));
-            _customControls.Add(AddOnOff<T>("masterOnOff", "BDAM Master Mode", "Designates this assembler (max 1 per grid) as the Master\nwhich will balance large quantities or slow queued items\nout to available helpers", "On", "Off", GetMasterOnOff, SetMasterOnOff, CheckModeMaster, VisibleTrue));
-            _customControls.Add(AddOnOff<T>("helperOnOff", "BDAM Helper Mode", "Determines if assembler will help with designated\nMaster assembler with its build or grind queue", "On", "Off", GetHelperOnOff, SetHelperOnOff, CheckModeHelper, VisibleTrue, true));
+            MyAPIGateway.TerminalControls.AddControl<T>(Separator<T>());
+            MyAPIGateway.TerminalControls.AddControl<T>(AddOnOff<T>("queueOnOff", "BDAM Auto Queue Control", "Enables BDAM automatic queue control, as set\nin the assembler window accessed via hotbar", "On", "Off", GetAutoOnOff, SetAutoOnOff, CheckModeAuto, VisibleTrue));
+            MyAPIGateway.TerminalControls.AddControl<T>(AddOnOff<T>("masterOnOff", "BDAM Master Mode", "Designates this assembler (max 1 per grid) as the Master\nwhich will balance large quantities or slow queued items\nout to available helpers", "On", "Off", GetMasterOnOff, SetMasterOnOff, CheckModeMaster, VisibleTrue));
+            MyAPIGateway.TerminalControls.AddControl<T>(AddOnOff<T>("helperOnOff", "BDAM Helper Mode", "Determines if assembler will help with designated\nMaster assembler with its build or grind queue", "On", "Off", GetHelperOnOff, SetHelperOnOff, CheckModeHelper, VisibleTrue, true));
+            MyAPIGateway.TerminalControls.AddControl<T>(AddButton<T>("showInv", "Inventory Summary", "Inventory Summary", OpenSummary, VisibleTrue, VisibleTrue));
+            MyAPIGateway.TerminalControls.AddControl<T>(AddButton<T>("sortInv", "Combine Item Stacks", "Combine items stacks on this grid (within each cargo container)", CombineItemStacks, VisibleTrue, VisibleTrue));
+            MyAPIGateway.TerminalControls.AddControl<T>(AddButton<T>("exportQueue", "Export To Custom Data", "Export BDAM queue to custom data", ExportCustomData, VisibleTrue, VisibleTrue));
+            MyAPIGateway.TerminalControls.AddControl<T>(AddButton<T>("importQueue", "Import From Custom Data", "Import BDAM queue updates/additions from custom data", ImportCustomData, VisibleTrue, VisibleTrue));
+            MyAPIGateway.TerminalControls.AddControl<T>(Separator<T>());
 
-            _customControls.Add(AddButton<T>("showInv", "Inventory Summary", "Inventory Summary", OpenSummary, VisibleTrue, VisibleTrue));
-            _customControls.Add(AddButton<T>("sortInv", "Combine Item Stacks", "Combine items stacks on this grid (within each cargo container)", CombineItemStacks, VisibleTrue, VisibleTrue));
-            _customControls.Add(AddButton<T>("exportQueue", "Export To Custom Data", "Export BDAM queue to custom data", ExportCustomData, VisibleTrue, VisibleTrue));
-            _customControls.Add(AddButton<T>("importQueue", "Import From Custom Data", "Import BDAM queue updates/additions from custom data", ImportCustomData, VisibleTrue, VisibleTrue));
-            _customControls.Add(Separator<T>());
-            _customActions.Add(CreateAssemblerMenuAction<T>());
-            _customActions.Add(CreateAssemblerAutoAction<T>());
-
-            foreach (var action in _customActions)
-                MyAPIGateway.TerminalControls.AddAction<T>(action);
-            foreach (var control in _customControls)
-                MyAPIGateway.TerminalControls.AddControl<T>(control);
+            CreateAssemblerMenuAction<T>();
+            CreateAssemblerAutoAction<T>();
         }
         public static string NumberFormat(float number)
         {
@@ -237,7 +227,7 @@ namespace BDAM
                 SendPacketToServer(packet);
             }
         }
-        internal IMyTerminalAction CreateAssemblerMenuAction<T>() where T : IMyAssembler
+        internal void CreateAssemblerMenuAction<T>() where T : IMyAssembler
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("AssemblerMenu");
             action.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
@@ -246,9 +236,9 @@ namespace BDAM
             action.Writer = MenuActionWriter;
             action.Enabled = IsTrue;
             action.ValidForGroups = false;
-            return action;
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
-        internal IMyTerminalAction CreateAssemblerAutoAction<T>() where T : IMyAssembler
+        internal void CreateAssemblerAutoAction<T>() where T : IMyAssembler
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>("AssemblerAutoMode");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
@@ -257,7 +247,7 @@ namespace BDAM
             action.Writer = AutoActionWriter;
             action.Enabled = NotCoOp;
             action.ValidForGroups = false;
-            return action;
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
         internal void MenuActionWriter(IMyTerminalBlock block, StringBuilder builder)
         {
