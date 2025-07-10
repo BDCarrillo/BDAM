@@ -10,6 +10,7 @@ using VRage.Utils;
 using VRageMath;
 using BDAM;
 using Sandbox.Game.Entities;
+using System.Collections.Generic;
 
 namespace BDAMTSS
 {
@@ -163,13 +164,18 @@ namespace BDAMTSS
         {
             assemblerID = 0;
             var grid = TerminalBlock.CubeGrid as MyCubeGrid;
-            foreach (var block in grid.GetFatBlocks())
+            var gridList = new List<IMyCubeGrid>();
+            grid.GetGridGroup(GridLinkTypeEnum.Logical).GetGrids(gridList);
+            foreach (MyCubeGrid groupGrid in gridList)
             {
-                if (!(block is IMyAssembler))
-                    continue;
-                var assy = block as IMyAssembler;
-                if (assy.CustomName == name)
-                    assemblerID = assy.EntityId;
+                foreach (var block in groupGrid.GetFatBlocks())
+                {
+                    if (!(block is IMyAssembler))
+                        continue;
+                    var assy = block as IMyAssembler;
+                    if (assy.CustomName == name)
+                        assemblerID = assy.EntityId;
+                }
             }
             cachedName = name;
         }
