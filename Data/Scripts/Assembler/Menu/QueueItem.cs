@@ -187,12 +187,14 @@ namespace BDAM
             if (sender == dBuild)
             {
                 lComp.buildAmount = -1;
+                buildAmount.Format = new GlyphFormat(Session.grey, TextAlignment.Right, 1.25f * Session.resMult);
                 buildAmount.Text = "---";
                 lComp.dirty = true;
             }
             else if (sender == dGrind)
             {
                 lComp.grindAmount = -1;
+                grindAmount.Format = new GlyphFormat(Session.grey, TextAlignment.Right, 1.25f * Session.resMult);
                 grindAmount.Text = "---";
                 lComp.dirty = true;
             }

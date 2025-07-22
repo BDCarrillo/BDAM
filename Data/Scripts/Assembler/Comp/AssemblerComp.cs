@@ -200,6 +200,7 @@ namespace BDAM
                     }
                 }
                 if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + " quick check - items in queue");
+                lastQueue = queue[0];
             }
 
             if (assembler.IsQueueEmpty) //Second check, since it might have been cleared

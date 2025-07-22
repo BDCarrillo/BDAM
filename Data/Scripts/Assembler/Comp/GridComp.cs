@@ -142,7 +142,7 @@ namespace BDAM
                             }
 
                             //Helper stuck due to missing mats
-                            if (aComp.helperMode && !(aComp.inputJammed || aComp.outputJammed) && !aComp.assembler.IsQueueEmpty)
+                            if (aComp.helperMode && !(aComp.inputJammed || aComp.outputJammed) && !aComp.assembler.IsQueueEmpty && aComp.runStartTick != Session.Tick)
                             {
                                 var queue = aComp.assembler.GetQueue()[0];
                                 if (aComp.lastQueue.Blueprint == queue.Blueprint && aComp.lastQueue.Amount == queue.Amount && aComp.assembler.CurrentProgress == 0)

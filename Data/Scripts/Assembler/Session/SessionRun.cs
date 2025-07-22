@@ -44,7 +44,7 @@ namespace BDAM
             {
                 MyAPIGateway.Multiplayer.RegisterSecureMessageHandler(ServerPacketId, ProcessPacket);
                 MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisco;
-                refreshTimeSeconds = refreshTime * 0.016666666f;
+                refreshTimeSeconds = refreshTime * 0.016666666f - 2;
                 assemblerEfficiency = 1 / Session.AssemblerEfficiencyMultiplier;
                 assemblerSpeed = Session.AssemblerSpeedMultiplier;
             }
