@@ -177,9 +177,6 @@ namespace BDAM
 
         internal void Clean(bool sendUpdate)
         {
-            foreach (var aComp in assemblerList.Values)
-                aComp.Clean(sendUpdate);
-
             if (Session.logging && Session.Server)
                 Log.WriteLine($"{Session.modName} Grid {Grid.DisplayName} closed \n" +
                     $"Grid assembler qty: {assemblerList.Count}  inventories checked: {invCount}  cargo updates: {updateCargos}\n" +

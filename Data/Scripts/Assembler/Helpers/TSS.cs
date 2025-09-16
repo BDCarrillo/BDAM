@@ -30,6 +30,13 @@ namespace BDAMTSS
             mySurface = surface;
             TerminalBlock = (IMyTerminalBlock)block;
             TerminalBlock.OnMarkForClose += BlockMarkedForClose;
+            TerminalBlock.CubeGridChanged += CubeGridChanged;
+        }
+
+        private void CubeGridChanged(IMyCubeGrid obj)
+        {
+            assemblerID = 0;
+            cachedName = "";
         }
 
         public override void Dispose()
@@ -174,7 +181,10 @@ namespace BDAMTSS
                         continue;
                     var assy = block as IMyAssembler;
                     if (assy.CustomName == name)
+                    {
                         assemblerID = assy.EntityId;
+                        block.CubeGridChanged += CubeGridChanged;
+                    }
                 }
             }
             cachedName = name;

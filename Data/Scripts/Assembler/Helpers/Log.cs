@@ -31,7 +31,7 @@ namespace BDAM
             }
             string fileName = LOG_PREFIX + 0 + LOG_SUFFIX;
             TextWriter = MyAPIGateway.Utilities.WriteFileInLocalStorage(fileName, typeof(Log));
-            var message = $"{DateTime.Now:dd-MM-yy HH-mm-ss} - Logging Started";
+            var message = $"{DateTime.Now:MM-dd-yy_HH-mm-ss-fff} - Logging Started";
             TextWriter.WriteLine(message);
             TextWriter.Flush();
         }
@@ -73,7 +73,7 @@ namespace BDAM
             try
             {
 
-                var message = $"{DateTime.Now:dd-MM-yy HH-mm-ss} - Logging Stopped";
+                var message = $"{DateTime.Now:MM-dd-yy_HH-mm-ss-fff} - Logging Stopped";
                 TextWriter.WriteLine(message);
 
                 TextWriter.Flush();
