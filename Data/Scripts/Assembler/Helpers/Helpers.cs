@@ -2,7 +2,6 @@ using Sandbox.ModAPI.Interfaces.Terminal;
 using Sandbox.ModAPI;
 using System;
 using VRage.Utils;
-using System.Collections.Generic;
 using VRage.Game.Components;
 using Sandbox.Game.Entities;
 using System.Text;

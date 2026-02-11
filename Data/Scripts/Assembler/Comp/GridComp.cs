@@ -1,13 +1,10 @@
 ﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using VRage;
 using VRage.Game.Entity;
-using VRage.Utils;
 
 namespace BDAM
 {
@@ -80,98 +77,86 @@ namespace BDAM
                     Log.WriteLine($"{Session.modName} {Grid.DisplayName} Assembler type {block.DisplayNameText} was not in AssemblerList of the grid comp");
             }
         }
-        internal void UpdateGrid()
+        internal void UpdateGrid(bool invOnly = false)
         {
-            try
+            //TODO look at dampening inv updates if they are unchanged repeatedly?
+            inventoryList.Clear();
+            MyInventoryBase inventory;
+            foreach (var b in Grid.Inventories.ToArray())
             {
-                //TODO look at dampening inv updates if they are unchanged repeatedly?
-                var timer = new Stopwatch();
-                timer.Start();
-                inventoryList.Clear();
-                MyInventoryBase inventory;
-                foreach (var b in Grid.Inventories.ToArray())
+                if (b is IMyAssembler || b is IMyRefinery)
                 {
-                    if (b is IMyAssembler || b is IMyRefinery)
-                    {
-                        var prodBlock = b as IMyProductionBlock;
-                        var output = (MyInventoryBase)prodBlock.OutputInventory;
-                        foreach (MyPhysicalInventoryItem item in output.GetItems())
-                            inventoryList.AddOrUpdate(item.Content.SubtypeName, item.Amount, (key, current) => current += item.Amount);
-                        invCount++;
-                    }
-                    else if ((b is IMyCargoContainer || b is IMyShipConnector) && b.TryGetInventory(out inventory))
-                    {
-                        foreach (MyPhysicalInventoryItem item in inventory.GetItems())
-                            inventoryList.AddOrUpdate(item.Content.SubtypeName, item.Amount, (key, current) => current += item.Amount);
-                        invCount++;
-                    }
+                    var prodBlock = b as IMyProductionBlock;
+                    var output = (MyInventoryBase)prodBlock.OutputInventory;
+                    foreach (MyPhysicalInventoryItem item in output.GetItems())
+                        inventoryList.AddOrUpdate(item.Content.SubtypeName, item.Amount, (key, current) => current += item.Amount);
+                    invCount++;
                 }
-
-                lastInvUpdate = Session.Tick;
-                updateCargos++;
-                timer.Stop();
-                if (Session.logging) Log.WriteLine($"{Session.modName}{Grid.DisplayName} inventory update runtime: {timer.Elapsed.TotalMilliseconds}");
-
-                //Assembler updates
-                if (Session.Server)
+                else if ((b is IMyCargoContainer || b is IMyShipConnector) && b.TryGetInventory(out inventory))
                 {
-                    lock (assemblerList)
-                        foreach (var aComp in assemblerList.Values)
-                        {
-                            if (aComp.autoControl && !aComp.assembler.CooperativeMode && aComp.buildList.Count > 0)
-                                aComp.AssemblerUpdate();
-
-                            if (aComp.inputJammed)
-                            {
-                                if (aComp.unJamAttempts < 5)
-                                    aComp.UnJamAssembler(this, aComp);
-                                else if (aComp.unJamAttempts < 6)
-                                {
-                                    aComp.unJamAttempts++;
-                                    if (Session.logging) Log.WriteLine(Session.modName + aComp.gridComp.Grid.DisplayName + "Unable to unjam input for " + aComp.assembler.CustomName);
-                                    if (aComp.notification < 2)
-                                        aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Input inventory jammed");
-                                }
-                            }
-                            if (aComp.outputJammed)
-                            {
-                                if (Session.logging) Log.WriteLine(Session.modName + aComp.gridComp.Grid.DisplayName + $"Assembler {aComp.assembler.CustomName} stopped - output full");
-                                if (aComp.notification < 2)
-                                    aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Output inventory jammed");
-                                aComp.outputJammed = false;
-                            }
-
-                            //Helper stuck due to missing mats
-                            if (aComp.helperMode && !(aComp.inputJammed || aComp.outputJammed) && !aComp.assembler.IsQueueEmpty && aComp.runStartTick != Session.Tick)
-                            {
-                                var queue = aComp.assembler.GetQueue()[0];
-                                if (aComp.lastQueue.Blueprint == queue.Blueprint && aComp.lastQueue.Amount == queue.Amount && aComp.assembler.CurrentProgress == 0)
-                                {
-                                    aComp.assembler.RemoveQueueItem(0, queue.Amount);
-                                    if (Session.logging) Log.WriteLine(Session.modName + aComp.assembler.CustomName + $" in helper mode and stuck missing mats/components");
-                                }
-                            }
-                        }
-                    nextUpdate += Session.refreshTime;
-                }
-                if (fatblocksDirty)
-                {
-                    fatblocksDirty = false;
-                    foreach (var fat in Grid.GetFatBlocks().ToArray())
-                    {
-                        if (fat is IMyAssembler)
-                        {
-                            if (assemblerList.ContainsKey(fat))
-                                continue;
-                            FatBlockAdded(fat);
-                        }
-                    }
+                    foreach (MyPhysicalInventoryItem item in inventory.GetItems())
+                        inventoryList.AddOrUpdate(item.Content.SubtypeName, item.Amount, (key, current) => current += item.Amount);
+                    invCount++;
                 }
             }
-            catch (Exception e)
+
+            lastInvUpdate = Session.Tick;
+            updateCargos++;
+
+            //Assembler updates
+            if (Session.Server && !invOnly)
             {
-                Log.WriteLine("BDAM crash in update grid" + "\n" + e);
-                MyLog.Default.WriteLineAndConsole("BDAM crash in update grid" + "\n" + e);
+                lock (assemblerList)
+                    foreach (var aComp in assemblerList.Values)
+                    {
+                        if (aComp.autoControl && !aComp.assembler.CooperativeMode && aComp.buildList.Count > 0)
+                            aComp.AssemblerUpdate();
+
+                        if (aComp.inputJammed)
+                        {
+                            if (aComp.unJamAttempts < 5)
+                                aComp.UnJamAssembler(this, aComp);
+                            else if (aComp.unJamAttempts < 6)
+                            {
+                                aComp.unJamAttempts++;
+                                if (Session.logging) Log.WriteLine(Session.modName + aComp.gridComp.Grid.DisplayName + "Unable to unjam input for " + aComp.assembler.CustomName);
+                                if (aComp.notification < 2)
+                                    aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Input inventory jammed");
+                            }
+                        }
+                        if (aComp.outputJammed)
+                        {
+                            if (Session.logging) Log.WriteLine(Session.modName + aComp.gridComp.Grid.DisplayName + $"Assembler {aComp.assembler.CustomName} stopped - output full");
+                            if (aComp.notification < 2)
+                                aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Output inventory jammed");
+                            aComp.outputJammed = false;
+                        }
+
+                        //Helper stuck due to missing mats
+                        if (aComp.helperMode && !(aComp.inputJammed || aComp.outputJammed) && !aComp.assembler.IsQueueEmpty && aComp.runStartTick != Session.Tick)
+                        {
+                            var queue = aComp.assembler.GetQueue()[0];
+                            if (aComp.lastQueue.Blueprint == queue.Blueprint && aComp.lastQueue.Amount == queue.Amount && aComp.assembler.CurrentProgress == 0)
+                            {
+                                aComp.assembler.RemoveQueueItem(0, queue.Amount);
+                                if (Session.logging) Log.WriteLine(Session.modName + aComp.assembler.CustomName + $" in helper mode and stuck missing mats/components");
+                            }
+                        }
+                    }
+                nextUpdate += Session.refreshTime;
+            }
+            if (fatblocksDirty)
+            {
+                fatblocksDirty = false;
+                foreach (var fat in Grid.GetFatBlocks().ToArray())
+                {
+                    if (fat is IMyAssembler)
+                    {
+                        if (assemblerList.ContainsKey(fat))
+                            continue;
+                        FatBlockAdded(fat);
+                    }
+                }
             }
         }
 

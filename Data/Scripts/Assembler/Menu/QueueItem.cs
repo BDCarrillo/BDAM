@@ -9,7 +9,7 @@ namespace BDAM
 {
     public class QueueItem : HudElementBase
     {
-        private readonly ListCompItem lComp;
+        public readonly ListCompItem lComp;
         private readonly MyBlueprintDefinitionBase bp;
         private readonly TextBox labelBox, onHand;
         private readonly BorderedButton dBuild, dGrind, remove, buildAmount, grindAmount, priority;
@@ -46,7 +46,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
                 DimAlignment = DimAlignments.Height,
                 Offset = new Vector2(labelBox.Offset.X + labelBox.Width + 10, 0),
-                Format = new GlyphFormat(lComp.buildAmount <= -1 ? Session.grey : qtyInt >= lComp.buildAmount ? new Color(150, 255, 170) : new Color(255, 170, 170), TextAlignment.Right, 1.25f * Session.resMult),
+                Format = new GlyphFormat(lComp.buildAmount <= -1 ? Session.grey : qtyInt >= lComp.buildAmount ? Session.green : Session.red, TextAlignment.Right, 1.25f * Session.resMult),
                 AutoResize = false,
                 Width = 140 * Session.resMult,
                 Text = lComp.buildAmount <= -1 ? "---" : Session.NumberFormat(lComp.buildAmount),
@@ -78,7 +78,7 @@ namespace BDAM
                 ParentAlignment = ParentAlignments.Bottom | ParentAlignments.Inner | ParentAlignments.Left,
                 DimAlignment = DimAlignments.Height,
                 Offset = new Vector2(dBuild.Offset.X + dBuild.Width + 15, 0),
-                Format = new GlyphFormat(lComp.grindAmount <= -1 ? Session.grey : lComp.grindAmount >= qtyInt ? new Color(150, 255, 170) : new Color(255, 170, 170), TextAlignment.Right, 1.25f * Session.resMult),
+                Format = new GlyphFormat(lComp.grindAmount <= -1 ? Session.grey : lComp.grindAmount >= qtyInt ? Session.green : Session.red, TextAlignment.Right, 1.25f * Session.resMult),
                 AutoResize = false,
                 Width = 140 * Session.resMult,
                 Text = lComp.grindAmount <= -1 ? "---" : Session.NumberFormat(lComp.grindAmount),
@@ -246,6 +246,8 @@ namespace BDAM
                 grindAmount.Text = lComp.grindAmount <= -1 ? "---" : Session.NumberFormat(lComp.grindAmount);
             }
             lComp.dirty = true;
+            if (lComp.grindAmount > -1 && lComp.buildAmount > lComp.grindAmount)
+                MyAPIGateway.Utilities.ShowNotification("BDAM: Build amount greater than grind amount is not valid.", font: "Red");
         }
     }
 }

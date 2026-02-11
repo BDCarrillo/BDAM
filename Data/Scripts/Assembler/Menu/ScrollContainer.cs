@@ -418,94 +418,70 @@ namespace BDAM
 
         public void Update(bool rebuild = false, int lastPos = 0)
         {
-            var step = 0;
-            try
+            if (rebuild)
             {
-                if (rebuild)
+                startPos = lastPos;
+                notify.Text = "Msg: " + (aComp.notification == 0 ? "Own" : aComp.notification == 1 ? "Fac" : "Off");
+                autoMode.Text = "Auto: " + (aComp.autoControl ? "On" : "Off");
+                maxQueue.Text = "Max Queue: " + Session.NumberFormat(aComp.maxQueueAmount);
+                Clear();
+                //Buildlist alphabetical sorting
+                var refDict = new SortedDictionary<string, QueueItem>();
+                foreach (var item in aComp.buildList)
                 {
-                    step = 1;
-                    startPos = lastPos;
-                    notify.Text = "Msg: " + (aComp.notification == 0 ? "Own" : aComp.notification == 1 ? "Fac" : "Off");
-                    autoMode.Text = "Auto: " + (aComp.autoControl ? "On" : "Off");
-                    maxQueue.Text = "Max Queue: " + Session.NumberFormat(aComp.maxQueueAmount);
-                    Clear();
-                    step = 2;
-                    //Buildlist alphabetical sorting
-                    var refDict = new SortedDictionary<string, QueueItem>();
-                    foreach (var item in aComp.buildList)
+                    var friendly = Session.FriendlyNameLookup(item.Value.label);
+
+                    if (refDict.ContainsKey(friendly))
                     {
-                        var friendly = Session.FriendlyNameLookup(item.Value.label);
-
-                        if (refDict.ContainsKey(friendly))
-                        {
-                            var errorMsg = $"BDAM error, multiple BPs for {friendly}";
-                            Log.WriteLine(errorMsg);
-                            MyLog.Default.WriteLineAndConsole(errorMsg);
-                            MyAPIGateway.Utilities.ShowNotification(errorMsg, 2000, "Red");
-                        }
-                        else
-                            refDict[friendly] = new QueueItem(item.Value, item.Key, this);
+                        var errorMsg = $"BDAM error, multiple BPs for {friendly}";
+                        Log.WriteLine(errorMsg);
+                        MyLog.Default.WriteLineAndConsole(errorMsg);
+                        MyAPIGateway.Utilities.ShowNotification(errorMsg, 2000, "Red");
                     }
-                    step = 3;
-                    queueList.AddRange(refDict.Values);
+                    else
+                        refDict[friendly] = new QueueItem(item.Value, item.Key, this);
                 }
-                step = 4;
-
-                //Starting offset to get scrollbox list items below header bar
-                float offset = (title.Height * Session.resMult + 6) * -1;
-
-                //queuelist stacking to simulate a scroll list
-                for (int i = 0; i < queueList.Count; i++)
-                {
-                    var qItem = queueList[i];
-                    if (i < startPos)
-                    {
-                        qItem.Visible = false;
-                        continue;
-                    }
-                    qItem.Visible = true;
-                    qItem.Offset = new Vector2(-8, offset);
-                    offset -= qItem.Size.Y + 6; //for add'l spacing between rows
-                }
-                step = 5;
-
-                UpdateAddMulti();
-                step = 6;
-
-                string infoString = "";
-                if (aComp.missingMatAmount.Count > 0)
-                {
-                    step = 7;
-
-                    infoString += "Missing/Insufficient Materials:\n";
-                    foreach (var missing in aComp.missingMatAmount)
-                        infoString += "  " + (missing.Key == "Stone" ? "Gravel" : missing.Key) + ": " + Session.NumberFormat(missing.Value) + "\n";
-                    step = 8;
-
-                }
-                if (aComp.inaccessibleMatAmount.Count > 0)
-                {
-                    step = 9;
-
-                    if (infoString.Length > 0)
-                        infoString += "\n";
-                    infoString += "Inaccessible Items/Comps:\n";
-                    foreach (var inaccessible in aComp.inaccessibleMatAmount)
-                        infoString += "  " + (inaccessible.Key == "Stone" ? "Gravel" : inaccessible.Key) + ": " + Session.NumberFormat(inaccessible.Value) + "\n";
-                    step = 10;
-
-                }
-                step = 11;
-
-                infoPanel.Text = infoString;
+                queueList.AddRange(refDict.Values);
             }
-            catch (Exception e)
+
+            //Starting offset to get scrollbox list items below header bar
+            float offset = (title.Height * Session.resMult + 6) * -1;
+
+            string infoString = "";
+            //queuelist stacking to simulate a scroll list
+            for (int i = 0; i < queueList.Count; i++)
             {
-                var msg = $"{Session.modName} crash in Update, step {step} \n {e}";
-                Log.WriteLine(msg);
-                MyLog.Default.WriteLineAndConsole(msg);
-                throw e;
+                var qItem = queueList[i];
+                if (qItem.lComp.grindAmount > -1 && qItem.lComp.buildAmount > qItem.lComp.grindAmount)
+                    infoString += $"'{qItem.lComp.label}' Invalid, build > grind!!\n";
+                if (i < startPos)
+                {
+                    qItem.Visible = false;
+                    continue;
+                }
+                qItem.Visible = true;
+                qItem.Offset = new Vector2(-8, offset);
+                offset -= qItem.Size.Y + 6; //for add'l spacing between rows
             }
+
+            UpdateAddMulti();
+
+            if (aComp.missingMatAmount.Count > 0)
+            {
+                infoString += "Missing/Insufficient Materials:\n";
+                foreach (var missing in aComp.missingMatAmount)
+                    infoString += "  " + (missing.Key == "Stone" ? "Gravel" : missing.Key) + ": " + Session.NumberFormat(missing.Value) + "\n";
+            }
+            if (aComp.inaccessibleMatAmount.Count > 0)
+            {
+                if (infoString.Length > 0)
+                    infoString += "\n";
+                infoString += "Inaccessible Items/Comps:\n";
+                foreach (var inaccessible in aComp.inaccessibleMatAmount)
+                    infoString += "  " + (inaccessible.Key == "Stone" ? "Gravel" : inaccessible.Key) + ": " + Session.NumberFormat(inaccessible.Value) + "\n";
+            }
+
+            infoPanel.Text = infoString;
         }
 
         private void Clear(bool delete = false)

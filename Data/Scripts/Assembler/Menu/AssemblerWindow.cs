@@ -40,7 +40,7 @@ namespace BDAM
             if (!Visible)
             {
                 MyAPIGateway.Utilities.ShowNotification("Updating inventory...", 500);
-                aComp.gridComp.UpdateGrid();
+                aComp.gridComp.UpdateGrid(true);
             }
             scrollContainer.aComp = aComp;
             Visible = !Visible;
