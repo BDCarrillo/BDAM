@@ -14,12 +14,14 @@ namespace BDAM
         private readonly TextBox labelBox, onHand;
         private readonly BorderedButton dBuild, dGrind, remove, buildAmount, grindAmount, priority;
         private int qtyInt;
+        private readonly WindowScrollContainer window;
 
         public QueueItem(ListCompItem LComp, MyBlueprintDefinitionBase BP, HudElementBase parent) : base(parent)
         {
             lComp = LComp;
             bp = BP;
-
+            window = parent as WindowScrollContainer;
+           
             ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Left;
             Size = new Vector2(600, 25 * Session.resMult);
 
@@ -246,8 +248,10 @@ namespace BDAM
                 grindAmount.Text = lComp.grindAmount <= -1 ? "---" : Session.NumberFormat(lComp.grindAmount);
             }
             lComp.dirty = true;
+            
             if (lComp.grindAmount > -1 && lComp.buildAmount > lComp.grindAmount)
                 MyAPIGateway.Utilities.ShowNotification("BDAM: Build amount greater than grind amount is not valid.", font: "Red");
+            window.Update(false);
         }
     }
 }
