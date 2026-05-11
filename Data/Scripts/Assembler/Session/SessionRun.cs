@@ -57,7 +57,7 @@ namespace BDAM
                     //Iterate BP classes an assembler can build
                     var aDef = def as MyAssemblerDefinition;
                     var bpClassSubtypeNames = new List<string>();
-                    speedMap.Add(def.Id.SubtypeId.ToString(), aDef.AssemblySpeed);
+                    speedMap[def.Id.SubtypeId.ToString()] = aDef.AssemblySpeed;
                     foreach(var bpClass in aDef.BlueprintClasses)
                     {
                         if (bpClass.Id.SubtypeName == "LargeBlocks" || bpClass.Id.SubtypeName == "SmallBlocks" || bpClass.Id.SubtypeName == "BuildPlanner")
@@ -79,9 +79,9 @@ namespace BDAM
                             BPLookupFriendly[bp.Results[0].Id.SubtypeName] = bp;
                             NameLookupFriendly[bp.Results[0].Id.SubtypeName] = bp.DisplayNameText;
                         }
-                        BPClasses.Add(bpClass.Id.SubtypeName, bpList);                           
+                        BPClasses[bpClass.Id.SubtypeName] = bpList;                           
                     }
-                    assemblerBPs.Add(def.Id.SubtypeId.ToString(), bpClassSubtypeNames);//Pop assembler specific list
+                    assemblerBPs[def.Id.SubtypeId.ToString()] = bpClassSubtypeNames;//Pop assembler specific list
                 }
                 if (def is MyPhysicalItemDefinition)
                 {
@@ -92,7 +92,7 @@ namespace BDAM
             }
             foreach(var a in assemblerBPs)
             {
-                assemblerBP2.Add(a.Key, new List<MyBlueprintDefinitionBase>());
+                assemblerBP2[a.Key] = new List<MyBlueprintDefinitionBase>();
                 foreach (var bpClass in a.Value)
                     foreach (var bp in BPClasses[bpClass])
                         assemblerBP2[a.Key].Add(bp);
@@ -107,7 +107,7 @@ namespace BDAM
 
             if(Server)
                 foreach (var grid in GridMap.Values)
-                    if (grid.assemblerList.Count > 0 && grid.nextUpdate <= Tick) 
+                    if (!grid.Grid.MarkedForClose && grid.assemblerList.Count > 0 && grid.nextUpdate <= Tick) 
                         grid.UpdateGrid();
             Tick++;
         }
