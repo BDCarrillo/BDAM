@@ -60,7 +60,7 @@ namespace BDAM
                     speedMap[def.Id.SubtypeId.ToString()] = aDef.AssemblySpeed;
                     foreach(var bpClass in aDef.BlueprintClasses)
                     {
-                        if (bpClass.Id.SubtypeName == "LargeBlocks" || bpClass.Id.SubtypeName == "SmallBlocks" || bpClass.Id.SubtypeName == "BuildPlanner")
+                        if (bpClass.Id.SubtypeName.Contains("Blocks") || bpClass.Id.SubtypeName == "BuildPlanner")
                             continue;
 
                         bpClassSubtypeNames.Add(bpClass.Id.SubtypeName); //Add BP class to assembler list
