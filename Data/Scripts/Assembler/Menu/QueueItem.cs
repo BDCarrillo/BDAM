@@ -178,8 +178,8 @@ namespace BDAM
         private void priRightClicked(object sender, EventArgs e)
         {
             lComp.priority++;
-            if (lComp.priority > 3)
-                lComp.priority = 3;
+            if (lComp.priority > 5)
+                lComp.priority = 5;
             priority.Text = "Pri: " + lComp.priority;
             lComp.dirty = true;
         }

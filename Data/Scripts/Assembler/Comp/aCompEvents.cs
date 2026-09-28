@@ -56,7 +56,7 @@ namespace BDAM
 
             MyFixedPoint max = 0;
             MyInventoryItem? largestStack = null;
-            for (int i = 0; i < aInput.ItemCount - 1; i++)
+            for (int i = 0; i < aInput.ItemCount; i++)
             {
                 var curItem = aInput.GetItemAt(i);
                 if (curItem == null)
@@ -73,7 +73,10 @@ namespace BDAM
 
             if (largestStack != null)
             {
-                var transferAmount = MyFixedPoint.MultiplySafe(largestStack.Value.Amount, 0.5f);
+                var transferAmount = (int)(largestStack.Value.Amount * 0.5f);
+                if (transferAmount < 1)
+                    transferAmount = 1;
+
                 var moveSuccess = false;
                 foreach (var block in gComp.Grid.Inventories)
                 {

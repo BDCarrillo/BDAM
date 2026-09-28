@@ -123,7 +123,7 @@ namespace BDAM
                                 else if (aComp.unJamAttempts < 6)
                                 {
                                     aComp.unJamAttempts++;
-                                    if (Session.logging) Log.WriteLine(Session.modName + aComp.gridComp.Grid.DisplayName + "Unable to unjam input for " + aComp.assembler.CustomName);
+                                    if (Session.logging) Log.WriteLine(Session.modName + aComp.gridComp.Grid.DisplayName + " Unable to unjam input for " + aComp.assembler.CustomName);
                                     if (aComp.notification < 2)
                                         aComp.SendNotification(aComp.gridComp.Grid.DisplayName + ": " + aComp.assembler.CustomName + $" Input inventory jammed");
                                 }

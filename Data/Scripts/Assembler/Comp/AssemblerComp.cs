@@ -21,6 +21,7 @@ namespace BDAM
         internal bool helperMode = false;
         internal int notification = 0; // 0 = Owner, 1 = faction, 2 = none
         internal MyProductionQueueItem lastQueue;
+        internal float lastProgress;
         internal Dictionary<MyBlueprintDefinitionBase, ListCompItem> buildList = new Dictionary<MyBlueprintDefinitionBase, ListCompItem>();
         internal GridComp gridComp;
         internal Dictionary<string, int> missingMatAmount = new Dictionary<string, int>();
@@ -105,106 +106,119 @@ namespace BDAM
             if (!assembler.IsQueueEmpty)
             {
                 var queue = assembler.GetQueue();
-                if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Update check Queue: {queue[0].Blueprint.Id.SubtypeName} - {queue[0].Amount}");
+                if (Session.logging)
+                {
+                    Log.WriteLine(Session.modName + assembler.CustomName + $" Update check Queue: {queue[0].Blueprint.Id.SubtypeName} - {queue[0].Amount} - Prog: {assembler.CurrentProgress}");
+                    if (lastQueue.Blueprint != null) Log.WriteLine(Session.modName + assembler.CustomName + $" Update check lastQueue: {lastQueue.Blueprint.Id.SubtypeName} - {lastQueue.Amount} - Prog: {lastProgress}");
+                }
 
                 //Jam check due to missing mats
-                if (lastQueue.Blueprint == queue[0].Blueprint && lastQueue.Amount == queue[0].Amount && assembler.CurrentProgress == 0)
+                if (lastQueue.Blueprint == queue[0].Blueprint && lastQueue.Amount == queue[0].Amount && lastProgress == assembler.CurrentProgress)
                 {
-                    if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
+                    if (assembler.InputInventory.VolumeFillFactor > 0.9f)
                     {
-                        ListCompItem lComp;
-                        if (buildList.TryGetValue((MyBlueprintDefinitionBase)queue[0].Blueprint, out lComp))
-                        {
-                            var bp = (MyBlueprintDefinitionBase)queue[0].Blueprint;
-                            foreach (var item in bp.Prerequisites)
-                            {
-                                var adjustedAmount = item.Amount * Session.assemblerEfficiency;
-                                //Insufficient mats
-                                if ((!gridComp.inventoryList.ContainsKey(item.Id.SubtypeName) || gridComp.inventoryList[item.Id.SubtypeName] < item.Amount)) 
-                                {
-                                    MyFixedPoint qty = 0;
-                                    gridComp.inventoryList.TryGetValue(lComp.label, out qty);
-                                    var subTotalNeeded = adjustedAmount * (lComp.buildAmount - qty);
-
-                                    if (!missingMatQueue.ContainsKey(bp))
-                                        missingMatQueue.Add(bp, new Dictionary<string, MyFixedPoint>());
-
-                                    if (notification < 2)
-                                    {
-                                        var sendNotif = true;
-                                        foreach (var blueprint in missingMatQueue)
-                                            foreach (var matType in blueprint.Value)
-                                                if (matType.Key == item.Id.SubtypeName)
-                                                    sendNotif = false;
-
-                                        if (sendNotif)
-                                            SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" missing {Session.FriendlyNameLookup(item.Id.SubtypeName)}");
-                                    }
-                                    missingMatQueue[bp][item.Id.SubtypeName] = subTotalNeeded;
-
-                                    sendMatUpdates = true;
-                                    lComp.missingMats = true;
-                                    if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Missing {item.Amount} ({adjustedAmount}) {item.Id.SubtypeName} for {lComp.label}");
-                                }
-                                else if (!assembler.InputInventory.ContainItems(adjustedAmount, item.Id) && !missingMatQueue.ContainsKey(bp) && !inaccessibleMatQueue.ContainsKey(bp)) //Inaccessible mats.  Looks at what the Keen pull has already done
-                                {
-                                    MyFixedPoint qty = 0;
-                                    gridComp.inventoryList.TryGetValue(item.Id.SubtypeName, out qty);
-                                    if (!inaccessibleMatQueue.ContainsKey(bp))
-                                        inaccessibleMatQueue.Add(bp, new Dictionary<string, MyFixedPoint>());
-
-                                    if (notification < 2)
-                                    {
-                                        var sendNotif = true;
-                                        foreach (var blueprint in inaccessibleMatQueue)
-                                            foreach (var matType in blueprint.Value)
-                                                if (matType.Key == item.Id.SubtypeName)
-                                                    sendNotif = false;
-
-                                        if (sendNotif)
-                                            SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" can't access {(item.Id.SubtypeName == "Stone" ? "Gravel" : Session.FriendlyNameLookup(item.Id.SubtypeName))}");
-                                    }
-
-                                    inaccessibleMatQueue[bp][item.Id.SubtypeName] = qty;
-                                    lComp.inaccessibleMats = true;
-                                    sendInacUpdates = true;
-                                }
-                            }
-                            //If it was indeed missing materials, remove item from queue
-                            if (lComp.missingMats || lComp.inaccessibleMats)
-                                assembler.RemoveQueueItem(0, queue[0].Amount);
-
-                            if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats checked for {lComp.label}.  Progress: {assembler.CurrentProgress}  Actually missing: {lComp.missingMats} Inaccessible mats: {lComp.inaccessibleMats}");
-                        }
-                        else
-                        {
-                            assembler.RemoveQueueItem(0, queue[0].Amount);
-                            if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" manually added {queue[0].Blueprint.Id.SubtypeName} missing mats/stuck, removed from queue");
-                        }
+                        if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Input jam stall?");
+                        inputJammed = true;
                     }
-                    else //Disassembly stuck
+                    else
                     {
-                        ListCompItem lComp;
-                        if (buildList.TryGetValue((MyBlueprintDefinitionBase)queue[0].Blueprint, out lComp))
+                        if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
                         {
-                            var bp = (MyBlueprintDefinitionBase)queue[0].Blueprint;
-                            if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" same item/qty found in disassembly queue, removing. Progress: {assembler.CurrentProgress}");
-                            if (notification < 2)
-                                SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" cannot access items to be disassembled: {Session.FriendlyNameLookup(lComp.label)}");
+                            ListCompItem lComp;
+                            if (buildList.TryGetValue((MyBlueprintDefinitionBase)queue[0].Blueprint, out lComp))
+                            {
+                                var bp = (MyBlueprintDefinitionBase)queue[0].Blueprint;
+                                foreach (var item in bp.Prerequisites)
+                                {
+                                    var adjustedAmount = item.Amount * Session.assemblerEfficiency;
+                                    //Insufficient mats
+                                    if ((!gridComp.inventoryList.ContainsKey(item.Id.SubtypeName) || gridComp.inventoryList[item.Id.SubtypeName] < item.Amount))
+                                    {
+                                        MyFixedPoint qty = 0;
+                                        gridComp.inventoryList.TryGetValue(lComp.label, out qty);
+                                        var subTotalNeeded = adjustedAmount * (lComp.buildAmount - qty);
 
-                            MyFixedPoint qty = 0;
-                            gridComp.inventoryList.TryGetValue(lComp.label, out qty);
-                            if (!inaccessibleMatQueue.ContainsKey(bp))
-                                inaccessibleMatQueue.Add(bp, new Dictionary<string, MyFixedPoint>());
-                            inaccessibleMatQueue[bp][lComp.label] = qty.ToIntSafe();
-                            lComp.inaccessibleComps = true;
-                            assembler.RemoveQueueItem(0, queue[0].Amount);
-                            sendInacUpdates = true;
-                        }                        
+                                        if (!missingMatQueue.ContainsKey(bp))
+                                            missingMatQueue.Add(bp, new Dictionary<string, MyFixedPoint>());
+
+                                        if (notification < 2)
+                                        {
+                                            var sendNotif = true;
+                                            foreach (var blueprint in missingMatQueue)
+                                                foreach (var matType in blueprint.Value)
+                                                    if (matType.Key == item.Id.SubtypeName)
+                                                        sendNotif = false;
+
+                                            if (sendNotif)
+                                                SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" missing {Session.FriendlyNameLookup(item.Id.SubtypeName)}");
+                                        }
+                                        missingMatQueue[bp][item.Id.SubtypeName] = subTotalNeeded;
+
+                                        sendMatUpdates = true;
+                                        lComp.missingMats = true;
+                                        if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Missing {item.Amount} ({adjustedAmount}) {item.Id.SubtypeName} for {lComp.label}");
+                                    }
+                                    else if (!assembler.InputInventory.ContainItems(adjustedAmount, item.Id) && !missingMatQueue.ContainsKey(bp) && !inaccessibleMatQueue.ContainsKey(bp)) //Inaccessible mats.  Looks at what the Keen pull has already done
+                                    {
+                                        MyFixedPoint qty = 0;
+                                        gridComp.inventoryList.TryGetValue(item.Id.SubtypeName, out qty);
+                                        if (!inaccessibleMatQueue.ContainsKey(bp))
+                                            inaccessibleMatQueue.Add(bp, new Dictionary<string, MyFixedPoint>());
+
+                                        if (notification < 2)
+                                        {
+                                            var sendNotif = true;
+                                            foreach (var blueprint in inaccessibleMatQueue)
+                                                foreach (var matType in blueprint.Value)
+                                                    if (matType.Key == item.Id.SubtypeName)
+                                                        sendNotif = false;
+
+                                            if (sendNotif)
+                                                SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" can't access {(item.Id.SubtypeName == "Stone" ? "Gravel" : Session.FriendlyNameLookup(item.Id.SubtypeName))}");
+                                        }
+
+                                        inaccessibleMatQueue[bp][item.Id.SubtypeName] = qty;
+                                        lComp.inaccessibleMats = true;
+                                        sendInacUpdates = true;
+                                    }
+                                }
+                                //If it was indeed missing materials, remove item from queue
+                                if (lComp.missingMats || lComp.inaccessibleMats)
+                                    assembler.RemoveQueueItem(0, queue[0].Amount);
+
+                                if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats checked for {lComp.label}.  Progress: {assembler.CurrentProgress}  Actually missing: {lComp.missingMats} Inaccessible mats: {lComp.inaccessibleMats}");
+                            }
+                            else
+                            {
+                                assembler.RemoveQueueItem(0, queue[0].Amount);
+                                if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" manually added {queue[0].Blueprint.Id.SubtypeName} missing mats/stuck, removed from queue");
+                            }
+                        }
+                        else //Disassembly stuck
+                        {
+                            ListCompItem lComp;
+                            if (buildList.TryGetValue((MyBlueprintDefinitionBase)queue[0].Blueprint, out lComp))
+                            {
+                                var bp = (MyBlueprintDefinitionBase)queue[0].Blueprint;
+                                if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" same item/qty found in disassembly queue, removing. Progress: {assembler.CurrentProgress}");
+                                if (notification < 2)
+                                    SendNotification(gridComp.Grid.DisplayName + ": " + assembler.CustomName + $" cannot access items to be disassembled: {Session.FriendlyNameLookup(lComp.label)}");
+
+                                MyFixedPoint qty = 0;
+                                gridComp.inventoryList.TryGetValue(lComp.label, out qty);
+                                if (!inaccessibleMatQueue.ContainsKey(bp))
+                                    inaccessibleMatQueue.Add(bp, new Dictionary<string, MyFixedPoint>());
+                                inaccessibleMatQueue[bp][lComp.label] = qty.ToIntSafe();
+                                lComp.inaccessibleComps = true;
+                                assembler.RemoveQueueItem(0, queue[0].Amount);
+                                sendInacUpdates = true;
+                            }
+                        }
                     }
                 }
                 if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + " quick check - items in queue");
                 lastQueue = queue[0];
+                lastProgress = assembler.CurrentProgress;
             }
 
             if (assembler.IsQueueEmpty) //Second check, since it might have been cleared
@@ -348,7 +362,7 @@ namespace BDAM
         public bool AssemblerTryBuild()
         {
             if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + " checking for buildable items");
-            for (int i = 1; i < 4; i++)
+            for (int i = 1; i < 6; i++)
                 foreach (var listItem in buildList)
                 {
                     var lComp = listItem.Value;

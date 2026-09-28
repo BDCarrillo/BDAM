@@ -33,6 +33,8 @@ namespace BDAM
         }
         public static string NumberFormat(float number)
         {
+            if ((int)number < 1)
+                return "1";
             var numStr = ((int)number).ToString();
             var numLen = numStr.Length;
             if (numLen > 3 && numLen <= 6)//Thousands
