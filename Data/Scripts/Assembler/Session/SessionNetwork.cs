@@ -249,15 +249,18 @@ namespace BDAM
                         break;
                     case PacketType.MissingMatData:
                         var mmPacket = packet as MissingMatPacket;
-                        aComp.missingMatAmount = mmPacket.data;
-                        if (netlogging) Log.WriteLine(modName + $"Received missing mat data from server");
+                        if (mmPacket.data != null)
+                            aComp.missingMatAmount = mmPacket.data;
+                        else
+                            aComp.missingMatAmount.Clear();
+                        if (netlogging) Log.WriteLine(modName + $" {aComp.assembler.DisplayName} Received missing mat data from server");
                         break;
                     case PacketType.InaccessibleData:
                         var inPacket = packet as InaccessibleCompPacket;
                         if (inPacket.data != null)
                             aComp.inaccessibleMatAmount = inPacket.data;
                         else
-                            Log.WriteLine($"inaccessibleMatAmount was null in packet received");
+                            aComp.inaccessibleMatAmount.Clear();
                         if (netlogging) Log.WriteLine(modName + $"Received inaccessible item data from server");
                         break;
                     default:
