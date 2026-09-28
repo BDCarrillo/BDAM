@@ -1,10 +1,12 @@
 ﻿using Sandbox.Definitions;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRageMath;
@@ -44,6 +46,7 @@ namespace BDAM
         public static Color red = new Color(255, 170, 170);
         public static Color grey = new Color(220, 235, 242);
         public static Color green = new Color(150, 255, 170);
+        public static MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 
 
         //TODO Future server settings

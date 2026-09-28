@@ -95,6 +95,7 @@ namespace BDAMTSS
             }
         }
 
+        //TODO has issue with wide LCD trimming assembler name and auto/master
         private void Draw(AssemblerComp aComp)
         {
             Vector2 screenSize = Surface.SurfaceSize;
@@ -145,7 +146,11 @@ namespace BDAMTSS
                     msg = "[AUTO MODE OFF]";
                 else if (aComp.buildList.Count == 0)
                     msg = "[NOTHING IN QUEUE]";
-                titlePos += newLine + newLine;
+                else if (!aComp.assembler.IsFunctional)
+                    msg = "[NOT FUNCTIONAL]";
+                else if (!aComp.assembler.ResourceSink.IsPoweredByType(Session.GId))
+                    msg = "[INSUFFICIENT POWER]";
+                    titlePos += newLine + newLine;
                 WriteTextSprite(ref frame, msg, titlePos, TextAlignment.CENTER);
             }
             frame.Dispose();

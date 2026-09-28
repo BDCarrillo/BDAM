@@ -96,11 +96,15 @@ namespace BDAM
         {
             bool sendMatUpdates = false;
             bool sendInacUpdates = false;
-
+            if (!assembler.ResourceSink.IsPoweredByType(Session.GId) || !assembler.IsFunctional)
+            {
+                if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Skipping check - powered: {assembler.ResourceSink.IsPoweredByType(Session.GId)} - functional: {assembler.IsFunctional}");
+                return;
+            }
             if (!assembler.IsQueueEmpty)
             {
                 var queue = assembler.GetQueue();
-                if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Update check Queue: {queue[0].Blueprint.Id.SubtypeName} - {queue[0].Amount}  Last: {lastQueue.Blueprint.Id.SubtypeName} - {lastQueue.Amount}");
+                if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Update check Queue: {queue[0].Blueprint.Id.SubtypeName} - {queue[0].Amount}");
 
                 //Jam check due to missing mats
                 if (lastQueue.Blueprint == queue[0].Blueprint && lastQueue.Amount == queue[0].Amount && assembler.CurrentProgress == 0)
@@ -169,7 +173,7 @@ namespace BDAM
                             if (lComp.missingMats || lComp.inaccessibleMats)
                                 assembler.RemoveQueueItem(0, queue[0].Amount);
 
-                            if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats checked for {lComp.label}.  Progress: {assembler.CurrentProgress}  Actually missing: {lComp.missingMats} Inaccessible: {lComp.inaccessibleComps}");
+                            if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" same item/qty found in queue, missing mats checked for {lComp.label}.  Progress: {assembler.CurrentProgress}  Actually missing: {lComp.missingMats} Inaccessible mats: {lComp.inaccessibleMats}");
                         }
                         else
                         {
