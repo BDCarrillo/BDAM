@@ -14,7 +14,10 @@ namespace BDAM
         {
             var rawData = MyAPIGateway.Utilities.SerializeToBinary(packet);
             if (MPActive)
+            {
+                if (netlogging) Log.WriteLine(modName + $" Sending to server from {Session.Player.SteamUserId} {packet.Type}");
                 MyModAPIHelper.MyMultiplayer.Static.SendMessageToServer(ServerPacketId, rawData, true);
+            }
             else
                 ProcessPacket(ServerPacketId, rawData, Session.Player.SteamUserId, true);
         }
@@ -64,7 +67,7 @@ namespace BDAM
                         return;
                     }
                 }
-                if (netlogging) Log.WriteLine(modName + $" {(id == ServerPacketId ? "Server" : "Client")} Packet type received: {packet.Type}");
+                if (netlogging) Log.WriteLine(modName + $" {(id == ServerPacketId ? "Server" : "Client")} Packet type received: {packet.Type} - {packet.EntityId}");
                 var toServer = id == ServerPacketId;
                 switch (packet.Type)
                 {

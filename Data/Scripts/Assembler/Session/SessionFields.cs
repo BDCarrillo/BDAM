@@ -16,7 +16,7 @@ namespace BDAM
 {
     public partial class Session : MySessionComponentBase
     {
-        internal static int Tick;
+        internal static int Tick = 1;
         public static bool Client;
         public static bool Server;
         public static bool MPActive;

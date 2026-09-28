@@ -48,6 +48,7 @@ namespace BDAM
             _session = session;
             gridComp = gComp;
             assembler = Assembler;
+            if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Init {assembler.EntityId} - {assembler.CustomName}");
             Session.aCompMap[assembler.EntityId] = this;
             //TODO look at grid change events
 

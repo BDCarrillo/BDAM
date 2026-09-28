@@ -105,9 +105,9 @@ namespace BDAM
             if (!_startGrids.IsEmpty && Tick % 30 == 0)
                 StartComps();
 
-            if(Server)
+            if (Server)
                 foreach (var grid in GridMap.Values)
-                    if (!grid.Grid.MarkedForClose && grid.assemblerList.Count > 0 && grid.nextUpdate <= Tick) 
+                    if (!grid.Grid.MarkedForClose && (grid.assemblerList.Count > 0 || grid.fatblocksDirty) && grid.nextUpdate <= Tick) 
                         grid.UpdateGrid();
             Tick++;
         }

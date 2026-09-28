@@ -32,11 +32,12 @@ namespace BDAM
 
             try
             {
-                foreach (var fat in grid.GetFatBlocks())
+                foreach (var fat in grid.GetFatBlocks().ToArray())
                     FatBlockAdded(fat);
             }
-            catch
+            catch (Exception e)
             {
+                if (Session.logging) Log.WriteLine($"{Session.modName} {Grid.DisplayName} Error in grid Init {e}");
                 fatblocksDirty = true;
             }
 
@@ -48,7 +49,6 @@ namespace BDAM
         }
         private void OnGridMerge(MyCubeGrid retainedGrid, MyCubeGrid removedGrid)
         {
-
             Grid.OnGridMerge -= OnGridMerge;
         }
         internal void FatBlockAdded(MyCubeBlock block)
@@ -152,7 +152,6 @@ namespace BDAM
                 if (fatblocksDirty)
                 {
                     crumb = "before fat update";
-
                     fatblocksDirty = false;
                     foreach (var fat in Grid.GetFatBlocks().ToArray())
                     {
@@ -164,7 +163,6 @@ namespace BDAM
                         }
                     }
                     crumb = "finished fat update";
-
                 }
             }
             catch (Exception e)
