@@ -214,6 +214,8 @@ namespace BDAM
                 openAComp = aComp;
                 MyAPIGateway.Session.Player.Controller.ControlledEntityChanged += GridChange;
             }
+            else
+                MyAPIGateway.Utilities.ShowNotification($"BDAM:  No assembler component found!", 2000, "Red");
         }
         internal void SetAutoMode(IMyTerminalBlock block)
         {

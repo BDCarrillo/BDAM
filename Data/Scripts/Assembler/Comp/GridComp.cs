@@ -60,7 +60,6 @@ namespace BDAM
                 aComp.Init(assembler, this, _session);
                 assemblerList.Add(block, aComp);
                 aComp.gridComp.masterAssembler = aComp.masterMode ? aComp.assembler.EntityId : 0;
-                return;
             }
         }
 
@@ -73,7 +72,6 @@ namespace BDAM
                 {
                     assemblerList[block].Clean(false);
                     assemblerList.Remove(block);
-                    return;
                 }
                 else
                     Log.WriteLine($"{Session.modName} {Grid.DisplayName} Assembler type {block.DisplayNameText} was not in AssemblerList of the grid comp");
