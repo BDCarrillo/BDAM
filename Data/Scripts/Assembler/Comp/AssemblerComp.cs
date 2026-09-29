@@ -97,10 +97,11 @@ namespace BDAM
         public void AssemblerUpdate()
         {
             bool sendMatUpdates = false;
-            bool sendInacUpdates = false;
-            if (!assembler.ResourceSink.IsPoweredByType(Session.GId) || !assembler.IsFunctional)
+            bool sendInacUpdates = false;         
+            
+            if (!assembler.Enabled || !assembler.IsFunctional)
             {
-                if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Skipping check - powered: {assembler.ResourceSink.IsPoweredByType(Session.GId)} - functional: {assembler.IsFunctional}");
+                if (Session.logging) Log.WriteLine(Session.modName + assembler.CustomName + $" Skipping check - powered: {assembler.ResourceSink.IsPoweredByType(Session.GId)} - functional: {assembler.IsFunctional} - enabled: {assembler.Enabled}");
                 return;
             }
             if (!assembler.IsQueueEmpty)
@@ -377,6 +378,8 @@ namespace BDAM
                     if (amountNeeded > 0)
                     {
                         var queueAmount = amountNeeded > maxQueueAmount ? maxQueueAmount : amountNeeded;
+                        if (queueAmount < 1)
+                            queueAmount = 1;
                         if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly)
                             assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly;
                         var processingTime = (float)(listItem.Key.BaseProductionTimeInSeconds / (Session.assemblerSpeed * (baseSpeed + assembler.UpgradeValues["Productivity"])) * queueAmount);
@@ -411,6 +414,8 @@ namespace BDAM
                         if (amountExcess > 0)
                         {
                             var queueAmount = amountExcess > maxQueueAmount ? maxQueueAmount : amountExcess;
+                            if (queueAmount < 1)
+                                queueAmount = 1;
                             if (assembler.Mode == Sandbox.ModAPI.Ingame.MyAssemblerMode.Assembly)
                                 assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly;
                             var processingTime = (float)(listItem.Key.BaseProductionTimeInSeconds / (Session.assemblerSpeed * (baseSpeed + assembler.UpgradeValues["Productivity"])) * queueAmount);
@@ -448,7 +453,7 @@ namespace BDAM
             }
 
             var masterProcessingAmount = (int)(Session.refreshTimeSeconds / (item.BaseProductionTimeInSeconds / (Session.assemblerSpeed * (baseSpeed + assembler.UpgradeValues["Productivity"]))));
-            if (masterProcessingAmount == 0)
+            if (masterProcessingAmount < 1)
                 masterProcessingAmount = 1;            
             if (masterProcessingAmount > queueAmount)
                 masterProcessingAmount = (int)queueAmount;
@@ -467,7 +472,7 @@ namespace BDAM
                     helper.assembler.Mode = Sandbox.ModAPI.Ingame.MyAssemblerMode.Disassembly;
 
                 var helperProcessingAmount = (int)(Session.refreshTimeSeconds / (item.BaseProductionTimeInSeconds / (Session.assemblerSpeed * (helper.baseSpeed + helper.assembler.UpgradeValues["Productivity"]))));
-                if (helperProcessingAmount == 0)
+                if (helperProcessingAmount < 1)
                     helperProcessingAmount = 1;
                 if (helperProcessingAmount > queueAmount)
                     helperProcessingAmount = (int)queueAmount;

@@ -43,6 +43,7 @@ namespace BDAMTSS
         {
             base.Dispose();
             TerminalBlock.OnMarkForClose -= BlockMarkedForClose;
+            TerminalBlock.CubeGridChanged -= CubeGridChanged;
         }
 
         void BlockMarkedForClose(IMyEntity ent)
@@ -150,7 +151,7 @@ namespace BDAMTSS
                     msg = "[NOT FUNCTIONAL]";
                 else if (!aComp.assembler.ResourceSink.IsPoweredByType(Session.GId))
                     msg = "[INSUFFICIENT POWER]";
-                    titlePos += newLine + newLine;
+                titlePos += newLine + newLine;
                 WriteTextSprite(ref frame, msg, titlePos, TextAlignment.CENTER);
             }
             frame.Dispose();
@@ -188,11 +189,11 @@ namespace BDAMTSS
                     if (assy.CustomName == name)
                     {
                         assemblerID = assy.EntityId;
-                        block.CubeGridChanged += CubeGridChanged;
+                        cachedName = name;
+                        return;
                     }
                 }
             }
-            cachedName = name;
         }
 
         private void CreateConfig()

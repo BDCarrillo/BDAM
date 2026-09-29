@@ -18,6 +18,8 @@ namespace BDAM
             MPActive = MyAPIGateway.Multiplayer.MultiplayerActive;
             Server = (MPActive && MyAPIGateway.Multiplayer.IsServer) || !MPActive;
             Client = !MyAPIGateway.Utilities.IsDedicated;
+            if (Client)
+                Tick = 1;
             MyEntities.OnEntityCreate += OnEntityCreate;
             Log.InitLogs();
         }
