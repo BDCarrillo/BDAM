@@ -33,6 +33,7 @@ namespace BDAM
         public static Dictionary<string, MyBlueprintDefinitionBase> BPLookup = new Dictionary<string, MyBlueprintDefinitionBase>();
         public static Dictionary<string, MyBlueprintDefinitionBase> BPLookupFriendly = new Dictionary<string, MyBlueprintDefinitionBase>();
         public static Dictionary<string, string> NameLookupFriendly = new Dictionary<string, string>();
+        public static List<GridComp> clientReinits = new List<GridComp>();
         public static Stopwatch timer = new Stopwatch();
         internal static string modName = "[BDAM]";
         internal readonly Guid storageGuid = new Guid("95dd6473-8e17-4ac3-ba22-57d283755755");

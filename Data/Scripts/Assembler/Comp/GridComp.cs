@@ -3,9 +3,9 @@ using Sandbox.ModAPI;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using VRage;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 
 namespace BDAM
@@ -32,13 +32,18 @@ namespace BDAM
 
             try
             {
-                foreach (var fat in grid.GetFatBlocks().ToArray())
-                    FatBlockAdded(fat);
+                var igrid = grid as IMyCubeGrid;
+                foreach (var fat in igrid.GetFatBlocks<IMyAssembler>())
+                    FatBlockAdded((MyCubeBlock)fat);
             }
             catch (Exception e)
             {
-                if (Session.logging) Log.WriteLine($"{Session.modName} {Grid.DisplayName} Error in grid Init {e}");
                 fatblocksDirty = true;
+                if (Session.Client)
+                {
+                    Log.WriteLine($"{Session.modName} {Grid.DisplayName} Error in grid Init {e}");
+                    Session.clientReinits.Add(this);
+                }
             }
 
             Grid.OnFatBlockAdded += FatBlockAdded;
@@ -151,18 +156,7 @@ namespace BDAM
                 }
                 if (fatblocksDirty)
                 {
-                    crumb = "before fat update";
-                    fatblocksDirty = false;
-                    foreach (var fat in Grid.GetFatBlocks().ToArray())
-                    {
-                        if (fat is IMyAssembler)
-                        {
-                            if (assemblerList.ContainsKey(fat))
-                                continue;
-                            FatBlockAdded(fat);
-                        }
-                    }
-                    crumb = "finished fat update";
+                    Reinit();
                 }
             }
             catch (Exception e)
@@ -171,6 +165,14 @@ namespace BDAM
                 Log.WriteLine($"BDAM error in UpdateGrid: {crumb}");
                 throw e;
             }
+        }
+
+        internal void Reinit()
+        {
+            fatblocksDirty = false;
+            var igrid = Grid as IMyCubeGrid;
+            foreach (var fat in igrid.GetFatBlocks<IMyAssembler>())
+                FatBlockAdded((MyCubeBlock)fat);
         }
 
         internal void Clean(bool sendUpdate)

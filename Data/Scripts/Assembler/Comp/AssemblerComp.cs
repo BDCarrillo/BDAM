@@ -59,6 +59,7 @@ namespace BDAM
                 {
                     var queue = assembler.GetQueue();
                     lastQueue = queue[0];
+                    lastProgress = assembler.CurrentProgress;
                 }
                 baseSpeed = Session.speedMap[assembler.BlockDefinition.SubtypeId];
                 assembler.StoppedProducing += Assembler_StoppedProducing;

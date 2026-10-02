@@ -9,7 +9,7 @@ namespace BDAM
     {
         internal const string LOG_PREFIX = "BDAM";
         internal const string LOG_SUFFIX = ".log";
-        internal const int LOGS_TO_KEEP = 2;
+        internal const int LOGS_TO_KEEP = 5;
 
         internal static TextWriter TextWriter;
 

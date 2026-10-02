@@ -111,6 +111,15 @@ namespace BDAM
                 foreach (var grid in GridMap.Values)
                     if (!grid.Grid.MarkedForClose && (grid.assemblerList.Count > 0 || grid.fatblocksDirty) && grid.nextUpdate <= Tick) 
                         grid.UpdateGrid();
+
+            if (clientReinits.Count > 0 && Tick % 30 == 0)
+            {
+                var gComp = clientReinits[0];
+                Log.WriteLine($"{modName} {gComp.Grid.DisplayName} Attempting re-init");
+                clientReinits.RemoveAt(0);
+                gComp.Reinit();
+            }
+
             Tick++;
         }
 
