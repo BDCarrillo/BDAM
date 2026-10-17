@@ -103,6 +103,8 @@ namespace BDAM
             for (int i = 0; i < _startGrids.Count; i++)
             {
                 var grid = _startGrids[i];
+                if (grid?.Physics == null || grid.IsPreview)
+                    continue;
                 var gridComp = _gridCompPool.Count > 0 ? _gridCompPool.Pop() : new GridComp();
                 gridComp.Init(grid, this);
                 GridMap[grid] = gridComp;
@@ -114,7 +116,7 @@ namespace BDAM
         {
             var grid = entity as MyCubeGrid;
             if (grid != null && !grid.IsPreview)
-                _startGrids.Add(grid);
+                grid.AddedToScene += addToStart => _startGrids.Add(grid);
             if (Client && !controlInit && entity is IMyAssembler)
             {
                 controlInit = true;

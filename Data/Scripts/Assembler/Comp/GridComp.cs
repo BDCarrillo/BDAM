@@ -30,32 +30,15 @@ namespace BDAM
             _session = session;
             Grid = grid;
 
-            try
-            {
-                var igrid = grid as IMyCubeGrid;
-                foreach (var fat in igrid.GetFatBlocks<IMyAssembler>())
-                    FatBlockAdded((MyCubeBlock)fat);
-            }
-            catch (Exception e)
-            {
-                fatblocksDirty = true;
-                if (Session.Client)
-                {
-                    Log.WriteLine($"{Session.modName} {Grid.DisplayName} Error in grid Init {e}");
-                    Session.clientReinits.Add(this);
-                }
-            }
-
             Grid.OnFatBlockAdded += FatBlockAdded;
             Grid.OnFatBlockRemoved += FatBlockRemoved;
-            Grid.OnGridMerge += OnGridMerge;
+            
+            foreach (var fat in grid.GetFatBlocks())
+                FatBlockAdded((MyCubeBlock)fat);
+
             nextUpdate = (int)(Session.Tick + Grid.EntityId % 100);
-            //TODO look at grid merge/change events to preserve aComp data
         }
-        private void OnGridMerge(MyCubeGrid retainedGrid, MyCubeGrid removedGrid)
-        {
-            Grid.OnGridMerge -= OnGridMerge;
-        }
+
         internal void FatBlockAdded(MyCubeBlock block)
         {
             var assembler = block as IMyAssembler;
@@ -154,10 +137,6 @@ namespace BDAM
                         }
                     nextUpdate += Session.refreshTime;
                 }
-                if (fatblocksDirty)
-                {
-                    Reinit();
-                }
             }
             catch (Exception e)
             {
@@ -165,14 +144,6 @@ namespace BDAM
                 Log.WriteLine($"BDAM error in UpdateGrid: {crumb}");
                 throw e;
             }
-        }
-
-        internal void Reinit()
-        {
-            fatblocksDirty = false;
-            var igrid = Grid as IMyCubeGrid;
-            foreach (var fat in igrid.GetFatBlocks<IMyAssembler>())
-                FatBlockAdded((MyCubeBlock)fat);
         }
 
         internal void Clean(bool sendUpdate)
