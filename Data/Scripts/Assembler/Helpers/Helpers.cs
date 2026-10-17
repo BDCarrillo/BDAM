@@ -33,7 +33,7 @@ namespace BDAM
         }
         public static string NumberFormat(float number)
         {
-            if ((int)number < 1)
+            if ((int)number != 0 && (int)number < 1)
                 return "1";
             var numStr = ((int)number).ToString();
             var numLen = numStr.Length;
