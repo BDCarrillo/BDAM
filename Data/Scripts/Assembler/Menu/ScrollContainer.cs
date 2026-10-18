@@ -343,8 +343,8 @@ namespace BDAM
                     bool needUpdate = false;
                     foreach (var addItem in addMulti)
                     {
-                        var details = addItem.Element as AddItem;
-                        if (details.addBox.IsBoxChecked)
+                        var details = addItem.Element as AddItem;                        
+                        if (details.selected)
                         {
                             var bp = details.bp;
                             var tempListCompItem = new ListCompItem() { bpBase = bp.Id.SubtypeName, label = bp.Results[0].Id.SubtypeName, dirty = true };

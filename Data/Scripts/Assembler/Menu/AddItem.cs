@@ -11,11 +11,13 @@ namespace BDAM
         private readonly TextBox labelBox;
         public readonly BorderedCheckBox addBox;
         private string labelStr;
+        public bool selected;
 
         public AddItem(MyBlueprintDefinitionBase BP, String LabelStr, HudElementBase parent) : base(parent)
         {
             labelStr = LabelStr;
             bp = BP;
+            selected = false;
 
             ParentAlignment = ParentAlignments.Top | ParentAlignments.Inner | ParentAlignments.Left;
             Size = new Vector2(300 * Session.resMult, 30 * Session.resMult);
@@ -29,6 +31,7 @@ namespace BDAM
                 UseFocusFormatting = false,
                 IsBoxChecked = false,
             };
+            addBox.MouseInput.LeftClicked += AddBoxUpdate;
 
             labelBox = new TextBox(this)
             {
@@ -40,7 +43,12 @@ namespace BDAM
                 AutoResize = false,
                 Text = labelStr,
                 InputEnabled = false,
-            };
+            };            
+        }
+
+        private void AddBoxUpdate(object sender, EventArgs e)
+        {
+            selected = !selected;
         }
     }
 }
